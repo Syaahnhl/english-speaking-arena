@@ -100,7 +100,7 @@ export const HEAD_TO_HEAD_BATTLES: HeadToHeadBattle[] = [
     title: 'The Great Remote Work Face-Off',
     category: 'Same Topic',
     level: 'intermediate',
-    prompt: 'Should companies enforce strict office return mandates or empower permanent remote flexibility? Both players speak on the topic for 60 seconds.',
+    prompt: 'Should companies enforce strict office return mandates or empower permanent remote flexibility? Both players speak on the topic for 1 minute.',
     timeLimit: 60,
     opponent: {
       name: 'Peserta 2',
@@ -110,7 +110,7 @@ export const HEAD_TO_HEAD_BATTLES: HeadToHeadBattle[] = [
   },
   {
     id: 'h2h-2',
-    title: '60-Second Rapid Tongue & Vocab Battle',
+    title: '1-Minute Rapid Tongue & Vocab Battle',
     category: 'Fast Answer',
     level: 'beginner',
     prompt: 'Describe your dream vacation destination using 5 vivid adjectives without pausing for more than 2 seconds.',
@@ -126,7 +126,7 @@ export const HEAD_TO_HEAD_BATTLES: HeadToHeadBattle[] = [
     title: 'The Unprepared Crisis Pitch',
     category: 'Storytelling Battle',
     level: 'advanced',
-    prompt: 'You are the captain of a submarine that lost sonar contact near an underwater volcanic ridge. Brief the crew in 90 seconds.',
+    prompt: 'You are the captain of a submarine that lost sonar contact near an underwater volcanic ridge. Brief the crew in 1.5 minutes.',
     timeLimit: 90,
     opponent: {
       name: 'Peserta 2',

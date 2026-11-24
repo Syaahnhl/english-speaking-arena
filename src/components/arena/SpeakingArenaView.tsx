@@ -234,7 +234,9 @@ export const SpeakingArenaView: React.FC = () => {
                   <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded bg-indigo-100 text-indigo-700">
                     {battle.category}
                   </span>
-                  <span className="text-xs font-mono text-slate-400">{battle.timeLimit} Detik / Siswa</span>
+                  <span className="text-xs font-mono text-slate-500 font-semibold">
+                    {Math.floor(battle.timeLimit / 60)}:{(battle.timeLimit % 60).toString().padStart(2, '0')} Menit / Siswa
+                  </span>
                 </div>
 
                 <h3 className="font-extrabold text-sm text-slate-900">{battle.title}</h3>
@@ -249,7 +251,9 @@ export const SpeakingArenaView: React.FC = () => {
               </div>
 
               <div className="mt-5 pt-4 border-t border-slate-200/70 flex items-center justify-between">
-                <span className="text-xs text-slate-400 font-mono">Batas: {battle.timeLimit}s</span>
+                <span className="text-xs text-slate-500 font-mono font-semibold">
+                  Batas: {Math.floor(battle.timeLimit / 60)}:{(battle.timeLimit % 60).toString().padStart(2, '0')} Menit
+                </span>
                 <button
                   onClick={() => handleStartBattleModal(battle)}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-all"
@@ -371,7 +375,7 @@ export const SpeakingArenaView: React.FC = () => {
                       <CheckCircle className="w-4 h-4" /> Selesai
                     </span>
                   ) : (
-                    `${selectedBattle.timeLimit}s`
+                    `${Math.floor(selectedBattle.timeLimit / 60)}:${(selectedBattle.timeLimit % 60).toString().padStart(2, '0')}`
                   )}
                 </div>
                 <span className="text-[11px] text-slate-500 block">
@@ -396,7 +400,7 @@ export const SpeakingArenaView: React.FC = () => {
                       <CheckCircle className="w-4 h-4" /> Selesai
                     </span>
                   ) : (
-                    `${selectedBattle.timeLimit}s`
+                    `${Math.floor(selectedBattle.timeLimit / 60)}:${(selectedBattle.timeLimit % 60).toString().padStart(2, '0')}`
                   )}
                 </div>
                 <span className="text-[11px] text-slate-500 block">
