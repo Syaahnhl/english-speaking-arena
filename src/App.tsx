@@ -45,7 +45,7 @@ const MainContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans selection:bg-teal-600 selection:text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
       {/* Top Navbar */}
       <Navbar />
 

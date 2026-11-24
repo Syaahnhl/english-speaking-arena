@@ -11,13 +11,13 @@ export const LevelSelector: React.FC = () => {
       id: 'beginner',
       label: 'Beginner',
       icon: <Sparkles className="w-3.5 h-3.5" />,
-      activeBg: 'bg-emerald-700 text-white shadow-sm'
+      activeBg: 'bg-sky-500 text-white shadow-sm'
     },
     {
       id: 'intermediate',
       label: 'Intermediate',
       icon: <Compass className="w-3.5 h-3.5" />,
-      activeBg: 'bg-teal-700 text-white shadow-sm'
+      activeBg: 'bg-blue-600 text-white shadow-sm'
     },
     {
       id: 'advanced',

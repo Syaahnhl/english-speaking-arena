@@ -310,7 +310,7 @@ export const ReadingReader: React.FC<Props> = ({ material, onBack }) => {
               <button
                 onClick={() => setTheme('dark')}
                 className={`flex-1 py-1.5 rounded-lg border flex items-center justify-center gap-1 ${
-                  theme === 'dark' ? 'bg-slate-900 border-teal-500 font-bold text-white' : 'bg-slate-100 text-slate-600'
+                  theme === 'dark' ? 'bg-slate-900 border-blue-500 font-bold text-white' : 'bg-slate-100 text-slate-600'
                 }`}
               >
                 <Moon className="w-3.5 h-3.5" /> Studio Gelap
@@ -318,7 +318,7 @@ export const ReadingReader: React.FC<Props> = ({ material, onBack }) => {
               <button
                 onClick={() => setTheme('light')}
                 className={`flex-1 py-1.5 rounded-lg border flex items-center justify-center gap-1 ${
-                  theme === 'light' ? 'bg-teal-50 border-teal-600 font-bold text-teal-800' : 'bg-slate-100 text-slate-600'
+                  theme === 'light' ? 'bg-blue-50 border-blue-600 font-bold text-blue-700' : 'bg-slate-100 text-slate-600'
                 }`}
               >
                 <Sun className="w-3.5 h-3.5" /> Terang
@@ -343,7 +343,7 @@ export const ReadingReader: React.FC<Props> = ({ material, onBack }) => {
                   key={sz}
                   onClick={() => setFontSize(sz)}
                   className={`flex-1 py-1.5 rounded-lg border uppercase font-bold text-[11px] ${
-                    fontSize === sz ? 'bg-teal-700 text-white border-teal-700' : 'bg-slate-50 border-slate-200 text-slate-600'
+                    fontSize === sz ? 'bg-blue-600 text-white border-blue-600' : 'bg-slate-50 border-slate-200 text-slate-600'
                   }`}
                 >
                   {sz === 'sm' ? 'Sedang' : sz === 'md' ? 'Besar' : sz === 'lg' ? 'XL' : 'XXL'}
@@ -359,7 +359,7 @@ export const ReadingReader: React.FC<Props> = ({ material, onBack }) => {
         {/* Teleprompter Top Status Bar */}
         <div className="px-6 py-4 border-b border-inherit/20 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2">
-            <span className="font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-teal-500/20 text-teal-400">
+            <span className="font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-500/20 text-sky-400">
               {material.genre.replace('-', ' ')}
             </span>
             <span className="opacity-70 font-medium">
@@ -370,7 +370,7 @@ export const ReadingReader: React.FC<Props> = ({ material, onBack }) => {
           {/* Active speed indicator */}
           <div className="flex items-center gap-2 font-mono">
             <span className="opacity-70">Kecepatan:</span>
-            <span className="px-2 py-0.5 rounded bg-teal-500/20 font-bold text-teal-400">
+            <span className="px-2 py-0.5 rounded bg-blue-500/20 font-bold text-sky-400">
               {speedMultiplier}x ({Math.round(160 * speedMultiplier)} WPM)
             </span>
           </div>
@@ -392,7 +392,7 @@ export const ReadingReader: React.FC<Props> = ({ material, onBack }) => {
             <div ref={contentRef} className="max-w-2xl mx-auto space-y-12 text-center">
               {/* Title & Introduction */}
               <div className="text-center pt-8 pb-4 border-b border-inherit/20">
-                <span className="text-xs uppercase font-extrabold tracking-widest text-teal-400 block mb-2">
+                <span className="text-xs uppercase font-extrabold tracking-widest text-sky-400 block mb-2">
                   TELEPROMPTER SPEED DRILL
                 </span>
                 <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-snug">

@@ -180,7 +180,7 @@ export const SpeakingCardsView: React.FC = () => {
 
                   <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-lg flex items-center gap-1 ${
                     card.level === 'beginner' 
-                      ? 'bg-emerald-50 text-emerald-700' 
+                      ? 'bg-sky-50 text-sky-700 border border-sky-200' 
                       : card.level === 'intermediate'
                       ? 'bg-blue-50 text-blue-700'
                       : 'bg-purple-50 text-purple-700'
@@ -228,12 +228,12 @@ export const SpeakingCardsView: React.FC = () => {
                     disabled={inCart}
                     className={`p-2.5 rounded-xl text-xs font-semibold border transition-all ${
                       inCart
-                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700 cursor-default'
+                        ? 'bg-blue-50 border-blue-200 text-blue-700 cursor-default'
                         : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
                     }`}
                     title={inCart ? 'Sudah di Keranjang' : 'Tambah ke Speaking Cart'}
                   >
-                    {inCart ? <Check className="w-4 h-4 text-emerald-600" /> : <Plus className="w-4 h-4" />}
+                    {inCart ? <Check className="w-4 h-4 text-blue-600" /> : <Plus className="w-4 h-4" />}
                   </button>
 
                   <button

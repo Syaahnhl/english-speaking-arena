@@ -164,7 +164,7 @@ export const SpeakingCartView: React.FC = () => {
             }}
             className={`w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-3 rounded-2xl font-bold text-xs shadow-lg transition-all ${
               cart.length > 0
-                ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/30'
+                ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/30'
                 : 'bg-white/20 text-white/40 cursor-not-allowed'
             }`}
           >
@@ -244,7 +244,7 @@ export const SpeakingCartView: React.FC = () => {
                       onClick={() => (inCart ? removeFromCart(item.id) : addToCart(item))}
                       className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                         inCart
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          ? 'bg-blue-50 text-blue-700 border border-blue-200'
                           : 'bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white'
                       }`}
                     >
@@ -292,7 +292,7 @@ export const SpeakingCartView: React.FC = () => {
                       onClick={() => (inCart ? removeFromCart(item.id) : addToCart(item))}
                       className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                         inCart
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          ? 'bg-blue-50 text-blue-700 border border-blue-200'
                           : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20'
                       }`}
                     >
@@ -338,7 +338,7 @@ export const SpeakingCartView: React.FC = () => {
                       onClick={() => (inCart ? removeFromCart(item.id) : addToCart(item))}
                       className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                         inCart
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          ? 'bg-blue-50 text-blue-700 border border-blue-200'
                           : 'bg-pink-50 hover:bg-pink-600 text-pink-700 hover:text-white'
                       }`}
                     >

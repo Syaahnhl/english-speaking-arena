@@ -67,10 +67,10 @@ export const StudentDashboard: React.FC = () => {
       {/* 1. TEACHER HERO BANNER */}
       <div className="relative overflow-hidden rounded-2xl bg-slate-900 text-white p-6 sm:p-8 border border-slate-800 shadow-sm flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
         <div className="relative z-10 max-w-2xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-950 text-teal-300 text-xs font-semibold tracking-wide border border-teal-800">
-            <GraduationCap className="w-3.5 h-3.5 text-teal-400" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-950/90 text-blue-300 text-xs font-semibold tracking-wide border border-blue-800">
+            <GraduationCap className="w-3.5 h-3.5 text-sky-400" />
             <span>Fasilitasi Kelas • {currentClass ? currentClass.name : 'Belum Ada Kelas'}</span>
-            <span className="ml-1 px-2 py-0.5 rounded bg-teal-600 text-white font-extrabold uppercase text-[10px]">
+            <span className="ml-1 px-2 py-0.5 rounded bg-blue-600 text-white font-extrabold uppercase text-[10px]">
               Tier {level.toUpperCase()}
             </span>
           </div>
@@ -88,7 +88,7 @@ export const StudentDashboard: React.FC = () => {
                 soundService.playClick();
                 setActiveTab('reading');
               }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-teal-600 hover:bg-teal-500 text-white shadow-sm transition-all"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-sm transition-all"
             >
               <Gauge className="w-4 h-4" />
               <span>Buka Teleprompter Kelas</span>
@@ -125,7 +125,7 @@ export const StudentDashboard: React.FC = () => {
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Kelas Aktif</span>
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-teal-400 text-slate-900">
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-blue-500 text-white">
                   {currentClass?.level?.toUpperCase() || level.toUpperCase()}
                 </span>
               </div>
@@ -133,7 +133,7 @@ export const StudentDashboard: React.FC = () => {
                 {currentClass ? currentClass.name : 'Belum Ada'}
               </h3>
             </div>
-            <span className="px-2.5 py-1 rounded-lg bg-teal-900/60 text-teal-300 text-xs font-semibold">
+            <span className="px-2.5 py-1 rounded-lg bg-blue-900/60 text-blue-200 text-xs font-semibold">
               {students.length} Siswa
             </span>
           </div>
@@ -143,7 +143,7 @@ export const StudentDashboard: React.FC = () => {
             <select
               value={activeClassId}
               onChange={(e) => setActiveClassId(e.target.value)}
-              className="w-full text-xs font-semibold text-white bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 cursor-pointer focus:outline-none focus:border-teal-500"
+              className="w-full text-xs font-semibold text-white bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 cursor-pointer focus:outline-none focus:border-blue-500"
             >
               {classrooms.map(c => (
                 <option key={c.id} value={c.id}>
@@ -164,13 +164,13 @@ export const StudentDashboard: React.FC = () => {
 
       {/* 2. RANDOM STUDENT WINNER BANNER (IF PICKED) */}
       {selectedStudent && (
-        <div className="p-4 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-between animate-fadeIn">
+        <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-between animate-fadeIn">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center font-bold text-lg">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-lg">
               🎯
             </div>
             <div>
-              <span className="text-[11px] font-bold text-teal-700 uppercase tracking-wider block">Giliran Maju Bicara</span>
+              <span className="text-[11px] font-bold text-blue-700 uppercase tracking-wider block">Giliran Maju Bicara</span>
               <h4 className="text-base font-extrabold text-slate-900">
                 {selectedStudent}
               </h4>
@@ -182,7 +182,7 @@ export const StudentDashboard: React.FC = () => {
                 soundService.playClick();
                 setActiveTab('cards');
               }}
-              className="px-3 py-1.5 bg-teal-700 text-white text-xs font-semibold rounded-lg hover:bg-teal-800 transition-colors"
+              className="px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors"
             >
               Pilihkan Topik Bicara →
             </button>
@@ -199,7 +199,7 @@ export const StudentDashboard: React.FC = () => {
       {/* 3. TEACHER STATS OVERVIEW */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="p-4 rounded-xl bg-white border border-slate-200 space-y-1">
-          <div className="flex items-center gap-2 text-teal-700 text-xs font-semibold">
+          <div className="flex items-center gap-2 text-blue-600 text-xs font-semibold">
             <FolderOpen className="w-4 h-4" />
             <span>Kelas Anda</span>
           </div>
@@ -210,7 +210,7 @@ export const StudentDashboard: React.FC = () => {
         </div>
 
         <div className="p-4 rounded-xl bg-white border border-slate-200 space-y-1">
-          <div className="flex items-center gap-2 text-teal-700 text-xs font-semibold">
+          <div className="flex items-center gap-2 text-blue-600 text-xs font-semibold">
             <Users className="w-4 h-4" />
             <span>Total Siswa</span>
           </div>
@@ -221,7 +221,7 @@ export const StudentDashboard: React.FC = () => {
         </div>
 
         <div className="p-4 rounded-xl bg-white border border-slate-200 space-y-1">
-          <div className="flex items-center gap-2 text-teal-700 text-xs font-semibold">
+          <div className="flex items-center gap-2 text-blue-600 text-xs font-semibold">
             <CheckCircle2 className="w-4 h-4" />
             <span>Siswa Kelas Aktif</span>
           </div>
@@ -232,7 +232,7 @@ export const StudentDashboard: React.FC = () => {
         </div>
 
         <div className="p-4 rounded-xl bg-white border border-slate-200 space-y-1">
-          <div className="flex items-center gap-2 text-teal-700 text-xs font-semibold">
+          <div className="flex items-center gap-2 text-blue-600 text-xs font-semibold">
             <Sparkles className="w-4 h-4" />
             <span>Mode Latihan</span>
           </div>
@@ -254,7 +254,7 @@ export const StudentDashboard: React.FC = () => {
           </div>
           <button
             onClick={() => setActiveTab('progress')}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-700 hover:text-teal-800"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700"
           >
             <PlusCircle className="w-3.5 h-3.5" />
             <span>Tambah Kelas Baru</span>
@@ -273,18 +273,18 @@ export const StudentDashboard: React.FC = () => {
                 }}
                 className={`p-4 rounded-xl border text-left cursor-pointer transition-all ${
                   isSelected
-                    ? 'bg-teal-50/70 border-teal-500 ring-1 ring-teal-500'
+                    ? 'bg-blue-50/70 border-blue-500 ring-1 ring-blue-500'
                     : 'bg-slate-50 border-slate-200 hover:bg-white hover:border-slate-300'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-1.5">
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                      isSelected ? 'bg-teal-700 text-white' : 'bg-slate-200 text-slate-700'
+                      isSelected ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-700'
                     }`}>
                       {isSelected ? 'Kelas Aktif' : 'Klik Masuk'}
                     </span>
-                    <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-teal-100 text-teal-800">
+                    <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
                       {cls.level || 'intermediate'}
                     </span>
                   </div>
@@ -313,20 +313,20 @@ export const StudentDashboard: React.FC = () => {
           {/* Running Reading */}
           <div
             onClick={() => setActiveTab('reading')}
-            className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-teal-400 hover:shadow-sm transition-all cursor-pointer group flex flex-col justify-between"
+            className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-blue-400 hover:shadow-sm transition-all cursor-pointer group flex flex-col justify-between"
           >
             <div className="space-y-2.5">
-              <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center font-bold">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
                 <Gauge className="w-5 h-5" />
               </div>
-              <h4 className="font-bold text-sm text-slate-900 group-hover:text-teal-700 transition-colors">
+              <h4 className="font-bold text-sm text-slate-900 group-hover:text-blue-600 transition-colors">
                 Teleprompter Reading
               </h4>
               <p className="text-xs text-slate-600 leading-relaxed">
                 Tampilkan teks bacaan berjalan naik secara kontinu. Guru memegang kendali kecepatan untuk melatih kelancaran membaca bersama.
               </p>
             </div>
-            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-teal-700">
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-blue-600">
               <span>Buka Teleprompter</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </div>
@@ -357,20 +357,20 @@ export const StudentDashboard: React.FC = () => {
           {/* Roleplay Secret Mission */}
           <div
             onClick={() => setActiveTab('roleplay')}
-            className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition-all cursor-pointer group flex flex-col justify-between"
+            className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-blue-400 hover:shadow-sm transition-all cursor-pointer group flex flex-col justify-between"
           >
             <div className="space-y-2.5">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
                 <Theater className="w-5 h-5" />
               </div>
-              <h4 className="font-bold text-sm text-slate-900 group-hover:text-emerald-700 transition-colors">
+              <h4 className="font-bold text-sm text-slate-900 group-hover:text-blue-600 transition-colors">
                 Roleplay Misi Rahasia
               </h4>
               <p className="text-xs text-slate-600 leading-relaxed">
                 Tugaskan dua siswa maju ke depan. Setiap peran memiliki misi tersembunyi yang harus dicapai dalam dialog bahasa Inggris.
               </p>
             </div>
-            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-emerald-700">
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-blue-600">
               <span>Buka Simulasi Roleplay</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </div>
@@ -401,20 +401,20 @@ export const StudentDashboard: React.FC = () => {
           {/* Studio Games */}
           <div
             onClick={() => setActiveTab('interactive')}
-            className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-teal-400 hover:shadow-sm transition-all cursor-pointer group flex flex-col justify-between"
+            className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-blue-400 hover:shadow-sm transition-all cursor-pointer group flex flex-col justify-between"
           >
             <div className="space-y-2.5">
-              <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center font-bold">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
                 <Mic2 className="w-5 h-5" />
               </div>
-              <h4 className="font-bold text-sm text-slate-900 group-hover:text-teal-700 transition-colors">
+              <h4 className="font-bold text-sm text-slate-900 group-hover:text-blue-600 transition-colors">
                 Studio Games & Pemanasan
               </h4>
               <p className="text-xs text-slate-600 leading-relaxed">
                 Permainan cepat: Word Chain, Alibi Detective, Tongue Twister, dan Rapid Fire untuk mencairkan suasana sebelum materi utama.
               </p>
             </div>
-            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-teal-700">
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-blue-600">
               <span>Buka Studio Games</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </div>
@@ -449,7 +449,7 @@ export const StudentDashboard: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div>
             <h3 className="font-bold text-base text-slate-900 flex items-center gap-2">
-              <Users className="w-4 h-4 text-teal-700" />
+              <Users className="w-4 h-4 text-blue-600" />
               <span>Siswa di {currentClass ? currentClass.name : 'Kelas Terpilih'} ({students.length} Siswa)</span>
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -462,7 +462,7 @@ export const StudentDashboard: React.FC = () => {
               <button
                 onClick={handlePickRandomStudent}
                 disabled={isPicking}
-                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-teal-50 text-teal-800 border border-teal-200 hover:bg-teal-100 transition-colors flex items-center gap-1.5"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors flex items-center gap-1.5"
               >
                 <Dices className={`w-3.5 h-3.5 ${isPicking ? 'animate-spin' : ''}`} />
                 <span>Undi Maju</span>
@@ -486,7 +486,7 @@ export const StudentDashboard: React.FC = () => {
             </p>
             <button
               onClick={() => setActiveTab('progress')}
-              className="mt-2 px-4 py-2 bg-teal-700 hover:bg-teal-800 text-white text-xs font-semibold rounded-lg shadow-sm"
+              className="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm"
             >
               + Input Nama Murid Sekarang
             </button>
@@ -499,7 +499,7 @@ export const StudentDashboard: React.FC = () => {
                 className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between hover:bg-slate-100/80 transition-colors"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-7 h-7 rounded-lg bg-teal-100 text-teal-800 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                  <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
                     {idx + 1}
                   </div>
                   <div className="min-w-0">
@@ -507,7 +507,7 @@ export const StudentDashboard: React.FC = () => {
                       {student.name}
                     </span>
                     <span className="text-[10px] text-slate-500">
-                      Poin: <strong className="text-teal-700">{student.xp || 0} XP</strong>
+                      Poin: <strong className="text-blue-600">{student.xp || 0} XP</strong>
                     </span>
                   </div>
                 </div>
@@ -515,7 +515,7 @@ export const StudentDashboard: React.FC = () => {
                 <button
                   onClick={() => handleAwardStudent(student.id)}
                   title="Beri +25 XP Partisipasi Bicara"
-                  className="px-2 py-1 bg-white hover:bg-teal-50 border border-slate-200 text-teal-700 text-[10px] font-bold rounded shadow-2xs hover:border-teal-300 transition-colors"
+                  className="px-2 py-1 bg-white hover:bg-blue-50 border border-slate-200 text-blue-600 text-[10px] font-bold rounded shadow-2xs hover:border-blue-300 transition-colors"
                 >
                   +25 XP
                 </button>

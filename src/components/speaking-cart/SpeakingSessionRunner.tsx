@@ -91,7 +91,7 @@ export const SpeakingSessionRunner: React.FC<Props> = ({ items, onFinish, onExit
   if (sessionCompleted) {
     return (
       <div className="max-w-xl mx-auto p-8 sm:p-12 bg-white rounded-3xl border border-slate-200/80 shadow-float text-center space-y-6 animate-slide-up">
-        <div className="w-16 h-16 mx-auto rounded-3xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20">
+        <div className="w-16 h-16 mx-auto rounded-3xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-500/20">
           <Sparkles className="w-8 h-8" />
         </div>
 
@@ -117,7 +117,7 @@ export const SpeakingSessionRunner: React.FC<Props> = ({ items, onFinish, onExit
           <div className="h-10 w-px bg-indigo-200" />
           <div>
             <span className="text-xs text-indigo-700 block font-bold">Total Reward</span>
-            <span className="text-xl font-black text-emerald-600 font-mono">
+            <span className="text-xl font-black text-blue-600 font-mono">
               +{items.length * 15 + 20} XP
             </span>
           </div>
@@ -182,7 +182,7 @@ export const SpeakingSessionRunner: React.FC<Props> = ({ items, onFinish, onExit
             key={item.id}
             className={`h-2.5 rounded-full transition-all ${
               idx < currentIndex
-                ? 'bg-emerald-500'
+                ? 'bg-blue-600'
                 : idx === currentIndex
                 ? 'bg-indigo-600 animate-pulse'
                 : 'bg-slate-200'

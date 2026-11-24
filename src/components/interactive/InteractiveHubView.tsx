@@ -282,7 +282,7 @@ export const InteractiveHubView: React.FC = () => {
               </div>
             </div>
 
-            <div className="text-center py-7 bg-gradient-to-b from-teal-50/40 to-white rounded-3xl border border-teal-100">
+            <div className="text-center py-7 bg-gradient-to-b from-blue-50/40 to-white rounded-3xl border border-blue-100">
               <span className="text-xs font-bold uppercase tracking-widest text-slate-400 block mb-2">
                 KATA TARGET YANG HARUS DIDESKRIPSIKAN:
               </span>
@@ -395,7 +395,7 @@ export const InteractiveHubView: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleNextTabooCard}
-                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-teal-700 hover:bg-teal-800 text-white shadow-sm transition-all"
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all"
                 >
                   <CheckCircle className="w-4 h-4" />
                   <span>Selesai & Kartu Berikutnya →</span>
@@ -544,7 +544,7 @@ export const InteractiveHubView: React.FC = () => {
                     fttRound === r
                       ? 'bg-purple-50 border-2 border-purple-600 shadow-sm'
                       : fttRound > r
-                      ? 'bg-emerald-50 border-emerald-300'
+                      ? 'bg-blue-50 border-blue-300'
                       : 'bg-slate-50 border-slate-200 opacity-60'
                   }`}
                 >
@@ -677,24 +677,24 @@ export const InteractiveHubView: React.FC = () => {
       {activeSubTab === 'shadowing' && (
         <div className="space-y-6">
           {showHowToPlay && (
-            <div className="bg-gradient-to-br from-emerald-50/70 via-white to-slate-50 rounded-3xl border border-emerald-100 p-6 shadow-soft space-y-3 animate-slide-up text-xs text-slate-700">
-              <div className="flex items-center gap-2 font-extrabold text-sm text-emerald-950">
-                <Volume2 className="w-4 h-4 text-emerald-600" />
+            <div className="bg-gradient-to-br from-blue-50/70 via-white to-slate-50 rounded-3xl border border-blue-100 p-6 shadow-soft space-y-3 animate-slide-up text-xs text-slate-700">
+              <div className="flex items-center gap-2 font-extrabold text-sm text-blue-950">
+                <Volume2 className="w-4 h-4 text-blue-600" />
                 <span>Cara Kerja Shadowing Studio:</span>
               </div>
               <p className="text-slate-600 leading-relaxed">
                 Teknik menirukan suara penutur asli (native speaker) persis seperti bayangan (shadow) untuk menyerap ritme bahasa, intonasi naik-turun, serta penekanan suku kata yang benar.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
-                <div className="p-3.5 bg-white rounded-2xl border border-emerald-100 space-y-1">
+                <div className="p-3.5 bg-white rounded-2xl border border-blue-100 space-y-1">
                   <strong className="block text-slate-900">1. Dengarkan Model Audio</strong>
                   <p className="text-slate-500">Putar audio kalimat dan perhatikan penekanan kata (kata yang dicetak tebal).</p>
                 </div>
-                <div className="p-3.5 bg-white rounded-2xl border border-emerald-100 space-y-1">
+                <div className="p-3.5 bg-white rounded-2xl border border-blue-100 space-y-1">
                   <strong className="block text-slate-900">2. Tirukan Persis</strong>
                   <p className="text-slate-500">Ucapkan secara bersamaan atau sesaat setelah audio berbunyi dengan intonasi serupa.</p>
                 </div>
-                <div className="p-3.5 bg-white rounded-2xl border border-emerald-100 space-y-1">
+                <div className="p-3.5 bg-white rounded-2xl border border-blue-100 space-y-1">
                   <strong className="block text-slate-900">3. Manfaatkan Tips Fonetik</strong>
                   <p className="text-slate-500">Baca tips sambungan kata (linking) untuk berbicara lebih mengalir.</p>
                 </div>
@@ -704,7 +704,7 @@ export const InteractiveHubView: React.FC = () => {
 
           <div className="max-w-2xl mx-auto bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-10 shadow-card space-y-6">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
                 {currentShadow.accent}
               </span>
               <span className="text-xs font-semibold text-slate-400">Penutur: {currentShadow.speaker}</span>
@@ -716,15 +716,15 @@ export const InteractiveHubView: React.FC = () => {
             </div>
 
             {/* Target Sentence Box */}
-            <div className="p-8 rounded-3xl bg-emerald-50/70 border-2 border-emerald-300 text-center space-y-4">
-              <span className="text-xs text-emerald-800 font-extrabold uppercase tracking-wider block">
+            <div className="p-8 rounded-3xl bg-blue-50/70 border-2 border-blue-200 text-center space-y-4">
+              <span className="text-xs text-blue-800 font-extrabold uppercase tracking-wider block">
                 Kalimat {shadowSentenceIndex + 1} dari {currentShadow.sentences.length}
               </span>
               <p className="text-xl sm:text-2xl font-bold text-slate-900 leading-relaxed">
                 "{activeShadowSentence.text}"
               </p>
               {activeShadowSentence.phoneticTips && (
-                <div className="text-xs text-emerald-900 font-medium bg-emerald-100/70 p-3 rounded-2xl inline-block border border-emerald-200">
+                <div className="text-xs text-blue-900 font-medium bg-blue-100/70 p-3 rounded-2xl inline-block border border-blue-200">
                   💡 <span className="font-bold">Tips Fonetik:</span> {activeShadowSentence.phoneticTips}
                 </div>
               )}
@@ -735,7 +735,7 @@ export const InteractiveHubView: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => speechService.speak(activeShadowSentence.text, 1.0)}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md transition-all"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all"
                 >
                   <Volume2 className="w-4 h-4" />
                   <span>Putar Audio Track</span>

@@ -350,10 +350,10 @@ export const RoleplayView: React.FC = () => {
                     <p className="text-slate-200 font-medium leading-relaxed">{missionA.secretObjective}</p>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/20 text-xs space-y-1">
-                    <span className="text-emerald-400 font-bold text-[10px] uppercase block">Frasa Wajib:</span>
+                  <div className="p-3 rounded-xl bg-blue-950/60 border border-blue-500/20 text-xs space-y-1">
+                    <span className="text-sky-400 font-bold text-[10px] uppercase block">Frasa Wajib:</span>
                     {missionA.requiredPhrases.map((p, i) => (
-                      <p key={i} className="text-emerald-200 italic">• "{p}"</p>
+                      <p key={i} className="text-sky-200 italic">• "{p}"</p>
                     ))}
                   </div>
 
@@ -381,10 +381,10 @@ export const RoleplayView: React.FC = () => {
                     <p className="text-slate-200 font-medium leading-relaxed">{missionB.secretObjective}</p>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/20 text-xs space-y-1">
-                    <span className="text-emerald-400 font-bold text-[10px] uppercase block">Frasa Wajib:</span>
+                  <div className="p-3 rounded-xl bg-blue-950/60 border border-blue-500/20 text-xs space-y-1">
+                    <span className="text-sky-400 font-bold text-[10px] uppercase block">Frasa Wajib:</span>
                     {missionB.requiredPhrases.map((p, i) => (
-                      <p key={i} className="text-emerald-200 italic">• "{p}"</p>
+                      <p key={i} className="text-sky-200 italic">• "{p}"</p>
                     ))}
                   </div>
 
@@ -423,11 +423,11 @@ export const RoleplayView: React.FC = () => {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="p-4 bg-emerald-950/70 border border-emerald-500/30 rounded-2xl space-y-1.5">
-                        <span className="text-emerald-400 font-bold text-xs flex items-center gap-1.5">
+                      <div className="p-4 bg-blue-950/70 border border-blue-500/30 rounded-2xl space-y-1.5">
+                        <span className="text-sky-400 font-bold text-xs flex items-center gap-1.5">
                           <CheckCircle className="w-4 h-4" /> Wajib Ucapkan Frasa Ini:
                         </span>
-                        <ul className="space-y-1 text-emerald-100">
+                        <ul className="space-y-1 text-sky-100">
                           {cur.requiredPhrases.map((phrase, pIdx) => (
                             <li key={pIdx} className="italic">• "{phrase}"</li>
                           ))}
@@ -485,7 +485,7 @@ export const RoleplayView: React.FC = () => {
 
               <button
                 onClick={handleCompleteSession}
-                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-500/20 transition-all"
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 transition-all"
               >
                 <CheckCircle className="w-4 h-4" />
                 <span>Selesai & Nilai Siswa</span>
@@ -579,7 +579,7 @@ export const RoleplayView: React.FC = () => {
 
               <button
                 onClick={handleSavePairGrades}
-                className="w-full py-3.5 rounded-2xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-500/20 transition-all flex items-center justify-center gap-2"
+                className="w-full py-3.5 rounded-2xl font-bold text-xs bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2"
               >
                 <Send className="w-4 h-4" />
                 <span>Simpan Nilai & Berikan XP untuk {studentA} & {studentB}</span>
@@ -660,7 +660,7 @@ export const RoleplayView: React.FC = () => {
                 <div className="flex items-center justify-between gap-2">
                   <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-lg flex items-center gap-1 ${
                     scenario.level === 'beginner' 
-                      ? 'bg-emerald-50 text-emerald-700' 
+                      ? 'bg-sky-50 text-sky-700 border border-sky-200' 
                       : scenario.level === 'intermediate'
                       ? 'bg-blue-50 text-blue-700'
                       : 'bg-purple-50 text-purple-700'

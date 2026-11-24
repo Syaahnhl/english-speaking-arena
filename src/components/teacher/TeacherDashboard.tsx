@@ -109,7 +109,7 @@ export const TeacherDashboard: React.FC = () => {
       {/* Teacher Banner */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
         <div className="space-y-1">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-teal-100 text-teal-800 text-xs font-semibold">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-semibold">
             <GraduationCap className="w-3.5 h-3.5" />
             <span>Roster & Penilaian Langsung di Kelas</span>
           </div>
@@ -139,7 +139,7 @@ export const TeacherDashboard: React.FC = () => {
                 }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
                   isActive
-                    ? 'bg-teal-700 text-white shadow-2xs'
+                    ? 'bg-blue-600 text-white shadow-2xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -166,7 +166,7 @@ export const TeacherDashboard: React.FC = () => {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setGlobalTab('progress')}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-teal-700 hover:bg-teal-800 text-white transition-colors flex items-center gap-1.5 shadow-2xs"
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-colors flex items-center gap-1.5 shadow-2xs"
               >
                 <Users className="w-3.5 h-3.5" />
                 <span>+ Input / Edit Siswa</span>
@@ -183,7 +183,7 @@ export const TeacherDashboard: React.FC = () => {
               </p>
               <button
                 onClick={() => setGlobalTab('progress')}
-                className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-teal-700 hover:bg-teal-800 text-white shadow-2xs transition-colors"
+                className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-2xs transition-colors"
               >
                 <Users className="w-3.5 h-3.5" />
                 <span>Buka Menu Input Siswa</span>
@@ -213,18 +213,18 @@ export const TeacherDashboard: React.FC = () => {
                           {st.level || 'intermediate'}
                         </span>
                       </td>
-                      <td className="py-3 px-3 font-mono font-bold text-teal-700">{st.xp || 0} XP</td>
+                      <td className="py-3 px-3 font-mono font-bold text-blue-600">{st.xp || 0} XP</td>
                       <td className="py-3 px-3">
                         <div className="flex items-center gap-1.5">
                           <button
                             onClick={() => handleAwardStudent(st.id, 10)}
-                            className="px-2 py-1 bg-white hover:bg-teal-50 border border-slate-200 text-teal-800 text-[11px] font-bold rounded shadow-2xs transition-colors"
+                            className="px-2 py-1 bg-white hover:bg-blue-50 border border-slate-200 text-blue-700 text-[11px] font-bold rounded shadow-2xs transition-colors"
                           >
                             +10 XP
                           </button>
                           <button
                             onClick={() => handleAwardStudent(st.id, 25)}
-                            className="px-2 py-1 bg-teal-700 hover:bg-teal-800 text-white text-[11px] font-bold rounded shadow-2xs transition-colors"
+                            className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold rounded shadow-2xs transition-colors"
                           >
                             +25 XP
                           </button>
@@ -244,7 +244,7 @@ export const TeacherDashboard: React.FC = () => {
         <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-5">
           <div className="border-b border-slate-100 pb-3">
             <h3 className="font-bold text-base text-slate-900 flex items-center gap-2">
-              <ClipboardCheck className="w-4 h-4 text-teal-700" />
+              <ClipboardCheck className="w-4 h-4 text-blue-600" />
               <span>Rubrik Evaluasi Bicara Langsung (Real-Time In-Class)</span>
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -260,7 +260,7 @@ export const TeacherDashboard: React.FC = () => {
                   value={selectedStudentForEval}
                   onChange={(e) => setSelectedStudentForEval(e.target.value)}
                   required
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 bg-white focus:outline-none focus:border-teal-600"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 bg-white focus:outline-none focus:border-blue-600"
                 >
                   <option value="">-- Pilih Siswa --</option>
                   {currentStudents.map(st => (
@@ -276,7 +276,7 @@ export const TeacherDashboard: React.FC = () => {
                   value={evalTopic}
                   onChange={(e) => setEvalTopic(e.target.value)}
                   placeholder="Contoh: Opinion Card / Running Reading"
-                  className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-teal-600"
+                  className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-blue-600"
                 />
               </div>
             </div>
@@ -286,7 +286,7 @@ export const TeacherDashboard: React.FC = () => {
               <div className="space-y-1">
                 <div className="flex justify-between font-semibold">
                   <span>1. Fluency (Kelancaran & Ritme)</span>
-                  <strong className="text-teal-700">{fluencyScore}</strong>
+                  <strong className="text-blue-600">{fluencyScore}</strong>
                 </div>
                 <input
                   type="range"
@@ -294,14 +294,14 @@ export const TeacherDashboard: React.FC = () => {
                   max="100"
                   value={fluencyScore}
                   onChange={(e) => setFluencyScore(Number(e.target.value))}
-                  className="w-full accent-teal-700"
+                  className="w-full accent-blue-600"
                 />
               </div>
 
               <div className="space-y-1">
                 <div className="flex justify-between font-semibold">
                   <span>2. Vocabulary (Pilihan Kata)</span>
-                  <strong className="text-teal-700">{vocabScore}</strong>
+                  <strong className="text-blue-600">{vocabScore}</strong>
                 </div>
                 <input
                   type="range"
@@ -309,14 +309,14 @@ export const TeacherDashboard: React.FC = () => {
                   max="100"
                   value={vocabScore}
                   onChange={(e) => setVocabScore(Number(e.target.value))}
-                  className="w-full accent-teal-700"
+                  className="w-full accent-blue-600"
                 />
               </div>
 
               <div className="space-y-1">
                 <div className="flex justify-between font-semibold">
                   <span>3. Grammar & Akurasi</span>
-                  <strong className="text-teal-700">{grammarScore}</strong>
+                  <strong className="text-blue-600">{grammarScore}</strong>
                 </div>
                 <input
                   type="range"
@@ -324,14 +324,14 @@ export const TeacherDashboard: React.FC = () => {
                   max="100"
                   value={grammarScore}
                   onChange={(e) => setGrammarScore(Number(e.target.value))}
-                  className="w-full accent-teal-700"
+                  className="w-full accent-blue-600"
                 />
               </div>
 
               <div className="space-y-1">
                 <div className="flex justify-between font-semibold">
                   <span>4. Pronunciation & Artikulasi</span>
-                  <strong className="text-teal-700">{pronunScore}</strong>
+                  <strong className="text-blue-600">{pronunScore}</strong>
                 </div>
                 <input
                   type="range"
@@ -339,7 +339,7 @@ export const TeacherDashboard: React.FC = () => {
                   max="100"
                   value={pronunScore}
                   onChange={(e) => setPronunScore(Number(e.target.value))}
-                  className="w-full accent-teal-700"
+                  className="w-full accent-blue-600"
                 />
               </div>
             </div>
@@ -351,18 +351,18 @@ export const TeacherDashboard: React.FC = () => {
                 value={evalNotes}
                 onChange={(e) => setEvalNotes(e.target.value)}
                 placeholder="Berikan masukan singkat yang konstruktif..."
-                className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-teal-600"
+                className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-blue-600"
               />
             </div>
 
             <div className="flex items-center justify-between pt-2">
               <div className="text-xs font-bold text-slate-800">
-                Skor Akhir: <span className="text-base text-teal-700 font-mono">{overallScore}/100</span>
+                Skor Akhir: <span className="text-base text-blue-600 font-mono">{overallScore}/100</span>
               </div>
               <button
                 type="submit"
                 disabled={!selectedStudentForEval}
-                className="px-4 py-2 bg-teal-700 hover:bg-teal-800 disabled:opacity-50 text-white rounded-lg text-xs font-semibold shadow-2xs transition-colors flex items-center gap-1.5"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold shadow-2xs transition-colors flex items-center gap-1.5"
               >
                 <Check className="w-4 h-4" />
                 <span>Simpan Evaluasi & Tambah +50 XP</span>
@@ -377,7 +377,7 @@ export const TeacherDashboard: React.FC = () => {
         <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4 max-w-2xl">
           <div className="border-b border-slate-100 pb-3">
             <h3 className="font-bold text-base text-slate-900 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-teal-700" />
+              <Layers className="w-4 h-4 text-blue-600" />
               <span>Buat Kartu Bicara Kustom</span>
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -394,7 +394,7 @@ export const TeacherDashboard: React.FC = () => {
                 onChange={(e) => setNewCardTitle(e.target.value)}
                 placeholder="Contoh: Digital Nomads vs Traditional Jobs"
                 required
-                className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-teal-600"
+                className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-blue-600"
               />
             </div>
 
@@ -404,7 +404,7 @@ export const TeacherDashboard: React.FC = () => {
                 <select
                   value={newCardLevel}
                   onChange={(e) => setNewCardLevel(e.target.value as ProficiencyLevel)}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 bg-white focus:outline-none focus:border-teal-600"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 bg-white focus:outline-none focus:border-blue-600"
                 >
                   <option value="beginner">Beginner</option>
                   <option value="intermediate">Intermediate</option>
@@ -417,7 +417,7 @@ export const TeacherDashboard: React.FC = () => {
                 <select
                   value={newCardDuration}
                   onChange={(e) => setNewCardDuration(Number(e.target.value))}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 bg-white focus:outline-none focus:border-teal-600"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 bg-white focus:outline-none focus:border-blue-600"
                 >
                   <option value={30}>30 Detik</option>
                   <option value={60}>60 Detik (1 Menit)</option>
@@ -436,7 +436,7 @@ export const TeacherDashboard: React.FC = () => {
                 onChange={(e) => setNewCardQuestion(e.target.value)}
                 placeholder="What are the pros and cons of working remotely compared to going to an office every day?"
                 required
-                className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-teal-600"
+                className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-blue-600"
               />
             </div>
 
@@ -447,13 +447,13 @@ export const TeacherDashboard: React.FC = () => {
                 value={newCardVocab}
                 onChange={(e) => setNewCardVocab(e.target.value)}
                 placeholder="Flexibility, Isolation, Productivity, Collaboration"
-                className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-teal-600"
+                className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-blue-600"
               />
             </div>
 
             <button
               type="submit"
-              className="px-4 py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-2xs transition-colors flex items-center gap-1.5"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-2xs transition-colors flex items-center gap-1.5"
             >
               <Plus className="w-4 h-4" />
               <span>Simpan & Publikasikan Kartu</span>

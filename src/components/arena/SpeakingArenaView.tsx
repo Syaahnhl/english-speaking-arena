@@ -557,7 +557,7 @@ export const SpeakingArenaView: React.FC = () => {
 
                 <button
                   onClick={handleSaveBattleResult}
-                  className="w-full py-3.5 rounded-2xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-500/20 transition-all flex items-center justify-center gap-2"
+                  className="w-full py-3.5 rounded-2xl font-bold text-xs bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2"
                 >
                   <Send className="w-4 h-4" />
                   <span>

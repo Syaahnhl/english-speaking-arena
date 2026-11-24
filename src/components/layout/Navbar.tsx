@@ -24,11 +24,11 @@ export const Navbar: React.FC = () => {
           onClick={() => setActiveTab('dashboard')} 
           className="flex items-center gap-3 cursor-pointer select-none group"
         >
-          <div className="w-9 h-9 rounded-xl bg-teal-700 flex items-center justify-center text-white shadow-sm group-hover:bg-teal-800 transition-colors">
+          <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-sm group-hover:bg-blue-700 transition-colors">
             <GraduationCap className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="font-bold text-sm sm:text-base tracking-tight text-slate-900 group-hover:text-teal-700 transition-colors">
+            <h1 className="font-bold text-sm sm:text-base tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">
               English Speaking Arena
             </h1>
             <p className="text-[11px] text-slate-500 font-medium hidden sm:block">
@@ -50,7 +50,7 @@ export const Navbar: React.FC = () => {
             className="p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-all border border-transparent hover:border-slate-200"
             title={soundEnabled ? 'Matikan Efek Suara' : 'Nyalakan Efek Suara'}
           >
-            {soundEnabled ? <Volume2 className="w-4 h-4 text-teal-700" /> : <VolumeX className="w-4 h-4 text-slate-400" />}
+            {soundEnabled ? <Volume2 className="w-4 h-4 text-blue-600" /> : <VolumeX className="w-4 h-4 text-slate-400" />}
           </button>
 
           {/* Active Teacher Profile Button */}
@@ -59,7 +59,7 @@ export const Navbar: React.FC = () => {
             className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 border border-slate-200 text-slate-800 text-xs font-semibold transition-all"
             title="Kelola Profil Pengajar, Kelas & Siswa"
           >
-            <div className="w-5 h-5 rounded-md bg-teal-700 text-white flex items-center justify-center text-[10px] font-bold">
+            <div className="w-5 h-5 rounded-md bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">
               {user.name.charAt(0).toUpperCase()}
             </div>
             <span className="max-w-[130px] truncate">{user.name}</span>

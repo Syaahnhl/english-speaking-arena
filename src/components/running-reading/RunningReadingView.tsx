@@ -185,7 +185,7 @@ export const RunningReadingView: React.FC = () => {
 
                   <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-lg flex items-center gap-1 ${
                     mat.level === 'beginner' 
-                      ? 'bg-emerald-50 text-emerald-700' 
+                      ? 'bg-sky-50 text-sky-700 border border-sky-200' 
                       : mat.level === 'intermediate'
                       ? 'bg-blue-50 text-blue-700'
                       : 'bg-purple-50 text-purple-700'
