@@ -26,10 +26,10 @@ class StorageService {
     if (typeof window === 'undefined') return;
 
     if (!localStorage.getItem(KEYS.CURRENT_USER)) {
-      localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(DEMO_STUDENT));
+      localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(DEMO_TEACHER));
     }
     if (!localStorage.getItem(KEYS.CURRENT_ROLE)) {
-      localStorage.setItem(KEYS.CURRENT_ROLE, 'student');
+      localStorage.setItem(KEYS.CURRENT_ROLE, 'teacher');
     }
     if (!localStorage.getItem(KEYS.SPEAKING_CARDS)) {
       localStorage.setItem(KEYS.SPEAKING_CARDS, JSON.stringify(SPEAKING_CARDS));
@@ -104,7 +104,7 @@ class StorageService {
   }
 
   public getCurrentRole(): 'student' | 'teacher' {
-    return (localStorage.getItem(KEYS.CURRENT_ROLE) as 'student' | 'teacher') || 'student';
+    return (localStorage.getItem(KEYS.CURRENT_ROLE) as 'student' | 'teacher') || 'teacher';
   }
 
   public switchRole(role: 'student' | 'teacher') {

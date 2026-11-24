@@ -35,7 +35,9 @@ export const ProfileProgressView: React.FC = () => {
                 {user.role}
               </span>
             </div>
-            <p className="text-xs text-slate-400">@{user.username} • Siswa Terdaftar di Class 10-A</p>
+            <p className="text-xs text-slate-400">
+              @{user.username} • {user.role === 'teacher' ? 'Instruktur & Pengajar di Class 10-A' : 'Siswa Terdaftar di Class 10-A'}
+            </p>
 
             {/* Level Selector Pills */}
             <div className="pt-2 flex items-center gap-1.5">

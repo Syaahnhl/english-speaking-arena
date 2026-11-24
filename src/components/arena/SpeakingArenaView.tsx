@@ -3,6 +3,7 @@ import { useArena } from '../../context/ArenaContext';
 import { WEEKLY_LEADERBOARD, MONTHLY_LEADERBOARD, ALL_TIME_LEADERBOARD, HEAD_TO_HEAD_BATTLES } from '../../data/seedUsersData';
 import { LeaderboardUser, HeadToHeadBattle } from '../../types';
 import { soundService } from '../../services/soundService';
+import { storageService } from '../../services/storageService';
 import { 
   Trophy, 
   Flame, 
@@ -12,25 +13,44 @@ import {
   Sparkles, 
   Crown, 
   Play, 
+  Pause,
+  RotateCcw,
   CheckCircle, 
   Users, 
   HelpCircle,
   ChevronDown,
   ChevronUp,
   Shield,
-  Target
+  Target,
+  Dices,
+  Send,
+  UserCheck
 } from 'lucide-react';
 
 export const SpeakingArenaView: React.FC = () => {
-  const { user, awardXp, completeDailyChallenge } = useArena();
+  const { addToast } = useArena();
   const [activeBoard, setActiveBoard] = useState<'weekly' | 'monthly' | 'all-time'>('weekly');
   const [selectedBattle, setSelectedBattle] = useState<HeadToHeadBattle | null>(null);
   const [showHowToPlay, setShowHowToPlay] = useState<boolean>(false);
 
+  const students = WEEKLY_LEADERBOARD;
+  const [player1, setPlayer1] = useState<string>(students[0].name);
+  const [player2, setPlayer2] = useState<string>(students[1].name);
+
   // Battle session states
+  const [activeTurn, setActiveTurn] = useState<1 | 2>(1);
   const [battleRunning, setBattleRunning] = useState<boolean>(false);
   const [battleTimeLeft, setBattleTimeLeft] = useState<number>(60);
+  const [turn1Finished, setTurn1Finished] = useState<boolean>(false);
   const [battleFinished, setBattleFinished] = useState<boolean>(false);
+
+  // Teacher Rubric Scoring for the Battle
+  const [scoreP1, setScoreP1] = useState({ completion: 24, vocab: 23, fluency: 22, fulfillment: 23 });
+  const [scoreP2, setScoreP2] = useState({ completion: 23, vocab: 24, fluency: 23, fulfillment: 24 });
+  const [declaredWinner, setDeclaredWinner] = useState<string | null>(null);
+
+  const totalP1 = scoreP1.completion + scoreP1.vocab + scoreP1.fluency + scoreP1.fulfillment;
+  const totalP2 = scoreP2.completion + scoreP2.vocab + scoreP2.fluency + scoreP2.fulfillment;
 
   const leaderboardData: Record<string, LeaderboardUser[]> = {
     weekly: WEEKLY_LEADERBOARD,
@@ -47,7 +67,7 @@ export const SpeakingArenaView: React.FC = () => {
       timer = setInterval(() => {
         setBattleTimeLeft(prev => {
           if (prev <= 1) {
-            handleFinishBattle();
+            handleTurnTimesUp();
             return 0;
           }
           if (prev <= 4) soundService.playTick();
@@ -60,102 +80,151 @@ export const SpeakingArenaView: React.FC = () => {
     };
   }, [battleRunning, battleTimeLeft]);
 
-  const handleStartBattle = (battle: HeadToHeadBattle) => {
+  const handleStartBattleModal = (battle: HeadToHeadBattle) => {
     setSelectedBattle(battle);
     setBattleTimeLeft(battle.timeLimit);
     setBattleRunning(false);
+    setActiveTurn(1);
+    setTurn1Finished(false);
     setBattleFinished(false);
+    setDeclaredWinner(null);
   };
 
-  const handleFinishBattle = () => {
+  const handleTurnTimesUp = () => {
     setBattleRunning(false);
-    setBattleFinished(true);
+    soundService.playTimesUp();
+    if (activeTurn === 1) {
+      setTurn1Finished(true);
+      setActiveTurn(2);
+      if (selectedBattle) setBattleTimeLeft(selectedBattle.timeLimit);
+    } else {
+      setBattleFinished(true);
+      soundService.playSuccess();
+    }
+  };
+
+  const handleFinishTurnEarly = () => {
+    handleTurnTimesUp();
+  };
+
+  const handlePickRandomPair = () => {
+    soundService.playClick();
+    const idx1 = Math.floor(Math.random() * students.length);
+    let idx2 = Math.floor(Math.random() * students.length);
+    while (idx2 === idx1 && students.length > 1) {
+      idx2 = Math.floor(Math.random() * students.length);
+    }
+    setPlayer1(students[idx1].name);
+    setPlayer2(students[idx2].name);
+  };
+
+  const handleSaveBattleResult = () => {
+    if (!selectedBattle) return;
+    const winnerName = totalP1 >= totalP2 ? player1 : player2;
+
+    storageService.addSubmission({
+      id: `sub-battle-${Date.now()}`,
+      studentId: `usr-${winnerName.toLowerCase().replace(/\s+/g, '-')}`,
+      studentName: winnerName,
+      assignmentTitle: `Pemenang Duel 1v1: ${selectedBattle.title}`,
+      submittedAt: 'Baru saja di kelas',
+      durationSeconds: selectedBattle.timeLimit,
+      transcriptOrNotes: `Duel vs ${winnerName === player1 ? player2 : player1}. Skor Akhir: ${player1} (${totalP1}/100) vs ${player2} (${totalP2}/100).`,
+      status: 'graded',
+      score: Math.max(totalP1, totalP2),
+      feedback: `Selamat atas kemenangan duel argumen di depan kelas!`,
+      activityType: 'debate'
+    });
+
     soundService.playSuccess();
-    awardXp(35, `Menyelesaikan Duel Arena Head-to-Head: "${selectedBattle?.title}"`);
-    completeDailyChallenge('dc-1');
+    addToast({
+      type: 'success',
+      title: 'Hasil Duel Disimpan!',
+      message: `Pemenang: ${winnerName} dengan skor ${Math.max(totalP1, totalP2)}/100 (+40 XP).`
+    });
+
+    setSelectedBattle(null);
   };
 
   return (
     <div className="space-y-6">
       {/* Tournament Card / Arena Header */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-amber-600 via-amber-500 to-indigo-700 text-white p-6 sm:p-8 shadow-card flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div className="relative overflow-hidden rounded-3xl bg-slate-900 text-white p-6 sm:p-8 shadow-card flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="max-w-2xl relative z-10 space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/20 backdrop-blur-md text-xs font-semibold">
-            <Trophy className="w-3.5 h-3.5 text-amber-200" />
-            <span>Turnamen Mingguan Fluency Sprint 2026</span>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-semibold border border-indigo-400/20">
+            <Trophy className="w-3.5 h-3.5 text-amber-400" />
+            <span>Teacher Arena & Classroom Battles</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-            Speaking Arena & Kompetisi Murid
+            Arena Duel & Turnamen Murid
           </h1>
-          <p className="text-amber-100 text-xs sm:text-sm leading-relaxed">
-            Adu kemampuan berbicara Anda secara sehat! Taklukkan duel Head-to-Head bertopik sama, kumpulkan poin XP, dan raih posisi terhormat di papan peringkat.
+          <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
+            Fasilitasi duel bicara 1v1 antar siswa di depan kelas atau secara daring! Tentukan topik, jalankan timer duel, dan catat pemenang ke papan peringkat kelas.
           </p>
 
-          <div className="mt-4 flex flex-wrap items-center gap-3 text-xs font-semibold">
-            <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl">
-              <Calendar className="w-4 h-4 text-amber-200" />
-              <span>Sisa Waktu: 3 Hari</span>
+          <div className="mt-4 flex flex-wrap items-center gap-3 text-xs font-semibold text-slate-300">
+            <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
+              <Calendar className="w-4 h-4 text-amber-400" />
+              <span>Sesi Mingguan Aktif</span>
             </div>
-            <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl">
-              <Users className="w-4 h-4 text-amber-200" />
-              <span>128 Peserta Terdaftar</span>
+            <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
+              <Users className="w-4 h-4 text-amber-400" />
+              <span>18 Siswa di Kelas Ini</span>
             </div>
-            <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl">
-              <Crown className="w-4 h-4 text-amber-200" />
-              <span>Hadiah: Golden Orator Badge + 500 XP</span>
+            <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
+              <Crown className="w-4 h-4 text-amber-400" />
+              <span>Hadiah: +40 XP & Badge Kelas</span>
             </div>
           </div>
         </div>
 
         <button
           onClick={() => setShowHowToPlay(!showHowToPlay)}
-          className="relative z-10 flex items-center gap-2 px-5 py-3 rounded-2xl bg-white text-slate-900 text-xs font-bold shadow-lg hover:bg-amber-50 transition-all flex-shrink-0"
+          className="relative z-10 flex items-center gap-2 px-5 py-3 rounded-2xl bg-white text-slate-900 text-xs font-bold shadow-lg hover:bg-slate-100 transition-all flex-shrink-0"
         >
           <HelpCircle className="w-4 h-4 text-indigo-600" />
-          <span>Cara Bertanding & Rubrik</span>
+          <span>Panduan Duel & Rubrik</span>
           {showHowToPlay ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
-
-        <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-amber-400/20 rounded-full blur-3xl pointer-events-none" />
       </div>
 
       {/* Expandable How To Play */}
       {showHowToPlay && (
-        <div className="bg-gradient-to-br from-amber-50/70 via-white to-slate-50 rounded-3xl border border-amber-200 p-6 shadow-soft space-y-4 animate-slide-up text-xs text-slate-700">
-          <h4 className="font-extrabold text-sm text-slate-900">Format & Mekanisme Pertandingan di Speaking Arena:</h4>
+        <div className="bg-gradient-to-br from-indigo-50/70 via-white to-slate-50 rounded-3xl border border-indigo-100 p-6 shadow-soft space-y-4 animate-slide-up text-xs text-slate-700">
+          <h4 className="font-extrabold text-sm text-slate-900">Mekanisme Duel 1v1 di Depan Kelas:</h4>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 rounded-2xl bg-white border border-amber-200 shadow-sm space-y-1">
-              <span className="w-6 h-6 rounded-xl bg-amber-500 text-white font-extrabold flex items-center justify-center text-xs">1</span>
-              <strong className="block text-slate-900 pt-1">Prompt Topik yang Sama</strong>
-              <p className="text-slate-500 leading-relaxed">Kedua pemain menerima tantangan dan batas durasi bicara yang identik untuk memastikan persaingan adil.</p>
+            <div className="p-4 rounded-2xl bg-white border border-indigo-100 shadow-sm space-y-1">
+              <span className="w-6 h-6 rounded-xl bg-indigo-600 text-white font-extrabold flex items-center justify-center text-xs">1</span>
+              <strong className="block text-slate-900 pt-1">Pilih Dua Siswa & Topik</strong>
+              <p className="text-slate-500 leading-relaxed">Tentukan Siswa 1 dan Siswa 2. Keduanya diberikan tantangan topik dan durasi yang sama persis.</p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white border border-amber-200 shadow-sm space-y-1">
-              <span className="w-6 h-6 rounded-xl bg-amber-500 text-white font-extrabold flex items-center justify-center text-xs">2</span>
+            <div className="p-4 rounded-2xl bg-white border border-indigo-100 shadow-sm space-y-1">
+              <span className="w-6 h-6 rounded-xl bg-indigo-600 text-white font-extrabold flex items-center justify-center text-xs">2</span>
+              <strong className="block text-slate-900 pt-1">Giliran Bergantian (Turn-Based)</strong>
+              <p className="text-slate-500 leading-relaxed">Siswa 1 berbicara hingga timer selesai, lalu giliran Siswa 2 menyampaikan sanggahan atau argumennya.</p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white border border-indigo-100 shadow-sm space-y-1">
+              <span className="w-6 h-6 rounded-xl bg-indigo-600 text-white font-extrabold flex items-center justify-center text-xs">3</span>
               <strong className="block text-slate-900 pt-1">Rubrik Penilaian 4 Aspek</strong>
-              <p className="text-slate-500 leading-relaxed">Evaluasi berbasis: Completion (25%), Kosakata (25%), Kelancaran (25%), dan Pemenuhan Misi (25%).</p>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-white border border-amber-200 shadow-sm space-y-1">
-              <span className="w-6 h-6 rounded-xl bg-amber-500 text-white font-extrabold flex items-center justify-center text-xs">3</span>
-              <strong className="block text-slate-900 pt-1">Leaderboard Inklusif</strong>
-              <p className="text-slate-500 leading-relaxed">Murid pemula juga diapresiasi melalui kategori <em>Beginner Rising Star</em>, <em>Most Improved</em>, dan <em>Consistency Champion</em>!</p>
+              <p className="text-slate-500 leading-relaxed">Guru menilai: Ketuntasan (25%), Kosakata (25%), Kelancaran (25%), dan Pemenuhan Misi (25%).</p>
             </div>
           </div>
         </div>
       )}
 
       {/* Head to Head Challenge Section */}
-      <section className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-soft space-y-4">
-        <div className="flex items-center justify-between">
+      <section className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-soft space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               <Swords className="w-5 h-5 text-indigo-600" />
-              <h2 className="text-lg font-extrabold text-slate-900">Duel Topik Head-to-Head</h2>
+              <h2 className="text-lg font-extrabold text-slate-900">Pilih Arena Duel Topik</h2>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Tantang teman sekelas atau tandingkan argumen Anda dengan lawan bicara pada topik yang identik!
+              Pilih salah satu arena duel untuk menandingkan dua murid dalam kelas pada topik yang sama.
             </p>
           </div>
         </div>
@@ -171,7 +240,7 @@ export const SpeakingArenaView: React.FC = () => {
                   <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded bg-indigo-100 text-indigo-700">
                     {battle.category}
                   </span>
-                  <span className="text-xs font-mono text-slate-400">{battle.timeLimit} Detik</span>
+                  <span className="text-xs font-mono text-slate-400">{battle.timeLimit} Detik / Siswa</span>
                 </div>
 
                 <h3 className="font-extrabold text-sm text-slate-900">{battle.title}</h3>
@@ -179,25 +248,20 @@ export const SpeakingArenaView: React.FC = () => {
                   "{battle.prompt}"
                 </p>
 
-                {/* Opponent info */}
-                <div className="flex items-center gap-2 text-xs text-slate-600 pt-1">
-                  <img
-                    src={battle.opponent.avatar}
-                    alt={battle.opponent.name}
-                    className="w-7 h-7 rounded-full object-cover border border-slate-200"
-                  />
-                  <span>Lawan Tanding: <strong className="text-slate-800">{battle.opponent.name}</strong></span>
+                <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
+                  <span>Format: <strong>1v1 Turn-Based</strong></span>
+                  <span className="capitalize font-semibold text-indigo-600">{battle.level}</span>
                 </div>
               </div>
 
               <div className="mt-5 pt-4 border-t border-slate-200/70 flex items-center justify-between">
-                <span className="text-[11px] uppercase font-bold text-slate-400">{battle.level}</span>
+                <span className="text-xs text-slate-400 font-mono">Batas: {battle.timeLimit}s</span>
                 <button
-                  onClick={() => handleStartBattle(battle)}
+                  onClick={() => handleStartBattleModal(battle)}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-all"
                 >
                   <Play className="w-3.5 h-3.5 fill-white" />
-                  <span>Terima Tantangan</span>
+                  <span>Tandingkan Siswa</span>
                 </button>
               </div>
             </div>
@@ -205,13 +269,13 @@ export const SpeakingArenaView: React.FC = () => {
         </div>
       </section>
 
-      {/* Active Battle Modal */}
+      {/* Active Battle Modal for Classroom */}
       {selectedBattle && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-10 shadow-float border border-slate-200 animate-slide-up space-y-6">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-float border border-slate-200 animate-slide-up space-y-6 my-6">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <span className="text-xs font-extrabold uppercase text-indigo-600">
-                Head-to-Head Showdown: {selectedBattle.category}
+                Panggung Duel Kelas: {selectedBattle.title}
               </span>
               <button
                 onClick={() => setSelectedBattle(null)}
@@ -221,47 +285,113 @@ export const SpeakingArenaView: React.FC = () => {
               </button>
             </div>
 
-            <div className="text-center space-y-2">
-              <h3 className="text-xl sm:text-2xl font-black text-slate-900">{selectedBattle.title}</h3>
-              <p className="text-sm font-medium text-slate-800 bg-indigo-50/70 p-4 rounded-2xl border border-indigo-100 leading-relaxed">
+            {/* Student Pair Picker Toolbar */}
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-md bg-indigo-600 text-white font-bold flex items-center justify-center text-[10px]">1</span>
+                  <div>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Siswa 1</span>
+                    <select
+                      value={player1}
+                      onChange={(e) => setPlayer1(e.target.value)}
+                      className="bg-transparent font-bold text-slate-900 focus:outline-none cursor-pointer"
+                    >
+                      {students.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <span className="text-slate-400 font-bold">VS</span>
+
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-md bg-purple-600 text-white font-bold flex items-center justify-center text-[10px]">2</span>
+                  <div>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Siswa 2</span>
+                    <select
+                      value={player2}
+                      onChange={(e) => setPlayer2(e.target.value)}
+                      className="bg-transparent font-bold text-slate-900 focus:outline-none cursor-pointer"
+                    >
+                      {students.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={handlePickRandomPair}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-50"
+              >
+                <Dices className="w-3.5 h-3.5 text-indigo-600" />
+                <span>Undi Pasangan</span>
+              </button>
+            </div>
+
+            {/* Prompt Box */}
+            <div className="p-5 rounded-2xl bg-slate-900 text-white text-center space-y-1">
+              <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">Topik Adu Argumen</span>
+              <p className="text-base sm:text-lg font-medium leading-relaxed">
                 "{selectedBattle.prompt}"
               </p>
             </div>
 
             {/* Turn Comparison Display */}
             <div className="grid grid-cols-2 gap-4">
-              {/* You */}
-              <div className="p-5 rounded-2xl bg-indigo-50/70 border-2 border-indigo-500 text-center space-y-1">
-                <img
-                  src={user.avatar}
-                  alt={user.name}
-                  className="w-14 h-14 rounded-full mx-auto object-cover border-2 border-indigo-600"
-                />
-                <h4 className="font-extrabold text-xs text-slate-900 pt-1">{user.name} (Anda)</h4>
-                <span className="text-[10px] text-indigo-600 font-bold uppercase block">{user.rank}</span>
-                <div className="text-2xl font-mono font-black text-slate-900 pt-1">
-                  {Math.floor(battleTimeLeft / 60)}:{(battleTimeLeft % 60).toString().padStart(2, '0')}
+              {/* Player 1 */}
+              <div className={`p-5 rounded-2xl text-center space-y-2 border-2 transition-all ${
+                activeTurn === 1 && battleRunning
+                  ? 'bg-indigo-50/80 border-indigo-600 shadow-md ring-2 ring-indigo-400/20'
+                  : 'bg-slate-50 border-slate-200'
+              }`}>
+                <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
+                  Giliran 1: {player1}
+                </span>
+                <div className="text-3xl font-mono font-black text-slate-900 pt-1">
+                  {activeTurn === 1 ? (
+                    `${Math.floor(battleTimeLeft / 60)}:${(battleTimeLeft % 60).toString().padStart(2, '0')}`
+                  ) : turn1Finished ? (
+                    <span className="text-emerald-600 text-lg font-bold flex items-center justify-center gap-1">
+                      <CheckCircle className="w-4 h-4" /> Selesai
+                    </span>
+                  ) : (
+                    `${selectedBattle.timeLimit}s`
+                  )}
                 </div>
+                <span className="text-[11px] text-slate-500 block">
+                  {activeTurn === 1 && battleRunning ? 'Sedang Berbicara' : 'Menunggu Giliran'}
+                </span>
               </div>
 
-              {/* Opponent */}
-              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 text-center space-y-1">
-                <img
-                  src={selectedBattle.opponent.avatar}
-                  alt={selectedBattle.opponent.name}
-                  className="w-14 h-14 rounded-full mx-auto object-cover border-2 border-slate-300"
-                />
-                <h4 className="font-extrabold text-xs text-slate-900 pt-1">{selectedBattle.opponent.name}</h4>
-                <span className="text-[10px] text-slate-500 font-bold uppercase block">{selectedBattle.opponent.rank}</span>
-                <div className="text-xs text-slate-500 mt-2 p-2.5 bg-white rounded-xl border border-slate-100">
-                  Rubrik komparatif aktif.
+              {/* Player 2 */}
+              <div className={`p-5 rounded-2xl text-center space-y-2 border-2 transition-all ${
+                activeTurn === 2 && battleRunning
+                  ? 'bg-purple-50/80 border-purple-600 shadow-md ring-2 ring-purple-400/20'
+                  : 'bg-slate-50 border-slate-200'
+              }`}>
+                <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700">
+                  Giliran 2: {player2}
+                </span>
+                <div className="text-3xl font-mono font-black text-slate-900 pt-1">
+                  {activeTurn === 2 ? (
+                    `${Math.floor(battleTimeLeft / 60)}:${(battleTimeLeft % 60).toString().padStart(2, '0')}`
+                  ) : battleFinished ? (
+                    <span className="text-emerald-600 text-lg font-bold flex items-center justify-center gap-1">
+                      <CheckCircle className="w-4 h-4" /> Selesai
+                    </span>
+                  ) : (
+                    `${selectedBattle.timeLimit}s`
+                  )}
                 </div>
+                <span className="text-[11px] text-slate-500 block">
+                  {activeTurn === 2 && battleRunning ? 'Sedang Berbicara' : 'Menunggu Giliran'}
+                </span>
               </div>
             </div>
 
             {/* Controls */}
             {!battleFinished ? (
-              <div className="flex items-center justify-center gap-3">
+              <div className="flex flex-wrap items-center justify-center gap-3">
                 <button
                   onClick={() => {
                     if (!battleRunning) soundService.playStart();
@@ -269,51 +399,150 @@ export const SpeakingArenaView: React.FC = () => {
                   }}
                   className="px-8 py-3 rounded-2xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md transition-all flex items-center gap-2"
                 >
-                  <Play className="w-4 h-4 fill-white" />
-                  <span>{battleRunning ? 'Jeda Giliran' : 'Mulai Giliran Bicara Anda'}</span>
+                  {battleRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-white" />}
+                  <span>{battleRunning ? 'Jeda Timer' : `Mulai Giliran Bicara: ${activeTurn === 1 ? player1 : player2}`}</span>
                 </button>
 
                 {battleRunning && (
                   <button
-                    onClick={handleFinishBattle}
-                    className="px-5 py-3 rounded-2xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md transition-all"
+                    onClick={handleFinishTurnEarly}
+                    className="px-5 py-3 rounded-2xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all"
                   >
-                    Selesaikan Giliran
+                    Selesai Lebih Awal
                   </button>
                 )}
               </div>
             ) : (
-              <div className="p-5 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-3">
-                <div className="flex items-center justify-between">
+              /* TEACHER RUBRIC EVALUATION AFTER BOTH SPOKE */
+              <div className="p-6 rounded-3xl bg-slate-50 border border-slate-200 space-y-5 animate-slide-up">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-emerald-600" />
-                    <span className="font-bold text-sm text-emerald-900">Duel Berhasil Diselesaikan!</span>
+                    <Award className="w-5 h-5 text-amber-500" />
+                    <div>
+                      <h4 className="font-extrabold text-sm text-slate-900">Rubrik Penilaian Pengajar 4 Aspek</h4>
+                      <p className="text-[11px] text-slate-500">Bandingkan argumen kedua murid dan tentukan pemenang duel</p>
+                    </div>
                   </div>
-                  <span className="text-xs font-extrabold text-emerald-700">+35 XP Diperoleh</span>
-                </div>
-                <div className="grid grid-cols-4 gap-2 text-center text-xs">
-                  <div className="p-2.5 bg-white rounded-xl">
-                    <span className="text-[10px] text-slate-400 block">Kelengkapan</span>
-                    <strong className="text-slate-800">24/25</strong>
-                  </div>
-                  <div className="p-2.5 bg-white rounded-xl">
-                    <span className="text-[10px] text-slate-400 block">Kosakata</span>
-                    <strong className="text-slate-800">23/25</strong>
-                  </div>
-                  <div className="p-2.5 bg-white rounded-xl">
-                    <span className="text-[10px] text-slate-400 block">Kelancaran</span>
-                    <strong className="text-slate-800">22/25</strong>
-                  </div>
-                  <div className="p-2.5 bg-white rounded-xl">
-                    <span className="text-[10px] text-slate-400 block">Misi</span>
-                    <strong className="text-slate-800">24/25</strong>
+                  <div className="text-right">
+                    <span className="text-xs text-slate-400 block font-bold">Skor Akhir:</span>
+                    <span className="font-mono font-black text-sm text-slate-900">
+                      {player1} ({totalP1}) vs {player2} ({totalP2})
+                    </span>
                   </div>
                 </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                  {/* Player 1 Rubric */}
+                  <div className="p-4 bg-white rounded-2xl border border-slate-200 space-y-3">
+                    <span className="font-bold text-indigo-700 block uppercase">Penilaian {player1}</span>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Completion (Ketuntasan):</span>
+                        <input
+                          type="number"
+                          min="10"
+                          max="25"
+                          value={scoreP1.completion}
+                          onChange={(e) => setScoreP1({ ...scoreP1, completion: Number(e.target.value) })}
+                          className="w-14 px-2 py-0.5 border rounded text-right font-mono"
+                        />
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Vocab Usage (Kosakata):</span>
+                        <input
+                          type="number"
+                          min="10"
+                          max="25"
+                          value={scoreP1.vocab}
+                          onChange={(e) => setScoreP1({ ...scoreP1, vocab: Number(e.target.value) })}
+                          className="w-14 px-2 py-0.5 border rounded text-right font-mono"
+                        />
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Fluency (Kelancaran):</span>
+                        <input
+                          type="number"
+                          min="10"
+                          max="25"
+                          value={scoreP1.fluency}
+                          onChange={(e) => setScoreP1({ ...scoreP1, fluency: Number(e.target.value) })}
+                          className="w-14 px-2 py-0.5 border rounded text-right font-mono"
+                        />
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Task Fulfillment (Isi):</span>
+                        <input
+                          type="number"
+                          min="10"
+                          max="25"
+                          value={scoreP1.fulfillment}
+                          onChange={(e) => setScoreP1({ ...scoreP1, fulfillment: Number(e.target.value) })}
+                          className="w-14 px-2 py-0.5 border rounded text-right font-mono"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Player 2 Rubric */}
+                  <div className="p-4 bg-white rounded-2xl border border-slate-200 space-y-3">
+                    <span className="font-bold text-purple-700 block uppercase">Penilaian {player2}</span>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Completion (Ketuntasan):</span>
+                        <input
+                          type="number"
+                          min="10"
+                          max="25"
+                          value={scoreP2.completion}
+                          onChange={(e) => setScoreP2({ ...scoreP2, completion: Number(e.target.value) })}
+                          className="w-14 px-2 py-0.5 border rounded text-right font-mono"
+                        />
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Vocab Usage (Kosakata):</span>
+                        <input
+                          type="number"
+                          min="10"
+                          max="25"
+                          value={scoreP2.vocab}
+                          onChange={(e) => setScoreP2({ ...scoreP2, vocab: Number(e.target.value) })}
+                          className="w-14 px-2 py-0.5 border rounded text-right font-mono"
+                        />
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Fluency (Kelancaran):</span>
+                        <input
+                          type="number"
+                          min="10"
+                          max="25"
+                          value={scoreP2.fluency}
+                          onChange={(e) => setScoreP2({ ...scoreP2, fluency: Number(e.target.value) })}
+                          className="w-14 px-2 py-0.5 border rounded text-right font-mono"
+                        />
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Task Fulfillment (Isi):</span>
+                        <input
+                          type="number"
+                          min="10"
+                          max="25"
+                          value={scoreP2.fulfillment}
+                          onChange={(e) => setScoreP2({ ...scoreP2, fulfillment: Number(e.target.value) })}
+                          className="w-14 px-2 py-0.5 border rounded text-right font-mono"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <button
-                  onClick={() => setSelectedBattle(null)}
-                  className="w-full py-3 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                  onClick={handleSaveBattleResult}
+                  className="w-full py-3.5 rounded-2xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-500/20 transition-all flex items-center justify-center gap-2"
                 >
-                  Kembali ke Arena
+                  <Send className="w-4 h-4" />
+                  <span>
+                    Umumkan Pemenang: {totalP1 >= totalP2 ? player1 : player2} & Simpan Nilai (+40 XP)
+                  </span>
                 </button>
               </div>
             )}
@@ -327,10 +556,10 @@ export const SpeakingArenaView: React.FC = () => {
           <div>
             <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
               <Trophy className="w-5 h-5 text-amber-500" />
-              Papan Peringkat Arena
+              Papan Peringkat Murid Kelas
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Peringkat transparan dan apresiatif untuk konsistensi, volume bicara, dan kemajuan pemula.
+              Pantau kemajuan mingguan, akumulasi XP, dan konsistensi seluruh siswa di kelas Anda.
             </p>
           </div>
 
@@ -354,88 +583,80 @@ export const SpeakingArenaView: React.FC = () => {
           </div>
         </div>
 
-        {/* Table */}
+        {/* Leaderboard Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-200 text-slate-400 uppercase text-[10px] tracking-wider font-bold">
-                <th className="py-3 px-3">Peringkat</th>
-                <th className="py-3 px-3">Murid</th>
-                <th className="py-3 px-3">Level & Gelar</th>
-                <th className="py-3 px-3">Streak Harian</th>
-                <th className="py-3 px-3">Tantangan Selesai</th>
-                <th className="py-3 px-3 text-right">Skor Total XP</th>
+              <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+                <th className="py-3 px-4">Peringkat</th>
+                <th className="py-3 px-4">Nama Siswa</th>
+                <th className="py-3 px-4">Tingkat Kemampuan</th>
+                <th className="py-3 px-4">Jenjang Gelar</th>
+                <th className="py-3 px-4 text-center">Tantangan</th>
+                <th className="py-3 px-4 text-center">Streak</th>
+                <th className="py-3 px-4 text-right">Total XP</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {currentList.map((entry, idx) => {
-                const rankNumber = idx + 1;
-
+              {currentList.map((st, index) => {
+                const rankNum = index + 1;
                 return (
                   <tr
-                    key={entry.id}
-                    className={`transition-colors ${
-                      entry.isCurrentUser
-                        ? 'bg-indigo-50/70 font-semibold'
-                        : 'hover:bg-slate-50'
-                    }`}
+                    key={st.id}
+                    className="hover:bg-slate-50/80 transition-colors"
                   >
-                    <td className="py-4 px-3">
-                      <div className="flex items-center gap-1.5 font-mono font-bold">
-                        {rankNumber === 1 && <span className="w-6 h-6 rounded-full bg-amber-400 text-white flex items-center justify-center font-bold text-xs shadow-sm">1</span>}
-                        {rankNumber === 2 && <span className="w-6 h-6 rounded-full bg-slate-300 text-slate-800 flex items-center justify-center font-bold text-xs shadow-sm">2</span>}
-                        {rankNumber === 3 && <span className="w-6 h-6 rounded-full bg-amber-700 text-white flex items-center justify-center font-bold text-xs shadow-sm">3</span>}
-                        {rankNumber > 3 && <span className="text-slate-500 pl-2">#{rankNumber}</span>}
-                      </div>
+                    <td className="py-4 px-4 font-black text-sm">
+                      {rankNum === 1 && <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-amber-400 text-slate-900 shadow-sm font-black">1</span>}
+                      {rankNum === 2 && <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-slate-300 text-slate-900 shadow-sm font-black">2</span>}
+                      {rankNum === 3 && <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-amber-600 text-white shadow-sm font-black">3</span>}
+                      {rankNum > 3 && <span className="text-slate-400 pl-2">#{rankNum}</span>}
                     </td>
 
-                    <td className="py-4 px-3">
+                    <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
                         <img
-                          src={entry.avatar}
-                          alt={entry.name}
+                          src={st.avatar}
+                          alt={st.name}
                           className="w-9 h-9 rounded-full object-cover border border-slate-200"
                         />
                         <div>
-                          <div className="font-bold text-slate-900 flex items-center gap-1.5">
-                            <span>{entry.name}</span>
-                            {entry.isCurrentUser && (
-                              <span className="text-[10px] bg-indigo-600 text-white px-1.5 py-0.2 rounded font-extrabold">ANDA</span>
+                          <div className="flex items-center gap-1.5">
+                            <strong className="text-slate-900 font-bold">{st.name}</strong>
+                            {st.categoryPill && (
+                              <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-indigo-50 text-indigo-700">
+                                {st.categoryPill}
+                              </span>
                             )}
                           </div>
-                          <span className="text-[11px] text-slate-400">@{entry.username}</span>
+                          <span className="text-[11px] text-slate-400 font-mono">@{st.username}</span>
                         </div>
                       </div>
                     </td>
 
-                    <td className="py-4 px-3">
-                      <div className="flex items-center gap-2">
-                        <span className="capitalize px-2.5 py-0.5 rounded-lg text-[11px] font-semibold bg-slate-100 text-slate-700">
-                          {entry.level}
-                        </span>
-                        {entry.categoryPill && (
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                            {entry.categoryPill}
-                          </span>
-                        )}
-                      </div>
+                    <td className="py-4 px-4 capitalize font-semibold text-slate-600">
+                      {st.level}
                     </td>
 
-                    <td className="py-4 px-3">
-                      <div className="flex items-center gap-1 text-amber-600 font-bold font-mono">
-                        <Flame className="w-4 h-4 fill-amber-500" />
-                        <span>{entry.streak} Hari</span>
-                      </div>
-                    </td>
-
-                    <td className="py-4 px-3 text-slate-600 font-mono">
-                      {entry.completedChallenges} Tantangan
-                    </td>
-
-                    <td className="py-4 px-3 text-right">
-                      <span className="font-mono font-black text-indigo-700 text-sm">
-                        {entry.xp} XP
+                    <td className="py-4 px-4">
+                      <span className="inline-flex items-center gap-1 font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-xl">
+                        <Award className="w-3.5 h-3.5 text-indigo-500" />
+                        {st.rankTitle}
                       </span>
+                    </td>
+
+                    <td className="py-4 px-4 text-center font-mono font-bold text-slate-700">
+                      {st.completedChallenges} Selesai
+                    </td>
+
+                    <td className="py-4 px-4 text-center font-mono">
+                      <span className="inline-flex items-center gap-1 text-amber-600 font-bold">
+                        <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                        {st.streak} Hari
+                      </span>
+                    </td>
+
+                    <td className="py-4 px-4 text-right font-black font-mono text-sm text-indigo-600">
+                      {st.xp.toLocaleString()} XP
                     </td>
                   </tr>
                 );

@@ -67,13 +67,13 @@ export const SpeakingCardsView: React.FC = () => {
         <div className="max-w-xl space-y-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold">
             <Layers className="w-3.5 h-3.5" />
-            <span>Digital Speaking Deck</span>
+            <span>Teacher Digital Speaking Deck</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Speaking Cards Arena
+            Bank Speaking Cards Pengajar
           </h1>
           <p className="text-slate-600 text-sm leading-relaxed">
-            Kumpulan kartu tantangan berbicara untuk memicu ide spontan. Setiap kartu dilengkapi batas waktu, kosakata pemandu, dan contoh respons nyata.
+            Fasilitasi kelas speaking dengan 40+ kartu pemantik bicara interaktif. Tampilkan ke layar proyektor, panggil siswa untuk berbicara spontan, atau masukkan kartu ke dalam lesson plan (Cart) harian.
           </p>
         </div>
 
@@ -83,7 +83,7 @@ export const SpeakingCardsView: React.FC = () => {
           className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-md transition-all flex-shrink-0"
         >
           <HelpCircle className="w-4 h-4 text-amber-400" />
-          <span>Cara Menggunakan Kartu</span>
+          <span>Panduan Guru di Kelas</span>
           {showHowToPlay ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
       </div>
@@ -91,22 +91,22 @@ export const SpeakingCardsView: React.FC = () => {
       {/* Expandable How To Play */}
       {showHowToPlay && (
         <div className="bg-gradient-to-br from-indigo-50/70 via-white to-slate-50 rounded-3xl border border-indigo-100 p-6 shadow-soft space-y-4 animate-slide-up">
-          <h4 className="font-extrabold text-sm text-indigo-950">Panduan Sesi Speaking Cards:</h4>
+          <h4 className="font-extrabold text-sm text-indigo-950">Cara Fasilitasi Speaking Cards di Kelas:</h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-700">
             <div className="p-4 rounded-2xl bg-white border border-indigo-100/80 shadow-sm space-y-1">
               <span className="w-6 h-6 rounded-xl bg-indigo-600 text-white font-extrabold flex items-center justify-center text-xs">1</span>
-              <strong className="block text-slate-900 pt-1">Pilih Kartu Topik</strong>
-              <p className="text-slate-500 leading-relaxed">Pilih kartu yang menarik atau sesuai dengan materi belajar Anda hari ini.</p>
+              <strong className="block text-slate-900 pt-1">Pilih Kartu Topik Sesuai Silabus</strong>
+              <p className="text-slate-500 leading-relaxed">Pilih materi yang selaras dengan tema belajar hari ini (Beginner, Intermediate, atau Advanced).</p>
             </div>
             <div className="p-4 rounded-2xl bg-white border border-indigo-100/80 shadow-sm space-y-1">
               <span className="w-6 h-6 rounded-xl bg-indigo-600 text-white font-extrabold flex items-center justify-center text-xs">2</span>
-              <strong className="block text-slate-900 pt-1">Mulai / Masukkan ke Cart</strong>
-              <p className="text-slate-500 leading-relaxed">Tekan "Mulai" untuk langsung latihan solo, atau tekan ikon "+" untuk menyusun menu latihan campuran.</p>
+              <strong className="block text-slate-900 pt-1">Proyeksikan / Masukkan ke Cart</strong>
+              <p className="text-slate-500 leading-relaxed">Tekan "Uji Siswa" untuk membuka modal proyektor, atau klik "+" untuk menyusun rangkaian sesi.</p>
             </div>
             <div className="p-4 rounded-2xl bg-white border border-indigo-100/80 shadow-sm space-y-1">
               <span className="w-6 h-6 rounded-xl bg-indigo-600 text-white font-extrabold flex items-center justify-center text-xs">3</span>
-              <strong className="block text-slate-900 pt-1">Bicara Tanpa Ragu</strong>
-              <p className="text-slate-500 leading-relaxed">Gunakan kosakata panduan yang disediakan dan selesaikan durasi berbicara untuk klaim +20 XP.</p>
+              <strong className="block text-slate-900 pt-1">Beri Skor & Evaluasi Langsung</strong>
+              <p className="text-slate-500 leading-relaxed">Setelah siswa selesai bicara, gunakan rubrik cepat pengajar untuk mencatat skor dan memberikan XP.</p>
             </div>
           </div>
         </div>
@@ -244,7 +244,7 @@ export const SpeakingCardsView: React.FC = () => {
                     className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20 transition-all"
                   >
                     <Play className="w-3.5 h-3.5 fill-white" />
-                    <span>Latihan</span>
+                    <span>Uji Siswa di Kelas</span>
                   </button>
                 </div>
               </div>

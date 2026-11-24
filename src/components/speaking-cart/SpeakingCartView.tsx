@@ -55,13 +55,13 @@ export const SpeakingCartView: React.FC = () => {
         <div className="max-w-xl space-y-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold">
             <Utensils className="w-3.5 h-3.5" />
-            <span>Speaking Cart & Menu</span>
+            <span>Classroom Lesson Plan Builder</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Menu Sesi Latihan Bicara
+            Rangkaian Sesi Mengajar (Speaking Cart)
           </h1>
           <p className="text-slate-600 text-sm leading-relaxed">
-            Pilih dan rangkai kombinasi latihan bicara Anda seperti memesan hidangan makanan: buka dengan <strong className="text-amber-700">Appetizer</strong>, lanjutkan dengan <strong className="text-indigo-700">Main Course</strong>, dan tutup dengan <strong className="text-pink-700">Dessert</strong>!
+            Rancang alur sesi mengajar speaking di kelas seperti menyusun 3 babak sajian: buka dengan <strong className="text-amber-700">Appetizer</strong> (pemanasan kelas), lanjutkan dengan <strong className="text-indigo-700">Main Course</strong> (aktivitas inti debat/roleplay), dan tutup dengan <strong className="text-pink-700">Dessert</strong> (latihan artikulasi kilat).
           </p>
         </div>
 
@@ -71,7 +71,7 @@ export const SpeakingCartView: React.FC = () => {
           className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-md transition-all flex-shrink-0"
         >
           <HelpCircle className="w-4 h-4 text-amber-400" />
-          <span>Cara Menyusun Menu</span>
+          <span>Panduan Rangkaian Sesi</span>
           {showHowToPlay ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
       </div>
@@ -79,24 +79,24 @@ export const SpeakingCartView: React.FC = () => {
       {/* Expandable How To Play */}
       {showHowToPlay && (
         <div className="bg-gradient-to-br from-indigo-50/70 via-white to-slate-50 rounded-3xl border border-indigo-100 p-6 shadow-soft space-y-4 animate-slide-up">
-          <h4 className="font-extrabold text-sm text-indigo-950">Cara Kerja Speaking Cart:</h4>
+          <h4 className="font-extrabold text-sm text-indigo-950">Cara Fasilitasi 3 Babak Speaking di Kelas:</h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-700">
             <div className="p-4 rounded-2xl bg-white border border-amber-200 shadow-sm space-y-1">
-              <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-extrabold text-[10px] uppercase">Langkah 1: Appetizer</span>
-              <h5 className="font-bold text-slate-900 pt-1">Pemanasan (1–2 Menit)</h5>
-              <p className="text-slate-500 leading-relaxed">Memanaskan pita suara dengan small talk ringan atau pertanyaan spontan kilat.</p>
+              <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-extrabold text-[10px] uppercase">Babak 1: Appetizer</span>
+              <h5 className="font-bold text-slate-900 pt-1">Pemanasan Kelas (1–2 Menit)</h5>
+              <p className="text-slate-500 leading-relaxed">Cairkan suasana kelas dengan ice breaker ringan atau pertanyaan cepat untuk memancing murid berbicara.</p>
             </div>
 
             <div className="p-4 rounded-2xl bg-white border border-indigo-200 shadow-sm space-y-1">
-              <span className="px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 font-extrabold text-[10px] uppercase">Langkah 2: Main Course</span>
-              <h5 className="font-bold text-slate-900 pt-1">Latihan Utama (3–4 Menit)</h5>
-              <p className="text-slate-500 leading-relaxed">Latihan berbobot seperti debat terstruktur, bercerita, atau roleplay konflik.</p>
+              <span className="px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 font-extrabold text-[10px] uppercase">Babak 2: Main Course</span>
+              <h5 className="font-bold text-slate-900 pt-1">Aktivitas Inti (3–5 Menit)</h5>
+              <p className="text-slate-500 leading-relaxed">Fokus utama pembelajaran: tantang murid dengan roleplay berpasangan, opini berbobot, atau debat formal.</p>
             </div>
 
             <div className="p-4 rounded-2xl bg-white border border-pink-200 shadow-sm space-y-1">
-              <span className="px-2 py-0.5 rounded bg-pink-100 text-pink-800 font-extrabold text-[10px] uppercase">Langkah 3: Dessert</span>
-              <h5 className="font-bold text-slate-900 pt-1">Penutup Seru (1 Menit)</h5>
-              <p className="text-slate-500 leading-relaxed">Tongue twister melatih artikulasi atau tantangan menyusun 3 kata acak menjadi cerita.</p>
+              <span className="px-2 py-0.5 rounded bg-pink-100 text-pink-800 font-extrabold text-[10px] uppercase">Babak 3: Dessert</span>
+              <h5 className="font-bold text-slate-900 pt-1">Refleksi & Artikulasi (1 Menit)</h5>
+              <p className="text-slate-500 leading-relaxed">Penutup sesi yang menyenangkan: latih kejelasan artikulasi dengan tongue twister atau tantangan kosakata kilat.</p>
             </div>
           </div>
         </div>

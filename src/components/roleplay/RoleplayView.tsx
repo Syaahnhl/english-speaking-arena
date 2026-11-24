@@ -4,6 +4,8 @@ import { ROLEPLAY_SCENARIOS } from '../../data/roleplayScenariosData';
 import { RoleplayScenario, SecretMission } from '../../types';
 import { soundService } from '../../services/soundService';
 import { speechService } from '../../services/speechService';
+import { storageService } from '../../services/storageService';
+import { WEEKLY_LEADERBOARD } from '../../data/seedUsersData';
 import { 
   Theater, 
   Sparkles, 
@@ -19,35 +21,48 @@ import {
   Volume2, 
   ArrowLeft, 
   Award, 
-  HelpCircle,
-  ChevronDown,
-  ChevronUp,
-  ShieldAlert
+  HelpCircle, 
+  ChevronDown, 
+  ChevronUp, 
+  ShieldAlert,
+  Users,
+  Dices,
+  Monitor,
+  Send,
+  UserCheck
 } from 'lucide-react';
 
 export const RoleplayView: React.FC = () => {
-  const { level, awardXp, completeDailyChallenge } = useArena();
+  const { addToast } = useArena();
+  const students = WEEKLY_LEADERBOARD;
+  
   const [selectedScenario, setSelectedScenario] = useState<RoleplayScenario | null>(null);
-  const [activePlayerRole, setActivePlayerRole] = useState<'A' | 'B'>('A');
-  const [revealedSecret, setRevealedSecret] = useState<boolean>(false);
+  const [studentA, setStudentA] = useState<string>(students[0].name);
+  const [studentB, setStudentB] = useState<string>(students[1].name);
+
+  // View modes: 'projector' (hides secrets), 'teacher-console' (shows both), 'brief-a', 'brief-b'
+  const [displayMode, setDisplayMode] = useState<'projector' | 'teacher-console' | 'brief-a' | 'brief-b'>('teacher-console');
   const [showHowToPlay, setShowHowToPlay] = useState<boolean>(false);
 
   // In-session timer
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [timeLeft, setTimeLeft] = useState<number>(180);
   const [sessionCompleted, setSessionCompleted] = useState<boolean>(false);
-  const [scoreResult, setScoreResult] = useState<{ score: number; feedback: string } | null>(null);
 
-  // Reset timer on scenario selection
+  // Teacher grading states for both students
+  const [scoreA, setScoreA] = useState<number>(92);
+  const [scoreB, setScoreB] = useState<number>(88);
+  const [notesA, setNotesA] = useState<string>('Sangat diplomatis, berhasil mengutarakan keluhan tanpa kata terlarang.');
+  const [notesB, setNotesB] = useState<string>('Respon cepat tanggap dan menawarkan solusi alternatif yang ramah.');
+
   useEffect(() => {
     if (selectedScenario) {
       setTimeLeft(selectedScenario.suggestedDuration);
       setIsRunning(false);
-      setRevealedSecret(false);
       setSessionCompleted(false);
-      setScoreResult(null);
+      setDisplayMode('teacher-console');
     }
-  }, [selectedScenario, activePlayerRole]);
+  }, [selectedScenario]);
 
   useEffect(() => {
     let interval: any = null;
@@ -83,29 +98,74 @@ export const RoleplayView: React.FC = () => {
     setIsRunning(false);
     if (selectedScenario) setTimeLeft(selectedScenario.suggestedDuration);
     setSessionCompleted(false);
-    setScoreResult(null);
   };
 
   const handleCompleteSession = () => {
     setIsRunning(false);
     setSessionCompleted(true);
     soundService.playSuccess();
-
-    const calculatedScore = Math.floor(Math.random() * 10) + 89; // 89-98%
-    const feedback = `Luar biasa! Anda berhasil mempertahankan tata krama bahasa Inggris yang sopan, menyisipkan frasa wajib secara natural, dan menghindari seluruh kata terlarang.`;
-    setScoreResult({ score: calculatedScore, feedback });
-
-    awardXp(30, `Menyelesaikan Misi Rahasia Roleplay: "${selectedScenario?.title}"`);
-    completeDailyChallenge('dc-1');
   };
 
-  // If in active scenario view
+  const handlePickRandomPair = () => {
+    soundService.playClick();
+    const idxA = Math.floor(Math.random() * students.length);
+    let idxB = Math.floor(Math.random() * students.length);
+    while (idxB === idxA && students.length > 1) {
+      idxB = Math.floor(Math.random() * students.length);
+    }
+    setStudentA(students[idxA].name);
+    setStudentB(students[idxB].name);
+  };
+
+  const handleSavePairGrades = () => {
+    if (!selectedScenario) return;
+
+    // Save student A
+    storageService.addSubmission({
+      id: `sub-rp-a-${Date.now()}`,
+      studentId: `usr-${studentA.toLowerCase().replace(/\s+/g, '-')}`,
+      studentName: studentA,
+      assignmentTitle: `Roleplay: ${selectedScenario.title} (${selectedScenario.playerA.roleName})`,
+      submittedAt: 'Baru saja di kelas',
+      durationSeconds: selectedScenario.suggestedDuration - timeLeft,
+      transcriptOrNotes: notesA,
+      status: 'graded',
+      score: scoreA,
+      feedback: `Nilai: ${scoreA}/100. ${notesA}`,
+      activityType: 'roleplay'
+    });
+
+    // Save student B
+    storageService.addSubmission({
+      id: `sub-rp-b-${Date.now()}`,
+      studentId: `usr-${studentB.toLowerCase().replace(/\s+/g, '-')}`,
+      studentName: studentB,
+      assignmentTitle: `Roleplay: ${selectedScenario.title} (${selectedScenario.playerB.roleName})`,
+      submittedAt: 'Baru saja di kelas',
+      durationSeconds: selectedScenario.suggestedDuration - timeLeft,
+      transcriptOrNotes: notesB,
+      status: 'graded',
+      score: scoreB,
+      feedback: `Nilai: ${scoreB}/100. ${notesB}`,
+      activityType: 'roleplay'
+    });
+
+    soundService.playSuccess();
+    addToast({
+      type: 'success',
+      title: 'Nilai Pasangan Disimpan!',
+      message: `Nilai berhasil direkam untuk ${studentA} (${scoreA}/100) dan ${studentB} (${scoreB}/100).`
+    });
+
+    setSelectedScenario(null);
+  };
+
   if (selectedScenario) {
-    const currentMission: SecretMission = activePlayerRole === 'A' ? selectedScenario.playerA : selectedScenario.playerB;
-    const opponentMission: SecretMission = activePlayerRole === 'A' ? selectedScenario.playerB : selectedScenario.playerA;
+    const missionA: SecretMission = selectedScenario.playerA;
+    const missionB: SecretMission = selectedScenario.playerB;
 
     return (
-      <div className="max-w-3xl mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6">
         {/* Top Header Navigation */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <button
@@ -113,32 +173,97 @@ export const RoleplayView: React.FC = () => {
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 shadow-sm transition-all"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Kembali ke Daftar Skenario</span>
+            <span>Kembali ke Bank Skenario</span>
           </button>
 
-          {/* Role A / Role B Switcher */}
-          <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-2xl border border-slate-200">
+          {/* Mode Switcher */}
+          <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-100 rounded-2xl border border-slate-200 text-xs">
             <button
-              onClick={() => setActivePlayerRole('A')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                activePlayerRole === 'A' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              onClick={() => setDisplayMode('teacher-console')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                displayMode === 'teacher-console' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Peran A ({selectedScenario.playerA.roleName.split(' ')[0]})
+              Konsol Guru (Semua Misi)
             </button>
             <button
-              onClick={() => setActivePlayerRole('B')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                activePlayerRole === 'B' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              onClick={() => setDisplayMode('projector')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                displayMode === 'projector' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Peran B ({selectedScenario.playerB.roleName.split(' ')[0]})
+              Mode Proyektor (Rahasia Tersembunyi)
+            </button>
+            <button
+              onClick={() => setDisplayMode('brief-a')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                displayMode === 'brief-a' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Briefing {studentA}
+            </button>
+            <button
+              onClick={() => setDisplayMode('brief-b')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                displayMode === 'brief-b' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Briefing {studentB}
             </button>
           </div>
         </div>
 
+        {/* Classroom Pair Selection Toolbar */}
+        <div className="p-4 rounded-3xl bg-white border border-slate-200 shadow-soft flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-4 text-xs">
+            {/* Student A Selector */}
+            <div className="flex items-center gap-2">
+              <span className="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-700 font-black flex items-center justify-center">A</span>
+              <div>
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">Siswa Peran A ({missionA.roleName})</span>
+                <select
+                  value={studentA}
+                  onChange={(e) => setStudentA(e.target.value)}
+                  className="bg-transparent font-bold text-slate-900 text-xs focus:outline-none cursor-pointer"
+                >
+                  {students.map(s => (
+                    <option key={s.id} value={s.name}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="h-6 w-px bg-slate-200 hidden sm:block" />
+
+            {/* Student B Selector */}
+            <div className="flex items-center gap-2">
+              <span className="w-6 h-6 rounded-lg bg-purple-100 text-purple-700 font-black flex items-center justify-center">B</span>
+              <div>
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">Siswa Peran B ({missionB.roleName})</span>
+                <select
+                  value={studentB}
+                  onChange={(e) => setStudentB(e.target.value)}
+                  className="bg-transparent font-bold text-slate-900 text-xs focus:outline-none cursor-pointer"
+                >
+                  {students.map(s => (
+                    <option key={s.id} value={s.name}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={handlePickRandomPair}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all"
+          >
+            <Dices className="w-3.5 h-3.5 text-indigo-600" />
+            <span>Undi Pasangan Acak</span>
+          </button>
+        </div>
+
         {/* Main Scenario Workspace */}
-        <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-10 shadow-card space-y-6">
+        <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-card space-y-6">
           <div className="space-y-2">
             <span className="text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
               SIMULASI SITUASI • TINGKAT {selectedScenario.level.toUpperCase()}
@@ -147,111 +272,165 @@ export const RoleplayView: React.FC = () => {
               {selectedScenario.title}
             </h2>
             <div className="p-4 bg-slate-50/90 rounded-2xl border border-slate-200 text-xs text-slate-700 leading-relaxed">
-              <strong className="text-slate-900 block mb-1">Latar Belakang Situasi:</strong>
+              <strong className="text-slate-900 block mb-1">Latar Belakang Situasi untuk Kelas:</strong>
               {selectedScenario.context}
             </div>
           </div>
 
-          {/* Roles Breakdown */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Player's Active Role */}
-            <div className="p-5 rounded-2xl bg-indigo-50/60 border-2 border-indigo-500 shadow-sm space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-indigo-700">
-                  PERAN ANDA: ROLE {currentMission.playerRole}
-                </span>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-indigo-600 text-white">
-                  ANDA
-                </span>
-              </div>
-              <h4 className="font-extrabold text-base text-slate-900">{currentMission.roleName}</h4>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                {currentMission.situation}
-              </p>
-            </div>
-
-            {/* Partner's Role */}
-            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  PERAN LAWAN: ROLE {opponentMission.playerRole}
-                </span>
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-200 text-slate-700">
-                  PARTNER / LAWAN BICARA
-                </span>
-              </div>
-              <h4 className="font-extrabold text-base text-slate-800">{opponentMission.roleName}</h4>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                {opponentMission.situation}
-              </p>
-            </div>
-          </div>
-
-          {/* SECRET MISSION CARD (Confidential) */}
-          <div className="p-6 rounded-3xl bg-slate-950 text-white shadow-lg space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
-                <ShieldAlert className="w-4 h-4 text-rose-400" />
-                <span className="text-xs font-extrabold uppercase tracking-wider text-rose-300">
-                  Kartu Misi Rahasia (Hanya untuk Anda)
-                </span>
+          {/* PROJECTOR VIEW (Public) */}
+          {displayMode === 'projector' && (
+            <div className="p-8 rounded-3xl bg-slate-900 text-white text-center space-y-6 shadow-xl">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 text-amber-300 text-xs font-bold">
+                <Monitor className="w-4 h-4" />
+                <span>Layar Proyektor Kelas • Sesi Berlangsung</span>
               </div>
 
-              <button
-                onClick={() => setRevealedSecret(!revealedSecret)}
-                className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 transition-all text-white"
-              >
-                {revealedSecret ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                <span>{revealedSecret ? 'Tutup Misi' : 'Buka Misi Rahasia'}</span>
-              </button>
-            </div>
-
-            {revealedSecret ? (
-              <div className="space-y-4 animate-slide-up text-xs">
-                <div className="p-4 bg-white/10 rounded-2xl border border-white/10">
-                  <span className="text-[11px] text-indigo-300 uppercase font-bold block mb-1">
-                    Tujuan Tersembunyi Anda:
-                  </span>
-                  <p className="text-sm font-semibold text-white leading-relaxed">
-                    {currentMission.secretObjective}
-                  </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto text-left">
+                <div className="p-5 rounded-2xl bg-white/10 border border-white/10 space-y-2">
+                  <span className="text-xs uppercase font-extrabold text-indigo-300">Peran A ({studentA})</span>
+                  <h4 className="text-lg font-black text-white">{missionA.roleName}</h4>
+                  <p className="text-xs text-slate-300 leading-relaxed">{missionA.situation}</p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Required phrases */}
-                  <div className="p-4 bg-emerald-950/70 border border-emerald-500/30 rounded-2xl space-y-2">
-                    <span className="text-emerald-400 font-bold block flex items-center gap-1.5">
-                      <CheckCircle className="w-4 h-4 text-emerald-400" /> Wajib Ucapkan Frasa Ini:
-                    </span>
-                    <ul className="space-y-1.5 text-emerald-100">
-                      {currentMission.requiredPhrases.map((phrase, pIdx) => (
-                        <li key={pIdx} className="italic">• "{phrase}"</li>
-                      ))}
-                    </ul>
+                <div className="p-5 rounded-2xl bg-white/10 border border-white/10 space-y-2">
+                  <span className="text-xs uppercase font-extrabold text-purple-300">Peran B ({studentB})</span>
+                  <h4 className="text-lg font-black text-white">{missionB.roleName}</h4>
+                  <p className="text-xs text-slate-300 leading-relaxed">{missionB.situation}</p>
+                </div>
+              </div>
+
+              <div className="p-4 bg-amber-400/10 border border-amber-400/20 rounded-2xl max-w-md mx-auto text-xs text-amber-200">
+                Misi rahasia disembunyikan agar audiens kelas dapat menebak tujuan masing-masing!
+              </div>
+            </div>
+          )}
+
+          {/* TEACHER CONSOLE VIEW (Shows both secret missions) */}
+          {displayMode === 'teacher-console' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+                  <ShieldAlert className="w-4 h-4 text-indigo-600" />
+                  <span>Konsol Rahasia Pengajar (Kedua Misi Siswa)</span>
+                </h4>
+                <span className="text-xs text-slate-400">Guru memantau pemenuhan misi dan kata terlarang</span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Mission A */}
+                <div className="p-5 rounded-3xl bg-slate-950 text-white space-y-4 border border-indigo-900/50 shadow-md">
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <span className="text-xs font-black uppercase text-indigo-400">Peran A: {studentA}</span>
+                    <span className="text-[11px] font-semibold text-slate-400">{missionA.roleName}</span>
                   </div>
 
-                  {/* Forbidden words */}
-                  <div className="p-4 bg-rose-950/70 border border-rose-500/30 rounded-2xl space-y-2">
-                    <span className="text-rose-400 font-bold block flex items-center gap-1.5">
-                      <AlertTriangle className="w-4 h-4 text-rose-400" /> Dilarang Keras Menyebut Kata Ini:
-                    </span>
-                    <div className="flex flex-wrap gap-2 pt-1">
-                      {currentMission.forbiddenWords.map((word, wIdx) => (
-                        <span key={wIdx} className="px-2.5 py-1 rounded-lg bg-rose-900/80 text-rose-100 font-mono font-bold text-xs">
-                          {word}
+                  <div className="text-xs space-y-1">
+                    <span className="text-indigo-300 uppercase font-bold text-[10px]">Tujuan Rahasia:</span>
+                    <p className="text-slate-200 font-medium leading-relaxed">{missionA.secretObjective}</p>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/20 text-xs space-y-1">
+                    <span className="text-emerald-400 font-bold text-[10px] uppercase block">Frasa Wajib:</span>
+                    {missionA.requiredPhrases.map((p, i) => (
+                      <p key={i} className="text-emerald-200 italic">• "{p}"</p>
+                    ))}
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-500/20 text-xs space-y-1">
+                    <span className="text-rose-400 font-bold text-[10px] uppercase block">Dilarang Ucapkan:</span>
+                    <div className="flex flex-wrap gap-1.5 pt-0.5">
+                      {missionA.forbiddenWords.map((w, i) => (
+                        <span key={i} className="px-2 py-0.5 rounded bg-rose-900 text-rose-100 font-mono text-[11px] font-bold">
+                          {w}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mission B */}
+                <div className="p-5 rounded-3xl bg-slate-950 text-white space-y-4 border border-purple-900/50 shadow-md">
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <span className="text-xs font-black uppercase text-purple-400">Peran B: {studentB}</span>
+                    <span className="text-[11px] font-semibold text-slate-400">{missionB.roleName}</span>
+                  </div>
+
+                  <div className="text-xs space-y-1">
+                    <span className="text-purple-300 uppercase font-bold text-[10px]">Tujuan Rahasia:</span>
+                    <p className="text-slate-200 font-medium leading-relaxed">{missionB.secretObjective}</p>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/20 text-xs space-y-1">
+                    <span className="text-emerald-400 font-bold text-[10px] uppercase block">Frasa Wajib:</span>
+                    {missionB.requiredPhrases.map((p, i) => (
+                      <p key={i} className="text-emerald-200 italic">• "{p}"</p>
+                    ))}
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-500/20 text-xs space-y-1">
+                    <span className="text-rose-400 font-bold text-[10px] uppercase block">Dilarang Ucapkan:</span>
+                    <div className="flex flex-wrap gap-1.5 pt-0.5">
+                      {missionB.forbiddenWords.map((w, i) => (
+                        <span key={i} className="px-2 py-0.5 rounded bg-rose-900 text-rose-100 font-mono text-[11px] font-bold">
+                          {w}
                         </span>
                       ))}
                     </div>
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="text-center py-6 text-slate-400">
-                <p className="text-xs">Partner bicara Anda tidak boleh melihat isi instruksi rahasia ini.</p>
-                <p className="text-sm font-bold text-slate-200 mt-1">Klik tombol "Buka Misi Rahasia" untuk membaca objektif Anda.</p>
+            </div>
+          )}
+
+          {/* BRIEFING A OR B VIEW */}
+          {(displayMode === 'brief-a' || displayMode === 'brief-b') && (
+            <div className="p-6 rounded-3xl bg-slate-950 text-white space-y-4 animate-slide-up">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <span className="text-xs font-bold uppercase text-amber-300">
+                  Kartu Briefing Pribadi: {displayMode === 'brief-a' ? studentA : studentB}
+                </span>
+                <span className="text-xs text-slate-400">Partner dilarang melihat kartu ini</span>
               </div>
-            )}
-          </div>
+
+              {(() => {
+                const cur = displayMode === 'brief-a' ? missionA : missionB;
+                return (
+                  <div className="space-y-4 text-xs">
+                    <div className="p-4 bg-white/10 rounded-2xl">
+                      <span className="text-indigo-300 font-bold uppercase text-[10px] block mb-1">Objektif Rahasia:</span>
+                      <p className="text-sm font-semibold text-white leading-relaxed">{cur.secretObjective}</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="p-4 bg-emerald-950/70 border border-emerald-500/30 rounded-2xl space-y-1.5">
+                        <span className="text-emerald-400 font-bold text-xs flex items-center gap-1.5">
+                          <CheckCircle className="w-4 h-4" /> Wajib Ucapkan Frasa Ini:
+                        </span>
+                        <ul className="space-y-1 text-emerald-100">
+                          {cur.requiredPhrases.map((phrase, pIdx) => (
+                            <li key={pIdx} className="italic">• "{phrase}"</li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div className="p-4 bg-rose-950/70 border border-rose-500/30 rounded-2xl space-y-1.5">
+                        <span className="text-rose-400 font-bold text-xs flex items-center gap-1.5">
+                          <AlertTriangle className="w-4 h-4" /> Dilarang Menyebut Kata:
+                        </span>
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          {cur.forbiddenWords.map((word, wIdx) => (
+                            <span key={wIdx} className="px-2.5 py-1 rounded-lg bg-rose-900/80 text-rose-100 font-mono font-bold text-xs">
+                              {word}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
 
           {/* Timer and In-session Controls */}
           <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -260,7 +439,7 @@ export const RoleplayView: React.FC = () => {
                 {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
               </span>
               <span className="text-xs text-slate-400 uppercase font-semibold">
-                {isRunning ? 'Simulasi Berlangsung' : 'Jeda / Siap'}
+                {isRunning ? 'Roleplay Berlangsung' : 'Jeda / Siap Dimulai'}
               </span>
             </div>
 
@@ -272,7 +451,7 @@ export const RoleplayView: React.FC = () => {
                 }`}
               >
                 {isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-white" />}
-                <span>{isRunning ? 'Jeda Percakapan' : 'Mulai Percakapan'}</span>
+                <span>{isRunning ? 'Jeda Simulasi' : 'Mulai Simulasi Kelas'}</span>
               </button>
 
               <button
@@ -288,14 +467,14 @@ export const RoleplayView: React.FC = () => {
                 className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-500/20 transition-all"
               >
                 <CheckCircle className="w-4 h-4" />
-                <span>Selesai & Evaluasi</span>
+                <span>Selesai & Nilai Siswa</span>
               </button>
             </div>
           </div>
 
-          {/* Vocabulary Support */}
+          {/* Situational Vocabulary Support */}
           <div className="pt-3 border-t border-slate-100 space-y-2">
-            <span className="text-xs font-bold text-slate-700 block">Kosakata Situasional:</span>
+            <span className="text-xs font-bold text-slate-700 block">Kosakata Situasional Pendukung (Klik untuk Audio):</span>
             <div className="flex flex-wrap gap-2">
               {selectedScenario.vocabularySupport.map((v, i) => (
                 <button
@@ -310,40 +489,80 @@ export const RoleplayView: React.FC = () => {
             </div>
           </div>
 
-          {/* Score Result */}
-          {sessionCompleted && scoreResult && (
-            <div className="p-6 rounded-3xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 space-y-4 animate-slide-up">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold">
-                    <Award className="w-6 h-6" />
-                  </div>
+          {/* TEACHER EVALUATION & GRADING FORM FOR PAIR */}
+          {sessionCompleted && (
+            <div className="p-6 rounded-3xl bg-slate-50 border border-slate-200 space-y-6 animate-slide-up">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                <div className="flex items-center gap-2">
+                  <Award className="w-5 h-5 text-indigo-600" />
                   <div>
-                    <h3 className="font-extrabold text-base text-emerald-950">Misi Selesai Dijalankan!</h3>
-                    <p className="text-xs text-emerald-700">Kedua belah pihak dinilai atas kesopanan dan pemenuhan objektif.</p>
+                    <h3 className="font-extrabold text-sm text-slate-900">
+                      Evaluasi & Penilaian Pengajar untuk Kedua Siswa
+                    </h3>
+                    <p className="text-[11px] text-slate-500">Berikan penilaian terhadap kesopanan, pencapaian objektif, dan pencegahan kata terlarang</p>
                   </div>
                 </div>
+              </div>
 
-                <div className="text-right">
-                  <span className="text-xs text-slate-500 block">Skor Kinerja</span>
-                  <span className="text-2xl font-black text-emerald-700 font-mono">{scoreResult.score}/100</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Grade for Student A */}
+                <div className="p-4 bg-white rounded-2xl border border-slate-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-extrabold text-xs text-indigo-700 uppercase">
+                      Nilai {studentA} (Peran A)
+                    </span>
+                    <span className="text-xl font-black font-mono text-indigo-600">{scoreA}/100</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="50"
+                    max="100"
+                    value={scoreA}
+                    onChange={(e) => setScoreA(Number(e.target.value))}
+                    className="w-full accent-indigo-600 cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    value={notesA}
+                    onChange={(e) => setNotesA(e.target.value)}
+                    placeholder="Catatan untuk Siswa A..."
+                    className="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200 focus:outline-none"
+                  />
+                </div>
+
+                {/* Grade for Student B */}
+                <div className="p-4 bg-white rounded-2xl border border-slate-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-extrabold text-xs text-purple-700 uppercase">
+                      Nilai {studentB} (Peran B)
+                    </span>
+                    <span className="text-xl font-black font-mono text-purple-600">{scoreB}/100</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="50"
+                    max="100"
+                    value={scoreB}
+                    onChange={(e) => setScoreB(Number(e.target.value))}
+                    className="w-full accent-purple-600 cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    value={notesB}
+                    onChange={(e) => setNotesB(e.target.value)}
+                    placeholder="Catatan untuk Siswa B..."
+                    className="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 border border-slate-200 focus:outline-none"
+                  />
                 </div>
               </div>
 
-              <div className="p-4 bg-white/90 rounded-2xl border border-emerald-100 text-xs text-slate-700 leading-relaxed">
-                <strong className="text-emerald-900 block mb-1">Ulasan Evaluasi Guru:</strong>
-                {scoreResult.feedback}
-              </div>
-
-              <div className="flex items-center justify-between pt-2">
-                <span className="text-xs font-bold text-emerald-800">+30 XP telah ditambahkan ke profil Anda</span>
-                <button
-                  onClick={() => setSelectedScenario(null)}
-                  className="px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md transition-all"
-                >
-                  Pilih Misi Berikutnya
-                </button>
-              </div>
+              <button
+                onClick={handleSavePairGrades}
+                className="w-full py-3.5 rounded-2xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-500/20 transition-all flex items-center justify-center gap-2"
+              >
+                <Send className="w-4 h-4" />
+                <span>Simpan Nilai & Berikan XP untuk {studentA} & {studentB}</span>
+              </button>
             </div>
           )}
         </div>
@@ -358,13 +577,13 @@ export const RoleplayView: React.FC = () => {
         <div className="max-w-xl space-y-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold">
             <Theater className="w-3.5 h-3.5" />
-            <span>Simulasi Percakapan Rahasia</span>
+            <span>Teacher Roleplay Lab</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Roleplay Secret Missions
+            Fasilitasi Roleplay Misi Rahasia
           </h1>
           <p className="text-slate-600 text-sm leading-relaxed">
-            Hadapi situasi konflik nyata dunia kerja, restoran, dan kehidupan sehari-hari dengan misi tersembunyi. Hindari kata terlarang dan capai kesepakatan secara diplomatis!
+            Bagi murid ke dalam pasangan (Peran A & Peran B). Setiap murid menerima misi tersembunyi dengan frasa wajib dan kata terlarang untuk memicu respon diplomatis nyata.
           </p>
         </div>
 
@@ -374,7 +593,7 @@ export const RoleplayView: React.FC = () => {
           className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-md transition-all flex-shrink-0"
         >
           <HelpCircle className="w-4 h-4 text-amber-400" />
-          <span>Cara Main & Peraturan Misi</span>
+          <span>Panduan Fasilitasi Kelas</span>
           {showHowToPlay ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
       </div>
@@ -382,27 +601,27 @@ export const RoleplayView: React.FC = () => {
       {/* Expandable How to Play Card */}
       {showHowToPlay && (
         <div className="bg-gradient-to-br from-indigo-50/70 via-white to-slate-50 rounded-3xl border border-indigo-100 p-6 shadow-soft space-y-4 animate-slide-up">
-          <h4 className="font-extrabold text-sm text-indigo-950">Aturan Main Roleplay Secret Mission:</h4>
+          <h4 className="font-extrabold text-sm text-indigo-950">Langkah Menjalankan Roleplay Secret Mission di Kelas:</h4>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs text-slate-700">
             <div className="p-4 rounded-2xl bg-white border border-indigo-100/80 shadow-sm space-y-1">
               <span className="w-6 h-6 rounded-xl bg-indigo-600 text-white font-extrabold flex items-center justify-center text-xs">1</span>
-              <strong className="block text-slate-900 pt-1">Pilih Skenario & Peran</strong>
-              <p className="text-slate-500 leading-relaxed">Pilih simulasi situasi dan tentukan apakah Anda berperan sebagai Player A atau Player B.</p>
+              <strong className="block text-slate-900 pt-1">Bagi Pasangan Siswa</strong>
+              <p className="text-slate-500 leading-relaxed">Pilih dua siswa dari kelas Anda (Peran A dan Peran B) atau gunakan fitur undi acak.</p>
             </div>
             <div className="p-4 rounded-2xl bg-white border border-indigo-100/80 shadow-sm space-y-1">
               <span className="w-6 h-6 rounded-xl bg-indigo-600 text-white font-extrabold flex items-center justify-center text-xs">2</span>
-              <strong className="block text-slate-900 pt-1">Baca Misi Rahasia</strong>
-              <p className="text-slate-500 leading-relaxed">Buka kartu rahasia Anda sendiri. Jangan perlihatkan pada partner bicara Anda!</p>
+              <strong className="block text-slate-900 pt-1">Briefing Misi Terpisah</strong>
+              <p className="text-slate-500 leading-relaxed">Buka tab Briefing A untuk Siswa A, lalu Briefing B untuk Siswa B tanpa saling membocorkan.</p>
             </div>
             <div className="p-4 rounded-2xl bg-white border border-indigo-100/80 shadow-sm space-y-1">
               <span className="w-6 h-6 rounded-xl bg-indigo-600 text-white font-extrabold flex items-center justify-center text-xs">3</span>
-              <strong className="block text-slate-900 pt-1">Patuhi Aturan Kata</strong>
-              <p className="text-slate-500 leading-relaxed">Wajib memakai frasa target tertentu dan hindari kata terlarang (misal kata "bad" atau "liar").</p>
+              <strong className="block text-slate-900 pt-1">Tampilkan ke Proyektor</strong>
+              <p className="text-slate-500 leading-relaxed">Gunakan Mode Proyektor agar audiens kelas hanya melihat skenario latar tanpa tahu rahasianya.</p>
             </div>
             <div className="p-4 rounded-2xl bg-white border border-indigo-100/80 shadow-sm space-y-1">
               <span className="w-6 h-6 rounded-xl bg-indigo-600 text-white font-extrabold flex items-center justify-center text-xs">4</span>
-              <strong className="block text-slate-900 pt-1">Evaluasi & Skor</strong>
-              <p className="text-slate-500 leading-relaxed">Tekan "Selesai & Evaluasi" di akhir untuk memperoleh skor pemenuhan misi dan +30 XP.</p>
+              <strong className="block text-slate-900 pt-1">Evaluasi Kedua Siswa</strong>
+              <p className="text-slate-500 leading-relaxed">Catat nilai skor dan feedback langsung ke buku nilai murid setelah simulasi usai.</p>
             </div>
           </div>
         </div>
@@ -450,7 +669,7 @@ export const RoleplayView: React.FC = () => {
                     <span className="font-bold text-slate-800 truncate block mt-0.5">{scenario.playerA.roleName}</span>
                   </div>
                   <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                    <span className="text-[10px] uppercase font-bold text-indigo-600 block">Peran B</span>
+                    <span className="text-[10px] uppercase font-bold text-purple-600 block">Peran B</span>
                     <span className="font-bold text-slate-800 truncate block mt-0.5">{scenario.playerB.roleName}</span>
                   </div>
                 </div>
@@ -458,7 +677,7 @@ export const RoleplayView: React.FC = () => {
 
               <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
                 <span className="text-xs text-slate-400 font-medium">
-                  {scenario.vocabularySupport.length} target kosakata
+                  {scenario.vocabularySupport.length} kosakata pendukung
                 </span>
 
                 <button
@@ -469,7 +688,7 @@ export const RoleplayView: React.FC = () => {
                   className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20 transition-all"
                 >
                   <Play className="w-3.5 h-3.5 fill-white" />
-                  <span>Mulai Misi</span>
+                  <span>Fasilitasi Sesi Ini</span>
                 </button>
               </div>
             </div>

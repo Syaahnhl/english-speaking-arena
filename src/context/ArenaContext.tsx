@@ -16,6 +16,10 @@ interface ArenaContextType {
   user: UserProfile;
   role: UserRole;
   level: ProficiencyLevel;
+  activeClassId: string;
+  setActiveClassId: (id: string) => void;
+  isProjectorMode: boolean;
+  toggleProjectorMode: () => void;
   cart: SpeakingCartItem[];
   cartDurationMinutes: number;
   dailyChallenges: DailyChallenge[];
@@ -43,6 +47,8 @@ export const ArenaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [user, setUser] = useState<UserProfile>(storageService.getCurrentUser());
   const [role, setRoleState] = useState<UserRole>(storageService.getCurrentRole());
   const [level, setLevelState] = useState<ProficiencyLevel>(user.level);
+  const [activeClassId, setActiveClassId] = useState<string>('cls-10a');
+  const [isProjectorMode, setIsProjectorMode] = useState<boolean>(false);
   const [cart, setCart] = useState<SpeakingCartItem[]>(storageService.getCartItems());
   const [dailyChallenges, setDailyChallenges] = useState<DailyChallenge[]>(storageService.getDailyChallenges());
   const [soundEnabled, setSoundEnabledState] = useState<boolean>(true);
@@ -180,6 +186,11 @@ export const ArenaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
   };
 
+  const toggleProjectorMode = () => {
+    setIsProjectorMode(prev => !prev);
+    soundService.playClick();
+  };
+
   const cartDurationMinutes = Math.round(cart.reduce((sum, item) => sum + item.duration, 0) / 60);
 
   return (
@@ -188,6 +199,10 @@ export const ArenaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         user,
         role,
         level,
+        activeClassId,
+        setActiveClassId,
+        isProjectorMode,
+        toggleProjectorMode,
         cart,
         cartDurationMinutes,
         dailyChallenges,

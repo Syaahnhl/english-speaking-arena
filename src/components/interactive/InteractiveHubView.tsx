@@ -125,13 +125,13 @@ export const InteractiveHubView: React.FC = () => {
         <div className="max-w-xl space-y-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold">
             <Mic2 className="w-3.5 h-3.5" />
-            <span>Fluency Gym & Games</span>
+            <span>Classroom Interactive Games Toolkit</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Interactive Speech Studio
+            Studio Games & Ice Breaker Kelas
           </h1>
           <p className="text-slate-600 text-sm leading-relaxed">
-            Enam metode latihan bicara interaktif yang dirancang untuk membongkar kebiasaan ragu, melatih improvisasi cepat, dan mengasah pelafalan intonasi alami.
+            Enam metode permainan bicara interaktif untuk memecah keheningan kelas, melatih spontanitas murid, dan mengasah kelancaran berbicara secara kompetitif dan menyenangkan.
           </p>
         </div>
 
@@ -140,7 +140,7 @@ export const InteractiveHubView: React.FC = () => {
           className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-md transition-all flex-shrink-0"
         >
           <HelpCircle className="w-4 h-4 text-amber-400" />
-          <span>Panduan Cara Main</span>
+          <span>Panduan Fasilitator Kelas</span>
           {showHowToPlay ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
       </div>

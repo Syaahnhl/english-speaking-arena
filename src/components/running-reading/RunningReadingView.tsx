@@ -60,13 +60,13 @@ export const RunningReadingView: React.FC = () => {
         <div className="max-w-xl space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold tracking-wide">
             <Gauge className="w-3.5 h-3.5 text-indigo-600" />
-            <span>Teleprompter Reading Trainer</span>
+            <span>Classroom Teleprompter Suite</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Running Reading Arena
+            Teleprompter Kecepatan Baca Kelas
           </h1>
           <p className="text-slate-600 text-sm leading-relaxed">
-            Latih kecepatan membaca dan pemahaman teks bahasa Inggris dengan sistem teleprompter dinamis. Teks akan bergerak naik secara konstan—tangkap setiap kalimat sebelum tergulung habis!
+            Pandu latihan membaca cepat dan fluency di depan kelas. Proyeksikan teks teleprompter ke layar proyektor, atur kecepatan baca murid (0.5x – 2.0x), dan uji pemahaman dengan kuis interaktif.
           </p>
         </div>
 
@@ -76,7 +76,7 @@ export const RunningReadingView: React.FC = () => {
           className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-md transition-all flex-shrink-0"
         >
           <HelpCircle className="w-4 h-4 text-amber-400" />
-          <span>Cara Main & Panduan Kecepatan</span>
+          <span>Panduan Guru & Kecepatan</span>
           {showHowToPlay ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
       </div>
@@ -86,32 +86,32 @@ export const RunningReadingView: React.FC = () => {
         <div className="bg-gradient-to-br from-indigo-50/80 via-white to-slate-50 rounded-3xl border border-indigo-100 p-6 shadow-soft animate-slide-up space-y-4">
           <div className="flex items-center gap-2 text-indigo-900 font-extrabold text-sm">
             <Zap className="w-4 h-4 text-amber-500" />
-            <span>Mekanisme Permainan Running Reading:</span>
+            <span>Cara Memandu Running Reading di Depan Kelas:</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs text-slate-700">
             <div className="p-4 rounded-2xl bg-white border border-indigo-100/80 shadow-sm space-y-1">
               <span className="w-6 h-6 rounded-xl bg-indigo-600 text-white font-extrabold flex items-center justify-center text-xs">1</span>
-              <h4 className="font-bold text-slate-900 pt-1">Pilih Materi Bacaan</h4>
-              <p className="text-slate-500 leading-relaxed">Pilih artikel sesuai tingkat kemahiran Anda (Beginner, Intermediate, atau Advanced).</p>
+              <h4 className="font-bold text-slate-900 pt-1">Pilih Teks & Tingkat</h4>
+              <p className="text-slate-500 leading-relaxed">Pilih artikel bacaan sesuai tingkat kemahiran murid (Beginner, Intermediate, atau Advanced).</p>
             </div>
 
             <div className="p-4 rounded-2xl bg-white border border-indigo-100/80 shadow-sm space-y-1">
               <span className="w-6 h-6 rounded-xl bg-indigo-600 text-white font-extrabold flex items-center justify-center text-xs">2</span>
-              <h4 className="font-bold text-slate-900 pt-1">Tentukan Kecepatan</h4>
-              <p className="text-slate-500 leading-relaxed">Gunakan tombol 0.5x hingga 2.0x. Teks akan terus bergerak ke atas secara otomatis.</p>
+              <h4 className="font-bold text-slate-900 pt-1">Atur Kecepatan Layar</h4>
+              <p className="text-slate-500 leading-relaxed">Pilih kecepatan 0.5x hingga 2.0x di teleprompter sesuai kemampuan membaca nyaring murid.</p>
             </div>
 
             <div className="p-4 rounded-2xl bg-white border border-indigo-100/80 shadow-sm space-y-1">
               <span className="w-6 h-6 rounded-xl bg-indigo-600 text-white font-extrabold flex items-center justify-center text-xs">3</span>
-              <h4 className="font-bold text-slate-900 pt-1">Baca Sebelum Hilang</h4>
-              <p className="text-slate-500 leading-relaxed">Fokuskan mata pada garis pandu. Jangan membaca terlalu lama agar kalimat tidak tergulung hilang ke atas!</p>
+              <h4 className="font-bold text-slate-900 pt-1">Fokus Garis Baca</h4>
+              <p className="text-slate-500 leading-relaxed">Teks bergerak ke atas konstan. Murid dilatih membaca cepat sebelum kalimat tergulung hilang ke atas.</p>
             </div>
 
             <div className="p-4 rounded-2xl bg-white border border-indigo-100/80 shadow-sm space-y-1">
               <span className="w-6 h-6 rounded-xl bg-indigo-600 text-white font-extrabold flex items-center justify-center text-xs">4</span>
-              <h4 className="font-bold text-slate-900 pt-1">Selesaikan Kuis</h4>
-              <p className="text-slate-500 leading-relaxed">Jawab kuis pemahaman di akhir untuk mengecek pemahaman dan mengklaim bonus XP.</p>
+              <h4 className="font-bold text-slate-900 pt-1">Kuis Pemahaman Bersama</h4>
+              <p className="text-slate-500 leading-relaxed">Uji pemahaman isi bacaan bersama kelas melalui kuis interaktif setelah sesi membaca selesai.</p>
             </div>
           </div>
         </div>

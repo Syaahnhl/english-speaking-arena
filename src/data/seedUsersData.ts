@@ -122,7 +122,7 @@ export const WEEKLY_LEADERBOARD: LeaderboardUser[] = [
   },
   {
     id: 'usr-student-01',
-    name: 'Aria Pratama (You)',
+    name: 'Aria Pratama',
     username: 'ariapratama',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
     level: 'intermediate',
@@ -130,7 +130,6 @@ export const WEEKLY_LEADERBOARD: LeaderboardUser[] = [
     completedChallenges: 14,
     streak: 4,
     rankTitle: 'Challenger',
-    isCurrentUser: true,
     categoryPill: 'Most Improved'
   },
   {
@@ -262,7 +261,7 @@ export const ALL_TIME_LEADERBOARD: LeaderboardUser[] = [
   },
   {
     id: 'usr-student-01',
-    name: 'Aria Pratama (You)',
+    name: 'Aria Pratama',
     username: 'ariapratama',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
     level: 'intermediate',
@@ -270,7 +269,6 @@ export const ALL_TIME_LEADERBOARD: LeaderboardUser[] = [
     completedChallenges: 102,
     streak: 28,
     rankTitle: 'Arena Champion',
-    isCurrentUser: true,
     categoryPill: 'Most Improved'
   }
 ];
