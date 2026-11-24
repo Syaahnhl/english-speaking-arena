@@ -64,7 +64,8 @@ export const ProfileProgressView: React.FC = () => {
 
   // --- CLASSROOM CREATION FORM STATE ---
   const [newClassName, setNewClassName] = useState('');
-  const [newClassGrade, setNewClassGrade] = useState('Kelas 10');
+  const [newClassGrade, setNewClassGrade] = useState('Kelas 10 (SMA/SMK)');
+  const [newClassTier, setNewClassTier] = useState<ProficiencyLevel>('intermediate');
   const [newClassDesc, setNewClassDesc] = useState('');
 
   // --- STUDENT CREATION STATE ---
@@ -119,7 +120,8 @@ export const ProfileProgressView: React.FC = () => {
       teacherId: activeTeacher.id,
       studentCount: 0,
       description: newClassDesc.trim() || 'Kelompok kelas aktif latihan berbicara dan membaca.',
-      grade: newClassGrade
+      grade: newClassGrade,
+      level: newClassTier
     };
 
     addClassroom(newClass);
@@ -497,6 +499,31 @@ export const ProfileProgressView: React.FC = () => {
                 </select>
               </div>
 
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700">Tier Kemampuan Bahasa Inggris *</label>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {(['beginner', 'intermediate', 'advanced'] as ProficiencyLevel[]).map((tier) => (
+                    <button
+                      key={tier}
+                      type="button"
+                      onClick={() => setNewClassTier(tier)}
+                      className={`py-2 px-1 text-center rounded-lg border text-xs font-bold capitalize transition-all ${
+                        newClassTier === tier
+                          ? 'bg-teal-700 text-white border-teal-700 shadow-2xs'
+                          : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                      }`}
+                    >
+                      {tier}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[10px] text-slate-500">
+                  {newClassTier === 'beginner' && '🎯 Beginner: Kalimat sederhana, ice breaker & bantuan kosakata dasar.'}
+                  {newClassTier === 'intermediate' && '⚡ Intermediate: Opini terarah, would you rather & simulasi roleplay.'}
+                  {newClassTier === 'advanced' && '🔥 Advanced: Debat analitis, critical thinking & komunikasi profesional.'}
+                </p>
+              </div>
+
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-700">Catatan Kelas (Opsional)</label>
                 <textarea
@@ -550,10 +577,15 @@ export const ProfileProgressView: React.FC = () => {
                     >
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div>
-                          <span className="text-[10px] font-bold text-teal-800 bg-teal-100/70 px-2 py-0.5 rounded">
-                            {cls.grade || 'Umum'}
-                          </span>
-                          <h4 className="font-bold text-sm text-slate-900 mt-1 truncate max-w-[200px]">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-teal-100 text-teal-800">
+                              {cls.level || 'intermediate'}
+                            </span>
+                            <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                              {cls.grade || 'Umum'}
+                            </span>
+                          </div>
+                          <h4 className="font-bold text-sm text-slate-900 mt-1.5 truncate max-w-[200px]">
                             {cls.name}
                           </h4>
                         </div>

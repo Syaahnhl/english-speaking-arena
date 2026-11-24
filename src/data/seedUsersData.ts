@@ -30,7 +30,9 @@ export const INITIAL_CLASSROOMS: Classroom[] = [
     teacherId: 'teacher-1',
     studentCount: 0,
     description: 'Kelas aktif latihan speaking spontan, teleprompter reading, dan simulasi percakapan.',
-    gradeLevel: 'Umum'
+    gradeLevel: 'Umum',
+    grade: 'Kelas 10 (SMA/SMK)',
+    level: 'intermediate'
   }
 ];
 

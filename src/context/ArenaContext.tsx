@@ -91,9 +91,18 @@ export const ArenaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setDailyChallenges(storageService.getDailyChallenges());
 
     if (!updatedClassrooms.some(c => c.id === activeClassId) && updatedClassrooms.length > 0) {
-      setActiveClassId(updatedClassrooms[0].id);
+      const firstClass = updatedClassrooms[0];
+      setActiveClassId(firstClass.id);
+      if (firstClass.level) {
+        setLevelState(firstClass.level);
+      }
     } else if (updatedClassrooms.length === 0) {
       setActiveClassId('');
+    } else {
+      const activeCls = updatedClassrooms.find(c => c.id === activeClassId);
+      if (activeCls?.level) {
+        setLevelState(activeCls.level);
+      }
     }
   };
 
@@ -173,15 +182,30 @@ export const ArenaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
   };
 
+  const handleSetActiveClassId = (newClassId: string) => {
+    setActiveClassId(newClassId);
+    const targetClass = classrooms.find(c => c.id === newClassId);
+    if (targetClass?.level) {
+      const updated = storageService.updateLevel(targetClass.level);
+      setUser(updated);
+      setLevelState(targetClass.level);
+    }
+  };
+
   const addClassroom = (cls: Classroom) => {
     storageService.addClassroom(cls);
     refreshState();
     setActiveClassId(cls.id);
+    if (cls.level) {
+      const updated = storageService.updateLevel(cls.level);
+      setUser(updated);
+      setLevelState(cls.level);
+    }
     soundService.playSuccess();
     addToast({
       type: 'success',
       title: 'Kelas Berhasil Dibuat',
-      message: `Kelas "${cls.name}" siap digunakan.`
+      message: `Kelas "${cls.name}" (Tier: ${cls.level?.toUpperCase() || 'INTERMEDIATE'}) siap digunakan.`
     });
   };
 
@@ -253,6 +277,17 @@ export const ArenaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const updated = storageService.updateLevel(newLevel);
     setUser(updated);
     setLevelState(newLevel);
+
+    // Sync level to active classroom if present
+    if (activeClassId) {
+      const cls = classrooms.find(c => c.id === activeClassId);
+      if (cls && cls.level !== newLevel) {
+        cls.level = newLevel;
+        storageService.updateClassroom(cls);
+        setClassrooms(classrooms.map(c => c.id === cls.id ? { ...c, level: newLevel } : c));
+      }
+    }
+
     soundService.playClick();
     addToast({
       type: 'info',
@@ -350,7 +385,7 @@ export const ArenaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         role,
         level,
         activeClassId,
-        setActiveClassId,
+        setActiveClassId: handleSetActiveClassId,
         cart,
         cartDurationMinutes,
         dailyChallenges,

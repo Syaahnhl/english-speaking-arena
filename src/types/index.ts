@@ -266,4 +266,5 @@ export interface Classroom {
   description: string;
   gradeLevel?: string;
   grade?: string;
+  level?: ProficiencyLevel;
 }

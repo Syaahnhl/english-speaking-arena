@@ -90,9 +90,16 @@ export const Sidebar: React.FC = () => {
       {/* Current Active Class Badge at Top of Sidebar */}
       <div className="mb-3 p-3 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200 transition-colors">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-teal-800 bg-teal-100/80 px-2 py-0.5 rounded">
-            Kelas Aktif
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-teal-800 bg-teal-100/80 px-2 py-0.5 rounded">
+              Kelas Aktif
+            </span>
+            {currentClass?.level && (
+              <span className="text-[10px] font-extrabold uppercase text-white bg-teal-700 px-1.5 py-0.5 rounded">
+                {currentClass.level}
+              </span>
+            )}
+          </div>
           <span className="text-xs font-semibold text-slate-500">
             {currentClass ? `${currentClass.studentCount} Murid` : '0 Murid'}
           </span>

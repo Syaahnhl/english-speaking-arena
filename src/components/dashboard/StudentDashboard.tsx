@@ -26,7 +26,8 @@ export const StudentDashboard: React.FC = () => {
     classrooms, 
     activeClassId, 
     setActiveClassId, 
-    setActiveTab
+    setActiveTab,
+    level
   } = useArena();
   
   const currentClass = classrooms.find(c => c.id === activeClassId) || classrooms[0];
@@ -69,6 +70,9 @@ export const StudentDashboard: React.FC = () => {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-950 text-teal-300 text-xs font-semibold tracking-wide border border-teal-800">
             <GraduationCap className="w-3.5 h-3.5 text-teal-400" />
             <span>Fasilitasi Kelas • {currentClass ? currentClass.name : 'Belum Ada Kelas'}</span>
+            <span className="ml-1 px-2 py-0.5 rounded bg-teal-600 text-white font-extrabold uppercase text-[10px]">
+              Tier {level.toUpperCase()}
+            </span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
@@ -119,7 +123,12 @@ export const StudentDashboard: React.FC = () => {
         <div className="relative z-10 w-full lg:w-72 bg-slate-800/80 rounded-2xl border border-slate-700 p-5 space-y-4">
           <div className="flex items-center justify-between border-b border-slate-700 pb-3">
             <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Kelas Aktif</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Kelas Aktif</span>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-teal-400 text-slate-900">
+                  {currentClass?.level?.toUpperCase() || level.toUpperCase()}
+                </span>
+              </div>
               <h3 className="text-sm font-bold text-white truncate max-w-[160px]">
                 {currentClass ? currentClass.name : 'Belum Ada'}
               </h3>
@@ -269,18 +278,23 @@ export const StudentDashboard: React.FC = () => {
                 }`}
               >
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                    isSelected ? 'bg-teal-700 text-white' : 'bg-slate-200 text-slate-700'
-                  }`}>
-                    {isSelected ? 'Kelas Aktif' : 'Klik Masuk'}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                      isSelected ? 'bg-teal-700 text-white' : 'bg-slate-200 text-slate-700'
+                    }`}>
+                      {isSelected ? 'Kelas Aktif' : 'Klik Masuk'}
+                    </span>
+                    <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-teal-100 text-teal-800">
+                      {cls.level || 'intermediate'}
+                    </span>
+                  </div>
                   <span className="text-xs font-semibold text-slate-500">
                     {cls.studentCount} Murid
                   </span>
                 </div>
                 <h4 className="font-bold text-sm text-slate-900 truncate">{cls.name}</h4>
                 <p className="text-[11px] text-slate-500 mt-1">
-                  Tingkat: {cls.grade || 'Umum'} • Guru: {activeTeacher?.name}
+                  Jenjang: {cls.grade || 'Umum'} • Guru: {activeTeacher?.name}
                 </p>
               </div>
             );

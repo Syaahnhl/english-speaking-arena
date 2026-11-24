@@ -164,7 +164,9 @@ class StorageService {
       teacherId: id,
       studentCount: 0,
       description: 'Kelas aktif latihan speaking spontan dan teleprompter.',
-      gradeLevel: 'Umum'
+      gradeLevel: 'Umum',
+      grade: 'Kelas 10',
+      level: 'intermediate'
     };
     this.addClassroom(initialClass);
 
