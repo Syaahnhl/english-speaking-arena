@@ -1,6 +1,9 @@
 # English Speaking Arena 🎙️
 ### Gamified English Fluency & Speed Reading Platform
 
+🌐 **Live Website:** [https://syaahnhl.github.io/english-speaking-arena/](https://syaahnhl.github.io/english-speaking-arena/)  
+📁 **GitHub Repository:** [https://github.com/Syaahnhl/english-speaking-arena](https://github.com/Syaahnhl/english-speaking-arena)
+
 **English Speaking Arena** is an interactive, gamified English learning platform engineered to help students overcome speaking anxiety, formulate articulate ideas on demand, and rapidly train conversational and reading velocity across three structured proficiency tiers: **Beginner**, **Intermediate**, and **Advanced**.
 
 ---
