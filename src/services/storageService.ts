@@ -1,5 +1,5 @@
-import { UserProfile, SpeakingCard, ReadingMaterial, StudentSubmission, Classroom, DailyChallenge, SpeakingCartItem, ProficiencyLevel } from '../types';
-import { DEMO_STUDENT, DEMO_TEACHER, SEED_CLASSROOMS, SEED_SUBMISSIONS } from '../data/seedUsersData';
+import { UserProfile, SpeakingCard, ReadingMaterial, StudentSubmission, Classroom, Student, DailyChallenge, SpeakingCartItem, ProficiencyLevel, LeaderboardUser } from '../types';
+import { DEFAULT_TEACHER, INITIAL_CLASSROOMS, INITIAL_SUBMISSIONS, INITIAL_STUDENTS, SAMPLE_STUDENTS_PRESET } from '../data/seedUsersData';
 import { SPEAKING_CARDS } from '../data/speakingCardsData';
 import { READING_MATERIALS } from '../data/readingMaterialsData';
 import { ACHIEVEMENTS_LIST } from '../data/achievementsData';
@@ -13,6 +13,7 @@ const KEYS = {
   SPEAKING_CART: 'esa_speaking_cart',
   SUBMISSIONS: 'esa_submissions',
   CLASSROOMS: 'esa_classrooms',
+  STUDENTS: 'esa_students',
   DAILY_CHALLENGES: 'esa_daily_challenges',
   COMPLETED_CHALLENGES: 'esa_completed_challenges',
 };
@@ -26,7 +27,7 @@ class StorageService {
     if (typeof window === 'undefined') return;
 
     if (!localStorage.getItem(KEYS.CURRENT_USER)) {
-      localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(DEMO_TEACHER));
+      localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(DEFAULT_TEACHER));
     }
     if (!localStorage.getItem(KEYS.CURRENT_ROLE)) {
       localStorage.setItem(KEYS.CURRENT_ROLE, 'teacher');
@@ -38,10 +39,13 @@ class StorageService {
       localStorage.setItem(KEYS.READING_MATERIALS, JSON.stringify(READING_MATERIALS));
     }
     if (!localStorage.getItem(KEYS.SUBMISSIONS)) {
-      localStorage.setItem(KEYS.SUBMISSIONS, JSON.stringify(SEED_SUBMISSIONS));
+      localStorage.setItem(KEYS.SUBMISSIONS, JSON.stringify(INITIAL_SUBMISSIONS));
     }
     if (!localStorage.getItem(KEYS.CLASSROOMS)) {
-      localStorage.setItem(KEYS.CLASSROOMS, JSON.stringify(SEED_CLASSROOMS));
+      localStorage.setItem(KEYS.CLASSROOMS, JSON.stringify(INITIAL_CLASSROOMS));
+    }
+    if (!localStorage.getItem(KEYS.STUDENTS)) {
+      localStorage.setItem(KEYS.STUDENTS, JSON.stringify(INITIAL_STUDENTS));
     }
     if (!localStorage.getItem(KEYS.DAILY_CHALLENGES)) {
       this.initDailyChallenges();
@@ -82,25 +86,31 @@ class StorageService {
     localStorage.setItem(KEYS.DAILY_CHALLENGES, JSON.stringify(initialChallenges));
   }
 
+  // --- USER / TEACHER PROFILE ---
   public getCurrentUser(): UserProfile {
-    const role = this.getCurrentRole();
-    if (role === 'teacher') {
-      return DEMO_TEACHER;
-    }
     try {
       const stored = localStorage.getItem(KEYS.CURRENT_USER);
-      if (stored) return JSON.parse(stored);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return { ...DEFAULT_TEACHER, ...parsed };
+      }
     } catch {
       // fallback
     }
-    return DEMO_STUDENT;
+    return DEFAULT_TEACHER;
   }
 
   public saveCurrentUser(user: UserProfile) {
-    // Ensure rank title is in sync with XP
     const rankDef = getRankByXp(user.xp);
     user.rank = rankDef.name;
     localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(user));
+  }
+
+  public updateTeacherProfile(updates: Partial<UserProfile>): UserProfile {
+    const current = this.getCurrentUser();
+    const updated = { ...current, ...updates };
+    this.saveCurrentUser(updated);
+    return updated;
   }
 
   public getCurrentRole(): 'student' | 'teacher' {
@@ -118,18 +128,13 @@ class StorageService {
     return user;
   }
 
-  // XP Awarding function with achievement validation
   public addXp(amount: number, reason: string): { newXp: number; leveledUp: boolean; unlockedAchievements: string[] } {
     const user = this.getCurrentUser();
-    const oldRank = getRankByXp(user.xp).name;
-    
+    const oldRank = getRankByXp(user.xp);
     user.xp += amount;
-    user.completedActivities += 1;
+    const newRank = getRankByXp(user.xp);
+    const leveledUp = newRank.minXp > oldRank.minXp;
 
-    const newRank = getRankByXp(user.xp).name;
-    const leveledUp = oldRank !== newRank;
-
-    // Check achievements
     const newlyUnlocked: string[] = [];
     ACHIEVEMENTS_LIST.forEach(ach => {
       if (!user.achievements.includes(ach.id)) {
@@ -142,7 +147,7 @@ class StorageService {
         if (satisfied) {
           user.achievements.push(ach.id);
           newlyUnlocked.push(ach.title);
-          user.xp += ach.xpReward; // bonus for unlocking
+          user.xp += ach.xpReward;
         }
       }
     });
@@ -155,6 +160,189 @@ class StorageService {
     };
   }
 
+  // --- CLASSROOMS ---
+  public getClassrooms(): Classroom[] {
+    try {
+      const data = localStorage.getItem(KEYS.CLASSROOMS);
+      if (data) return JSON.parse(data);
+    } catch {
+      // fallback
+    }
+    return INITIAL_CLASSROOMS;
+  }
+
+  public saveClassrooms(classrooms: Classroom[]) {
+    localStorage.setItem(KEYS.CLASSROOMS, JSON.stringify(classrooms));
+  }
+
+  public addClassroom(classroom: Classroom) {
+    const list = this.getClassrooms();
+    list.push(classroom);
+    this.saveClassrooms(list);
+  }
+
+  public updateClassroom(classroom: Classroom) {
+    const list = this.getClassrooms().map(c => c.id === classroom.id ? classroom : c);
+    this.saveClassrooms(list);
+  }
+
+  public deleteClassroom(classId: string) {
+    const list = this.getClassrooms().filter(c => c.id !== classId);
+    this.saveClassrooms(list);
+    // Delete students in this class
+    const students = this.getStudents().filter(s => s.classId !== classId);
+    this.saveStudents(students);
+  }
+
+  // --- STUDENTS MANAGEMENT ---
+  public getStudents(): Student[] {
+    try {
+      const data = localStorage.getItem(KEYS.STUDENTS);
+      if (data) return JSON.parse(data);
+    } catch {
+      // fallback
+    }
+    return [];
+  }
+
+  public saveStudents(students: Student[]) {
+    localStorage.setItem(KEYS.STUDENTS, JSON.stringify(students));
+    // sync student counts across classrooms
+    const classrooms = this.getClassrooms();
+    let changed = false;
+    classrooms.forEach(cls => {
+      const count = students.filter(s => s.classId === cls.id).length;
+      if (cls.studentCount !== count) {
+        cls.studentCount = count;
+        changed = true;
+      }
+    });
+    if (changed) {
+      this.saveClassrooms(classrooms);
+    }
+  }
+
+  public getStudentsByClass(classId?: string): Student[] {
+    const all = this.getStudents();
+    if (!classId) return all;
+    return all.filter(s => s.classId === classId);
+  }
+
+  public addStudent(student: Student) {
+    const list = this.getStudents();
+    list.push(student);
+    this.saveStudents(list);
+  }
+
+  public addStudentsBatch(newStudents: Student[]) {
+    const list = this.getStudents();
+    list.push(...newStudents);
+    this.saveStudents(list);
+  }
+
+  public updateStudent(student: Student) {
+    const list = this.getStudents().map(s => s.id === student.id ? student : s);
+    this.saveStudents(list);
+  }
+
+  public deleteStudent(id: string) {
+    const list = this.getStudents().filter(s => s.id !== id);
+    this.saveStudents(list);
+  }
+
+  public clearStudentsByClass(classId: string) {
+    const list = this.getStudents().filter(s => s.classId !== classId);
+    this.saveStudents(list);
+  }
+
+  public awardStudentXp(studentIdentifier: string, xpAmount: number) {
+    const list = this.getStudents();
+    const student = list.find(s => s.id === studentIdentifier || s.name.toLowerCase() === studentIdentifier.toLowerCase());
+    if (student) {
+      student.xp = (student.xp || 0) + xpAmount;
+      student.completedChallenges = (student.completedChallenges || 0) + 1;
+      const rank = getRankByXp(student.xp);
+      student.rankTitle = rank.name;
+      this.saveStudents(list);
+    }
+  }
+
+  public loadSampleStudents(classId: string) {
+    const currentStudents = this.getStudents();
+    const sampleStudents: Student[] = SAMPLE_STUDENTS_PRESET.map((st, i) => ({
+      ...st,
+      id: `sample-${Date.now()}-${i}`,
+      classId,
+      avatar: `https://images.unsplash.com/photo-${1534528741775 + i * 100}?auto=format&fit=crop&w=256&q=80`
+    }));
+    this.saveStudents([...currentStudents, ...sampleStudents]);
+    return sampleStudents;
+  }
+
+  // --- DYNAMIC LEADERBOARD FROM ACTUAL CLASS STUDENTS ---
+  public getClassLeaderboard(classId?: string): LeaderboardUser[] {
+    const students = this.getStudentsByClass(classId);
+    if (students.length === 0) return [];
+
+    const sorted = [...students].sort((a, b) => b.xp - a.xp);
+    return sorted.map((st, index) => {
+      let categoryPill: LeaderboardUser['categoryPill'] = undefined;
+      if (index === 0) categoryPill = 'Top Speaker';
+      else if (st.completedChallenges > 5) categoryPill = 'Debate Pro';
+      else if (st.level === 'beginner') categoryPill = 'Beginner Rising Star';
+      else if (st.streak >= 3) categoryPill = 'Consistency Star';
+
+      return {
+        id: st.id,
+        name: st.name,
+        username: st.username || st.name.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+        avatar: st.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(st.name)}`,
+        level: st.level,
+        xp: st.xp || 0,
+        completedChallenges: st.completedChallenges || 0,
+        streak: st.streak || 1,
+        rankTitle: st.rankTitle || 'Rookie',
+        categoryPill
+      };
+    });
+  }
+
+  // --- SUBMISSIONS ---
+  public getSubmissions(): StudentSubmission[] {
+    try {
+      const data = localStorage.getItem(KEYS.SUBMISSIONS);
+      if (data) return JSON.parse(data);
+    } catch {
+      // fallback
+    }
+    return INITIAL_SUBMISSIONS;
+  }
+
+  public addSubmission(sub: StudentSubmission) {
+    const list = this.getSubmissions();
+    list.unshift(sub);
+    localStorage.setItem(KEYS.SUBMISSIONS, JSON.stringify(list));
+
+    // Also award student XP if they exist in class
+    if (sub.score) {
+      const xp = Math.round(sub.score * 0.4);
+      this.awardStudentXp(sub.studentName, xp);
+    }
+  }
+
+  public gradeSubmission(id: string, score: number, feedback: string) {
+    const list = this.getSubmissions();
+    const item = list.find(s => s.id === id);
+    if (item) {
+      item.status = 'graded';
+      item.score = score;
+      item.feedback = feedback;
+      localStorage.setItem(KEYS.SUBMISSIONS, JSON.stringify(list));
+      this.awardStudentXp(item.studentName, Math.round(score * 0.4));
+    }
+  }
+
+  // --- DAILY CHALLENGES ---
   public getDailyChallenges(): DailyChallenge[] {
     try {
       const data = localStorage.getItem(KEYS.DAILY_CHALLENGES);
@@ -177,7 +365,7 @@ class StorageService {
     return 0;
   }
 
-  // Speaking Cards
+  // --- SPEAKING CARDS ---
   public getSpeakingCards(): SpeakingCard[] {
     try {
       const data = localStorage.getItem(KEYS.SPEAKING_CARDS);
@@ -194,7 +382,7 @@ class StorageService {
     localStorage.setItem(KEYS.SPEAKING_CARDS, JSON.stringify(cards));
   }
 
-  // Running Reading Materials
+  // --- RUNNING READING ---
   public getReadingMaterials(): ReadingMaterial[] {
     try {
       const data = localStorage.getItem(KEYS.READING_MATERIALS);
@@ -211,7 +399,7 @@ class StorageService {
     localStorage.setItem(KEYS.READING_MATERIALS, JSON.stringify(list));
   }
 
-  // Speaking Cart
+  // --- SPEAKING CART ---
   public getCartItems(): SpeakingCartItem[] {
     try {
       const data = localStorage.getItem(KEYS.SPEAKING_CART);
@@ -243,54 +431,12 @@ class StorageService {
     this.saveCartItems([]);
   }
 
-  // Submissions
-  public getSubmissions(): StudentSubmission[] {
-    try {
-      const data = localStorage.getItem(KEYS.SUBMISSIONS);
-      if (data) return JSON.parse(data);
-    } catch {
-      // fallback
-    }
-    return SEED_SUBMISSIONS;
-  }
-
-  public addSubmission(sub: StudentSubmission) {
-    const list = this.getSubmissions();
-    list.unshift(sub);
-    localStorage.setItem(KEYS.SUBMISSIONS, JSON.stringify(list));
-  }
-
-  public gradeSubmission(id: string, score: number, feedback: string) {
-    const list = this.getSubmissions();
-    const item = list.find(s => s.id === id);
-    if (item) {
-      item.status = 'graded';
-      item.score = score;
-      item.feedback = feedback;
-      localStorage.setItem(KEYS.SUBMISSIONS, JSON.stringify(list));
-    }
-  }
-
-  // Classrooms
-  public getClassrooms(): Classroom[] {
-    try {
-      const data = localStorage.getItem(KEYS.CLASSROOMS);
-      if (data) return JSON.parse(data);
-    } catch {
-      // fallback
-    }
-    return SEED_CLASSROOMS;
-  }
-
-  public addClassroom(classroom: Classroom) {
-    const list = this.getClassrooms();
-    list.push(classroom);
-    localStorage.setItem(KEYS.CLASSROOMS, JSON.stringify(list));
-  }
-
-  // Reset to initial demo state
+  // --- RESET ALL DATA ---
   public resetToFactory() {
-    localStorage.clear();
+    localStorage.removeItem(KEYS.CURRENT_USER);
+    localStorage.removeItem(KEYS.SUBMISSIONS);
+    localStorage.removeItem(KEYS.CLASSROOMS);
+    localStorage.removeItem(KEYS.STUDENTS);
     this.initDefaults();
   }
 }

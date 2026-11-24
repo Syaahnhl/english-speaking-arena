@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { UserProfile, ProficiencyLevel, UserRole, SpeakingCartItem, DailyChallenge } from '../types';
+import { UserProfile, ProficiencyLevel, UserRole, SpeakingCartItem, DailyChallenge, Classroom, Student } from '../types';
 import { storageService } from '../services/storageService';
 import { soundService } from '../services/soundService';
 import { celebrateReward } from '../services/gamificationService';
@@ -39,15 +39,29 @@ interface ArenaContextType {
   removeToast: (id: string) => void;
   resetAllData: () => void;
   refreshState: () => void;
+  // Classrooms & Students & Teacher Profile
+  classrooms: Classroom[];
+  students: Student[];
+  activeClassStudents: Student[];
+  updateTeacherProfile: (updates: Partial<UserProfile>) => void;
+  addClassroom: (cls: Classroom) => void;
+  deleteClassroom: (classId: string) => void;
+  addStudent: (st: Student) => void;
+  addStudentsBatch: (students: Student[]) => void;
+  deleteStudent: (studentId: string) => void;
+  loadSampleStudents: () => void;
 }
 
 const ArenaContext = createContext<ArenaContextType | undefined>(undefined);
 
 export const ArenaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const initialClassrooms = storageService.getClassrooms();
   const [user, setUser] = useState<UserProfile>(storageService.getCurrentUser());
   const [role, setRoleState] = useState<UserRole>(storageService.getCurrentRole());
   const [level, setLevelState] = useState<ProficiencyLevel>(user.level);
-  const [activeClassId, setActiveClassId] = useState<string>('cls-10a');
+  const [classrooms, setClassrooms] = useState<Classroom[]>(initialClassrooms);
+  const [activeClassId, setActiveClassId] = useState<string>(initialClassrooms[0]?.id || 'cls-main');
+  const [students, setStudents] = useState<Student[]>(storageService.getStudents());
   const [isProjectorMode, setIsProjectorMode] = useState<boolean>(false);
   const [cart, setCart] = useState<SpeakingCartItem[]>(storageService.getCartItems());
   const [dailyChallenges, setDailyChallenges] = useState<DailyChallenge[]>(storageService.getDailyChallenges());
@@ -57,11 +71,20 @@ export const ArenaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const refreshState = () => {
     const updatedUser = storageService.getCurrentUser();
+    const updatedClassrooms = storageService.getClassrooms();
+    const updatedStudents = storageService.getStudents();
     setUser(updatedUser);
     setLevelState(updatedUser.level);
     setRoleState(storageService.getCurrentRole());
+    setClassrooms(updatedClassrooms);
+    setStudents(updatedStudents);
     setCart(storageService.getCartItems());
     setDailyChallenges(storageService.getDailyChallenges());
+
+    // ensure activeClassId is valid
+    if (!updatedClassrooms.some(c => c.id === activeClassId) && updatedClassrooms.length > 0) {
+      setActiveClassId(updatedClassrooms[0].id);
+    }
   };
 
   useEffect(() => {
@@ -80,6 +103,84 @@ export const ArenaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setToasts(prev => prev.filter(t => t.id !== id));
   };
 
+  const updateTeacherProfile = (updates: Partial<UserProfile>) => {
+    const updated = storageService.updateTeacherProfile(updates);
+    setUser(updated);
+    soundService.playSuccess();
+    addToast({
+      type: 'success',
+      title: 'Profil Pengajar Disimpan',
+      message: `Data pengajar untuk ${updated.name} berhasil diperbarui.`
+    });
+  };
+
+  const addClassroom = (cls: Classroom) => {
+    storageService.addClassroom(cls);
+    refreshState();
+    setActiveClassId(cls.id);
+    soundService.playSuccess();
+    addToast({
+      type: 'success',
+      title: 'Kelas Berhasil Dibuat',
+      message: `Kelas "${cls.name}" aktif dengan kode undangan: ${cls.code}`
+    });
+  };
+
+  const deleteClassroom = (classId: string) => {
+    storageService.deleteClassroom(classId);
+    refreshState();
+    soundService.playClick();
+    addToast({
+      type: 'info',
+      title: 'Kelas Dihapus',
+      message: 'Kelompok kelas beserta data siswa di dalamnya telah dihapus.'
+    });
+  };
+
+  const addStudent = (st: Student) => {
+    storageService.addStudent(st);
+    refreshState();
+    soundService.playSuccess();
+    addToast({
+      type: 'success',
+      title: 'Siswa Ditambahkan',
+      message: `"${st.name}" berhasil terdaftar di kelas.`
+    });
+  };
+
+  const addStudentsBatch = (newStudents: Student[]) => {
+    storageService.addStudentsBatch(newStudents);
+    refreshState();
+    soundService.playSuccess();
+    addToast({
+      type: 'success',
+      title: 'Daftar Siswa Berhasil Disimpan',
+      message: `${newStudents.length} siswa berhasil dimasukkan ke kelas.`
+    });
+  };
+
+  const deleteStudent = (studentId: string) => {
+    storageService.deleteStudent(studentId);
+    refreshState();
+    soundService.playClick();
+    addToast({
+      type: 'info',
+      title: 'Siswa Dihapus',
+      message: 'Data siswa telah dihapus dari kelas.'
+    });
+  };
+
+  const loadSampleStudents = () => {
+    storageService.loadSampleStudents(activeClassId);
+    refreshState();
+    soundService.playSuccess();
+    addToast({
+      type: 'success',
+      title: 'Contoh Siswa Dimuat',
+      message: '4 siswa contoh berhasil dimasukkan untuk pengujian kelas.'
+    });
+  };
+
   const setLevel = (newLevel: ProficiencyLevel) => {
     const updated = storageService.updateLevel(newLevel);
     setUser(updated);
@@ -87,8 +188,8 @@ export const ArenaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     soundService.playClick();
     addToast({
       type: 'info',
-      title: 'Proficiency Level Updated',
-      message: `Switched arena curriculum focus to ${newLevel.toUpperCase()} mode.`
+      title: 'Tingkat Kemampuan Berubah',
+      message: `Kurikulum dialihkan ke mode ${newLevel.toUpperCase()}.`
     });
   };
 
@@ -99,11 +200,6 @@ export const ArenaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setUser(updatedUser);
     setLevelState(updatedUser.level);
     soundService.playClick();
-    addToast({
-      type: 'info',
-      title: `Switched to ${newRole === 'teacher' ? 'Teacher / Admin' : 'Student'} Mode`,
-      message: newRole === 'teacher' ? 'Accessing classroom grading, materials, and challenge creators.' : 'Entering student speaking and learning arena.'
-    });
   };
 
   const toggleSound = () => {
@@ -119,8 +215,8 @@ export const ArenaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     soundService.playClick();
     addToast({
       type: 'success',
-      title: 'Added to Speaking Cart',
-      message: `"${item.title}" added to your custom practice menu.`
+      title: 'Ditambahkan ke Speaking Cart',
+      message: `"${item.title}" siap di rangkaian sesi kelas.`
     });
   };
 
@@ -143,22 +239,10 @@ export const ArenaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     addToast({
       type: result.leveledUp ? 'achievement' : 'xp',
-      title: result.leveledUp ? '🎉 Rank Level Up!' : 'XP Earned!',
+      title: result.leveledUp ? '🎉 Pangkat Naik!' : 'XP Diperoleh!',
       message: `${reason} (+${amount} XP)`,
       xpAmount: amount
     });
-
-    if (result.unlockedAchievements.length > 0) {
-      result.unlockedAchievements.forEach(achName => {
-        setTimeout(() => {
-          addToast({
-            type: 'achievement',
-            title: '🏆 Achievement Unlocked!',
-            message: `You earned the "${achName}" badge!`
-          });
-        }, 800);
-      });
-    }
   };
 
   const completeDailyChallenge = (id: string) => {
@@ -168,8 +252,8 @@ export const ArenaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       celebrateReward(false);
       addToast({
         type: 'xp',
-        title: 'Daily Challenge Completed!',
-        message: `Awesome consistency! +${xp} XP`,
+        title: 'Tantangan Selesai!',
+        message: `+${xp} XP`,
         xpAmount: xp
       });
     }
@@ -181,8 +265,8 @@ export const ArenaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     soundService.playSuccess();
     addToast({
       type: 'info',
-      title: 'Reset Completed',
-      message: 'Demo dataset restored to initial state.'
+      title: 'Reset Selesai',
+      message: 'Data dummy telah dibersihkan.'
     });
   };
 
@@ -192,6 +276,7 @@ export const ArenaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const cartDurationMinutes = Math.round(cart.reduce((sum, item) => sum + item.duration, 0) / 60);
+  const activeClassStudents = students.filter(s => s.classId === activeClassId);
 
   return (
     <ArenaContext.Provider
@@ -221,7 +306,18 @@ export const ArenaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         addToast,
         removeToast,
         resetAllData,
-        refreshState
+        refreshState,
+        // Classrooms & Students & Teacher Profile
+        classrooms,
+        students,
+        activeClassStudents,
+        updateTeacherProfile,
+        addClassroom,
+        deleteClassroom,
+        addStudent,
+        addStudentsBatch,
+        deleteStudent,
+        loadSampleStudents
       }}
     >
       {children}

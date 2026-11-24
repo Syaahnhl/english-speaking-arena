@@ -5,7 +5,6 @@ import { RoleplayScenario, SecretMission } from '../../types';
 import { soundService } from '../../services/soundService';
 import { speechService } from '../../services/speechService';
 import { storageService } from '../../services/storageService';
-import { WEEKLY_LEADERBOARD } from '../../data/seedUsersData';
 import { 
   Theater, 
   Sparkles, 
@@ -33,12 +32,12 @@ import {
 } from 'lucide-react';
 
 export const RoleplayView: React.FC = () => {
-  const { addToast } = useArena();
-  const students = WEEKLY_LEADERBOARD;
+  const { addToast, activeClassStudents } = useArena();
+  const students = activeClassStudents;
   
   const [selectedScenario, setSelectedScenario] = useState<RoleplayScenario | null>(null);
-  const [studentA, setStudentA] = useState<string>(students[0].name);
-  const [studentB, setStudentB] = useState<string>(students[1].name);
+  const [studentA, setStudentA] = useState<string>(students[0]?.name || 'Siswa Peran A');
+  const [studentB, setStudentB] = useState<string>(students[1]?.name || 'Siswa Peran B');
 
   // View modes: 'projector' (hides secrets), 'teacher-console' (shows both), 'brief-a', 'brief-b'
   const [displayMode, setDisplayMode] = useState<'projector' | 'teacher-console' | 'brief-a' | 'brief-b'>('teacher-console');
@@ -221,15 +220,25 @@ export const RoleplayView: React.FC = () => {
               <span className="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-700 font-black flex items-center justify-center">A</span>
               <div>
                 <span className="text-[10px] uppercase font-bold text-slate-400 block">Siswa Peran A ({missionA.roleName})</span>
-                <select
-                  value={studentA}
-                  onChange={(e) => setStudentA(e.target.value)}
-                  className="bg-transparent font-bold text-slate-900 text-xs focus:outline-none cursor-pointer"
-                >
-                  {students.map(s => (
-                    <option key={s.id} value={s.name}>{s.name}</option>
-                  ))}
-                </select>
+                {students.length > 0 ? (
+                  <select
+                    value={studentA}
+                    onChange={(e) => setStudentA(e.target.value)}
+                    className="bg-transparent font-bold text-slate-900 text-xs focus:outline-none cursor-pointer"
+                  >
+                    {students.map(s => (
+                      <option key={s.id} value={s.name}>{s.name}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={studentA}
+                    onChange={(e) => setStudentA(e.target.value)}
+                    placeholder="Nama Siswa A..."
+                    className="bg-transparent font-bold text-slate-900 text-xs focus:outline-none border-b border-indigo-200"
+                  />
+                )}
               </div>
             </div>
 
@@ -240,26 +249,38 @@ export const RoleplayView: React.FC = () => {
               <span className="w-6 h-6 rounded-lg bg-purple-100 text-purple-700 font-black flex items-center justify-center">B</span>
               <div>
                 <span className="text-[10px] uppercase font-bold text-slate-400 block">Siswa Peran B ({missionB.roleName})</span>
-                <select
-                  value={studentB}
-                  onChange={(e) => setStudentB(e.target.value)}
-                  className="bg-transparent font-bold text-slate-900 text-xs focus:outline-none cursor-pointer"
-                >
-                  {students.map(s => (
-                    <option key={s.id} value={s.name}>{s.name}</option>
-                  ))}
-                </select>
+                {students.length > 0 ? (
+                  <select
+                    value={studentB}
+                    onChange={(e) => setStudentB(e.target.value)}
+                    className="bg-transparent font-bold text-slate-900 text-xs focus:outline-none cursor-pointer"
+                  >
+                    {students.map(s => (
+                      <option key={s.id} value={s.name}>{s.name}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={studentB}
+                    onChange={(e) => setStudentB(e.target.value)}
+                    placeholder="Nama Siswa B..."
+                    className="bg-transparent font-bold text-slate-900 text-xs focus:outline-none border-b border-purple-200"
+                  />
+                )}
               </div>
             </div>
           </div>
 
-          <button
-            onClick={handlePickRandomPair}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all"
-          >
-            <Dices className="w-3.5 h-3.5 text-indigo-600" />
-            <span>Undi Pasangan Acak</span>
-          </button>
+          {students.length > 1 && (
+            <button
+              onClick={handlePickRandomPair}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all"
+            >
+              <Dices className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Undi Pasangan Acak</span>
+            </button>
+          )}
         </div>
 
         {/* Main Scenario Workspace */}

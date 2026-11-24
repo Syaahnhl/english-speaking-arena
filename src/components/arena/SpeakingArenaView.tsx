@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useArena } from '../../context/ArenaContext';
-import { WEEKLY_LEADERBOARD, MONTHLY_LEADERBOARD, ALL_TIME_LEADERBOARD, HEAD_TO_HEAD_BATTLES } from '../../data/seedUsersData';
+import { HEAD_TO_HEAD_BATTLES } from '../../data/seedUsersData';
 import { LeaderboardUser, HeadToHeadBattle } from '../../types';
 import { soundService } from '../../services/soundService';
 import { storageService } from '../../services/storageService';
@@ -28,14 +28,14 @@ import {
 } from 'lucide-react';
 
 export const SpeakingArenaView: React.FC = () => {
-  const { addToast } = useArena();
+  const { addToast, activeClassStudents, activeClassId, setActiveTab } = useArena();
   const [activeBoard, setActiveBoard] = useState<'weekly' | 'monthly' | 'all-time'>('weekly');
   const [selectedBattle, setSelectedBattle] = useState<HeadToHeadBattle | null>(null);
   const [showHowToPlay, setShowHowToPlay] = useState<boolean>(false);
 
-  const students = WEEKLY_LEADERBOARD;
-  const [player1, setPlayer1] = useState<string>(students[0].name);
-  const [player2, setPlayer2] = useState<string>(students[1].name);
+  const students = activeClassStudents;
+  const [player1, setPlayer1] = useState<string>(students[0]?.name || 'Siswa 1');
+  const [player2, setPlayer2] = useState<string>(students[1]?.name || 'Siswa 2');
 
   // Battle session states
   const [activeTurn, setActiveTurn] = useState<1 | 2>(1);
@@ -52,13 +52,7 @@ export const SpeakingArenaView: React.FC = () => {
   const totalP1 = scoreP1.completion + scoreP1.vocab + scoreP1.fluency + scoreP1.fulfillment;
   const totalP2 = scoreP2.completion + scoreP2.vocab + scoreP2.fluency + scoreP2.fulfillment;
 
-  const leaderboardData: Record<string, LeaderboardUser[]> = {
-    weekly: WEEKLY_LEADERBOARD,
-    monthly: MONTHLY_LEADERBOARD,
-    'all-time': ALL_TIME_LEADERBOARD
-  };
-
-  const currentList = leaderboardData[activeBoard];
+  const currentList = storageService.getClassLeaderboard(activeClassId);
 
   // Head to head timer
   React.useEffect(() => {
@@ -292,13 +286,23 @@ export const SpeakingArenaView: React.FC = () => {
                   <span className="w-5 h-5 rounded-md bg-indigo-600 text-white font-bold flex items-center justify-center text-[10px]">1</span>
                   <div>
                     <span className="text-[10px] text-slate-400 uppercase font-bold block">Siswa 1</span>
-                    <select
-                      value={player1}
-                      onChange={(e) => setPlayer1(e.target.value)}
-                      className="bg-transparent font-bold text-slate-900 focus:outline-none cursor-pointer"
-                    >
-                      {students.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
-                    </select>
+                    {students.length > 0 ? (
+                      <select
+                        value={player1}
+                        onChange={(e) => setPlayer1(e.target.value)}
+                        className="bg-transparent font-bold text-slate-900 focus:outline-none cursor-pointer"
+                      >
+                        {students.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        value={player1}
+                        onChange={(e) => setPlayer1(e.target.value)}
+                        placeholder="Nama Siswa 1..."
+                        className="bg-transparent font-bold text-slate-900 focus:outline-none border-b border-indigo-200"
+                      />
+                    )}
                   </div>
                 </div>
 
@@ -308,24 +312,36 @@ export const SpeakingArenaView: React.FC = () => {
                   <span className="w-5 h-5 rounded-md bg-purple-600 text-white font-bold flex items-center justify-center text-[10px]">2</span>
                   <div>
                     <span className="text-[10px] text-slate-400 uppercase font-bold block">Siswa 2</span>
-                    <select
-                      value={player2}
-                      onChange={(e) => setPlayer2(e.target.value)}
-                      className="bg-transparent font-bold text-slate-900 focus:outline-none cursor-pointer"
-                    >
-                      {students.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
-                    </select>
+                    {students.length > 0 ? (
+                      <select
+                        value={player2}
+                        onChange={(e) => setPlayer2(e.target.value)}
+                        className="bg-transparent font-bold text-slate-900 focus:outline-none cursor-pointer"
+                      >
+                        {students.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        value={player2}
+                        onChange={(e) => setPlayer2(e.target.value)}
+                        placeholder="Nama Siswa 2..."
+                        className="bg-transparent font-bold text-slate-900 focus:outline-none border-b border-purple-200"
+                      />
+                    )}
                   </div>
                 </div>
               </div>
 
-              <button
-                onClick={handlePickRandomPair}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-50"
-              >
-                <Dices className="w-3.5 h-3.5 text-indigo-600" />
-                <span>Undi Pasangan</span>
-              </button>
+              {students.length > 1 && (
+                <button
+                  onClick={handlePickRandomPair}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-50"
+                >
+                  <Dices className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Undi Pasangan</span>
+                </button>
+              )}
             </div>
 
             {/* Prompt Box */}
@@ -583,87 +599,104 @@ export const SpeakingArenaView: React.FC = () => {
           </div>
         </div>
 
-        {/* Leaderboard Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
-                <th className="py-3 px-4">Peringkat</th>
-                <th className="py-3 px-4">Nama Siswa</th>
-                <th className="py-3 px-4">Tingkat Kemampuan</th>
-                <th className="py-3 px-4">Jenjang Gelar</th>
-                <th className="py-3 px-4 text-center">Tantangan</th>
-                <th className="py-3 px-4 text-center">Streak</th>
-                <th className="py-3 px-4 text-right">Total XP</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {currentList.map((st, index) => {
-                const rankNum = index + 1;
-                return (
-                  <tr
-                    key={st.id}
-                    className="hover:bg-slate-50/80 transition-colors"
-                  >
-                    <td className="py-4 px-4 font-black text-sm">
-                      {rankNum === 1 && <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-amber-400 text-slate-900 shadow-sm font-black">1</span>}
-                      {rankNum === 2 && <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-slate-300 text-slate-900 shadow-sm font-black">2</span>}
-                      {rankNum === 3 && <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-amber-600 text-white shadow-sm font-black">3</span>}
-                      {rankNum > 3 && <span className="text-slate-400 pl-2">#{rankNum}</span>}
-                    </td>
+        {/* Leaderboard Table / Clean Empty State */}
+        {currentList.length === 0 ? (
+          <div className="p-12 text-center text-slate-400 space-y-3 bg-slate-50/50 rounded-2xl border border-slate-100">
+            <Trophy className="w-10 h-10 mx-auto text-slate-300" />
+            <p className="text-sm font-bold text-slate-700">Belum ada siswa terdaftar di kelas ini.</p>
+            <p className="text-xs max-w-md mx-auto text-slate-500">
+              Papan peringkat akan otomatis menampilkan nama, rank, dan akumulasi poin XP setelah Anda menambahkan nama siswa di menu Profil Guru & Kelas.
+            </p>
+            <button
+              onClick={() => setActiveTab('progress')}
+              className="mt-2 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-all"
+            >
+              <Users className="w-4 h-4" />
+              <span>Input Siswa ke Kelas Ini</span>
+            </button>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+                  <th className="py-3 px-4">Peringkat</th>
+                  <th className="py-3 px-4">Nama Siswa</th>
+                  <th className="py-3 px-4">Tingkat Kemampuan</th>
+                  <th className="py-3 px-4">Jenjang Gelar</th>
+                  <th className="py-3 px-4 text-center">Tantangan</th>
+                  <th className="py-3 px-4 text-center">Streak</th>
+                  <th className="py-3 px-4 text-right">Total XP</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {currentList.map((st, index) => {
+                  const rankNum = index + 1;
+                  return (
+                    <tr
+                      key={st.id}
+                      className="hover:bg-slate-50/80 transition-colors"
+                    >
+                      <td className="py-4 px-4 font-black text-sm">
+                        {rankNum === 1 && <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-amber-400 text-slate-900 shadow-sm font-black">1</span>}
+                        {rankNum === 2 && <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-slate-300 text-slate-900 shadow-sm font-black">2</span>}
+                        {rankNum === 3 && <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-amber-600 text-white shadow-sm font-black">3</span>}
+                        {rankNum > 3 && <span className="text-slate-400 pl-2">#{rankNum}</span>}
+                      </td>
 
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={st.avatar}
-                          alt={st.name}
-                          className="w-9 h-9 rounded-full object-cover border border-slate-200"
-                        />
-                        <div>
-                          <div className="flex items-center gap-1.5">
-                            <strong className="text-slate-900 font-bold">{st.name}</strong>
-                            {st.categoryPill && (
-                              <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-indigo-50 text-indigo-700">
-                                {st.categoryPill}
-                              </span>
-                            )}
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={st.avatar}
+                            alt={st.name}
+                            className="w-9 h-9 rounded-full object-cover border border-slate-200"
+                          />
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <strong className="text-slate-900 font-bold">{st.name}</strong>
+                              {st.categoryPill && (
+                                <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-indigo-50 text-indigo-700">
+                                  {st.categoryPill}
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[11px] text-slate-400 font-mono">@{st.username}</span>
                           </div>
-                          <span className="text-[11px] text-slate-400 font-mono">@{st.username}</span>
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    <td className="py-4 px-4 capitalize font-semibold text-slate-600">
-                      {st.level}
-                    </td>
+                      <td className="py-4 px-4 capitalize font-semibold text-slate-600">
+                        {st.level}
+                      </td>
 
-                    <td className="py-4 px-4">
-                      <span className="inline-flex items-center gap-1 font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-xl">
-                        <Award className="w-3.5 h-3.5 text-indigo-500" />
-                        {st.rankTitle}
-                      </span>
-                    </td>
+                      <td className="py-4 px-4">
+                        <span className="inline-flex items-center gap-1 font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-xl">
+                          <Award className="w-3.5 h-3.5 text-indigo-500" />
+                          {st.rankTitle}
+                        </span>
+                      </td>
 
-                    <td className="py-4 px-4 text-center font-mono font-bold text-slate-700">
-                      {st.completedChallenges} Selesai
-                    </td>
+                      <td className="py-4 px-4 text-center font-mono font-bold text-slate-700">
+                        {st.completedChallenges} Selesai
+                      </td>
 
-                    <td className="py-4 px-4 text-center font-mono">
-                      <span className="inline-flex items-center gap-1 text-amber-600 font-bold">
-                        <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                        {st.streak} Hari
-                      </span>
-                    </td>
+                      <td className="py-4 px-4 text-center font-mono">
+                        <span className="inline-flex items-center gap-1 text-amber-600 font-bold">
+                          <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                          {st.streak} Hari
+                        </span>
+                      </td>
 
-                    <td className="py-4 px-4 text-right font-black font-mono text-sm text-indigo-600">
-                      {st.xp.toLocaleString()} XP
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                      <td className="py-4 px-4 text-right font-black font-mono text-sm text-indigo-600">
+                        {st.xp.toLocaleString()} XP
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
     </div>
   );

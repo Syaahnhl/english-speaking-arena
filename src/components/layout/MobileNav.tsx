@@ -10,6 +10,7 @@ import {
   Theater, 
   Mic2, 
   GraduationCap, 
+  UserCheck,
   X 
 } from 'lucide-react';
 
@@ -29,6 +30,7 @@ export const MobileNav: React.FC = () => {
     { id: 'roleplay', label: 'Roleplay Misi Rahasia', icon: Theater },
     { id: 'interactive', label: 'Studio Games Interaktif', icon: Mic2 },
     { id: 'teacher', label: 'Roster & Nilai Murid', icon: GraduationCap },
+    { id: 'progress', label: 'Profil Guru & Kelas', icon: UserCheck },
   ];
 
   return (

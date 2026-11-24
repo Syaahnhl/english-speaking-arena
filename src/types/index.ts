@@ -18,6 +18,12 @@ export interface UserProfile {
   wordsRead: number;
   achievements: string[]; // achievement ids
   classId?: string;
+  // Teacher profile fields
+  schoolName?: string;
+  subject?: string;
+  bio?: string;
+  email?: string;
+  phone?: string;
 }
 
 export type SpeakingCardCategory = 
@@ -235,6 +241,22 @@ export interface StudentSubmission {
   activityType: 'speaking-card' | 'roleplay' | 'running-reading' | 'debate';
 }
 
+export interface Student {
+  id: string;
+  classId: string;
+  name: string;
+  username?: string;
+  avatar?: string;
+  level: ProficiencyLevel;
+  xp: number;
+  completedChallenges: number;
+  streak: number;
+  rankTitle: string;
+  categoryPill?: string;
+  notes?: string;
+  createdAt?: string;
+}
+
 export interface Classroom {
   id: string;
   name: string;
@@ -242,4 +264,5 @@ export interface Classroom {
   teacherId: string;
   studentCount: number;
   description: string;
+  gradeLevel?: string;
 }

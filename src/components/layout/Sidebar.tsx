@@ -10,7 +10,8 @@ import {
   Mic2, 
   GraduationCap, 
   Users,
-  Gauge
+  Gauge,
+  UserCheck
 } from 'lucide-react';
 import { storageService } from '../../services/storageService';
 
@@ -78,6 +79,12 @@ export const Sidebar: React.FC = () => {
       label: 'Roster & Nilai Murid', 
       sublabel: 'Pemeriksaan Tugas Siswa',
       icon: GraduationCap 
+    },
+    { 
+      id: 'progress', 
+      label: 'Profil Guru & Kelas', 
+      sublabel: 'Input Kelas & Siswa',
+      icon: UserCheck 
     },
   ];
 

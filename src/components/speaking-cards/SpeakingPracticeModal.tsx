@@ -4,7 +4,6 @@ import { useArena } from '../../context/ArenaContext';
 import { soundService } from '../../services/soundService';
 import { speechService } from '../../services/speechService';
 import { storageService } from '../../services/storageService';
-import { WEEKLY_LEADERBOARD } from '../../data/seedUsersData';
 import { 
   X, 
   Play, 
@@ -32,10 +31,12 @@ interface Props {
 }
 
 export const SpeakingPracticeModal: React.FC<Props> = ({ card, onClose }) => {
-  const { addToast } = useArena();
-  const students = WEEKLY_LEADERBOARD;
+  const { addToast, activeClassStudents } = useArena();
+  const students = activeClassStudents;
   
-  const [selectedStudent, setSelectedStudent] = useState<string>(students[0].name);
+  const [selectedStudent, setSelectedStudent] = useState<string>(
+    students[0]?.name || 'Siswa Kelas'
+  );
   const durationOptions = card.suggestedDurationOptions || [30, 60, 90, 120, 180];
   const [selectedDuration, setSelectedDuration] = useState<number>(card.estimatedDuration || 60);
   const [timeLeft, setTimeLeft] = useState<number>(selectedDuration);
@@ -200,36 +201,48 @@ export const SpeakingPracticeModal: React.FC<Props> = ({ card, onClose }) => {
 
         {/* STUDENT SELECTOR FOR TEACHER */}
         <div className="p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-100 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center">
+          <div className="flex items-center gap-2 flex-1">
+            <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center flex-shrink-0">
               <UserCheck className="w-4 h-4" />
             </div>
-            <div>
+            <div className="flex-1">
               <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 block">
                 Siswa yang Maju Bicara
               </span>
-              <select
-                value={selectedStudent}
-                onChange={(e) => setSelectedStudent(e.target.value)}
-                className="bg-transparent font-bold text-slate-900 text-sm focus:outline-none cursor-pointer"
-              >
-                {students.map(s => (
-                  <option key={s.id} value={s.name}>
-                    {s.name} ({s.rankTitle})
-                  </option>
-                ))}
-              </select>
+              {students.length > 0 ? (
+                <select
+                  value={selectedStudent}
+                  onChange={(e) => setSelectedStudent(e.target.value)}
+                  className="bg-transparent font-bold text-slate-900 text-sm focus:outline-none cursor-pointer w-full"
+                >
+                  {students.map(s => (
+                    <option key={s.id} value={s.name}>
+                      {s.name} ({s.rankTitle || 'Rookie'})
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  value={selectedStudent}
+                  onChange={(e) => setSelectedStudent(e.target.value)}
+                  placeholder="Ketik nama siswa yang maju..."
+                  className="bg-transparent font-bold text-slate-900 text-sm focus:outline-none border-b border-indigo-200 w-full"
+                />
+              )}
             </div>
           </div>
 
-          <button
-            onClick={handlePickRandomStudent}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50 transition-all shadow-sm"
-            title="Pilih Siswa Secara Acak"
-          >
-            <Dices className="w-3.5 h-3.5 text-indigo-600" />
-            <span>Undi Acak</span>
-          </button>
+          {students.length > 1 && (
+            <button
+              onClick={handlePickRandomStudent}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50 transition-all shadow-sm flex-shrink-0"
+              title="Pilih Siswa Secara Acak"
+            >
+              <Dices className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Undi Acak</span>
+            </button>
+          )}
         </div>
 
         {/* Prompt Title & Core Question with High Focus */}

@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useArena } from '../../context/ArenaContext';
 import { storageService } from '../../services/storageService';
-import { StudentSubmission, Classroom, SpeakingCard, ProficiencyLevel } from '../../types';
-import { WEEKLY_LEADERBOARD } from '../../data/seedUsersData';
+import { StudentSubmission, Classroom, SpeakingCard, ProficiencyLevel, Student } from '../../types';
 import { soundService } from '../../services/soundService';
 import { 
   GraduationCap, 
@@ -13,11 +12,12 @@ import {
 } from 'lucide-react';
 
 export const TeacherDashboard: React.FC = () => {
-  const { addToast } = useArena();
+  const { addToast, activeClassStudents, activeClassId, setActiveTab: setGlobalTab } = useArena();
   const [activeTab, setActiveTab] = useState<'roster' | 'grading' | 'create-card' | 'classes'>('roster');
   
   const [submissions, setSubmissions] = useState<StudentSubmission[]>(storageService.getSubmissions());
   const [classrooms, setClassrooms] = useState<Classroom[]>(storageService.getClassrooms());
+  const currentStudents = activeClassStudents;
   
   // Grading Modal / State
   const [gradingSub, setGradingSub] = useState<StudentSubmission | null>(null);
@@ -159,53 +159,83 @@ export const TeacherDashboard: React.FC = () => {
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
               <h3 className="font-extrabold text-base text-slate-900">Kemajuan Murid Terdaftar</h3>
-              <p className="text-xs text-slate-500">Metrik aktifitas belajar untuk Class 10-A</p>
+              <p className="text-xs text-slate-500">Metrik aktifitas belajar untuk kelas aktif</p>
             </div>
-            <span className="text-xs font-mono text-slate-400 font-bold">{WEEKLY_LEADERBOARD.length} Murid</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono text-slate-400 font-bold">{currentStudents.length} Murid</span>
+              <button
+                onClick={() => setGlobalTab('progress')}
+                className="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition-all shadow-sm flex items-center gap-1.5"
+              >
+                <Users className="w-3.5 h-3.5" />
+                <span>Input / Kelola Siswa</span>
+              </button>
+            </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="border-b border-slate-200 text-slate-400 uppercase text-[10px] tracking-wider font-bold">
-                  <th className="py-3 px-3">Nama Murid</th>
-                  <th className="py-3 px-3">Tingkat Kemampuan</th>
-                  <th className="py-3 px-3">Total XP</th>
-                  <th className="py-3 px-3">Streak Harian</th>
-                  <th className="py-3 px-3">Tantangan Tuntas</th>
-                  <th className="py-3 px-3">Keaktifan</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {WEEKLY_LEADERBOARD.map((st) => (
-                  <tr key={st.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-4 px-3">
-                      <div className="flex items-center gap-3">
-                        <img src={st.avatar} alt={st.name} className="w-9 h-9 rounded-full object-cover border border-slate-200" />
-                        <div>
-                          <span className="font-bold text-slate-900 block">{st.name}</span>
-                          <span className="text-[10px] text-slate-400">@{st.username}</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-3">
-                      <span className="capitalize px-2.5 py-0.5 rounded-lg text-[11px] font-semibold bg-indigo-50 text-indigo-700">
-                        {st.level}
-                      </span>
-                    </td>
-                    <td className="py-4 px-3 font-mono font-bold text-indigo-600">{st.xp} XP</td>
-                    <td className="py-4 px-3 font-mono font-bold text-amber-600">{st.streak} Hari</td>
-                    <td className="py-4 px-3 text-slate-600">{st.completedChallenges} Selesai</td>
-                    <td className="py-4 px-3">
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700">
-                        Aktif Hari Ini
-                      </span>
-                    </td>
+          {currentStudents.length === 0 ? (
+            <div className="p-12 text-center text-slate-400 space-y-3 bg-slate-50/50 rounded-2xl border border-slate-100">
+              <Users className="w-10 h-10 mx-auto text-slate-300" />
+              <p className="text-sm font-bold text-slate-700">Belum ada murid di kelas ini.</p>
+              <p className="text-xs max-w-md mx-auto text-slate-500">
+                Silakan masukkan nama siswa melalui menu Profil Guru & Kelas untuk memulai penilaian dan melihat statistik performa.
+              </p>
+              <button
+                onClick={() => setGlobalTab('progress')}
+                className="mt-2 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-all"
+              >
+                <Users className="w-4 h-4" />
+                <span>Buka Menu Input Siswa</span>
+              </button>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-400 uppercase text-[10px] tracking-wider font-bold">
+                    <th className="py-3 px-3">Nama Murid</th>
+                    <th className="py-3 px-3">Tingkat Kemampuan</th>
+                    <th className="py-3 px-3">Total XP</th>
+                    <th className="py-3 px-3">Streak Harian</th>
+                    <th className="py-3 px-3">Tantangan Tuntas</th>
+                    <th className="py-3 px-3">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {currentStudents.map((st) => (
+                    <tr key={st.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-4 px-3">
+                        <div className="flex items-center gap-3">
+                          <img 
+                            src={st.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(st.name)}`} 
+                            alt={st.name} 
+                            className="w-9 h-9 rounded-full object-cover border border-slate-200" 
+                          />
+                          <div>
+                            <span className="font-bold text-slate-900 block">{st.name}</span>
+                            <span className="text-[10px] text-slate-400">@{st.username || 'murid'}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-3">
+                        <span className="capitalize px-2.5 py-0.5 rounded-lg text-[11px] font-semibold bg-indigo-50 text-indigo-700">
+                          {st.level}
+                        </span>
+                      </td>
+                      <td className="py-4 px-3 font-mono font-bold text-indigo-600">{st.xp || 0} XP</td>
+                      <td className="py-4 px-3 font-mono font-bold text-amber-600">{st.streak || 1} Hari</td>
+                      <td className="py-4 px-3 text-slate-600">{st.completedChallenges || 0} Selesai</td>
+                      <td className="py-4 px-3">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700">
+                          Aktif
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 

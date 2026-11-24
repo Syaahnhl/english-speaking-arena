@@ -1,275 +1,95 @@
-import { UserProfile, LeaderboardUser, Classroom, StudentSubmission, HeadToHeadBattle } from '../types';
+import { UserProfile, Classroom, StudentSubmission, HeadToHeadBattle, Student } from '../types';
 
-export const DEMO_STUDENT: UserProfile = {
-  id: 'usr-student-01',
-  name: 'Aria Pratama',
-  username: 'ariapratama',
-  role: 'student',
-  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
-  level: 'intermediate',
-  xp: 430, // Challenger Rank
-  rank: 'Challenger',
-  streakDays: 4,
-  lastActiveDate: new Date().toISOString().split('T')[0],
-  completedActivities: 14,
-  speakingMinutes: 38,
-  wordsRead: 2450,
-  achievements: ['ach-first-words', 'ach-brave-speaker'],
-  classId: 'cls-10a'
-};
-
-export const DEMO_TEACHER: UserProfile = {
+export const DEFAULT_TEACHER: UserProfile = {
   id: 'usr-teacher-01',
   name: 'Ms. Eleanor Vance',
   username: 'teacher_eleanor',
   role: 'teacher',
   avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80',
   level: 'advanced',
-  xp: 3200,
+  xp: 1200,
   rank: 'Arena Champion',
-  streakDays: 42,
+  streakDays: 7,
   lastActiveDate: new Date().toISOString().split('T')[0],
-  completedActivities: 180,
-  speakingMinutes: 450,
-  wordsRead: 45000,
-  achievements: ['ach-first-words', 'ach-brave-speaker', 'ach-no-fear', 'ach-reading-machine', 'ach-debate-master', 'ach-seven-day-streak'],
-  classId: 'cls-10a'
+  completedActivities: 0,
+  speakingMinutes: 0,
+  wordsRead: 0,
+  achievements: ['ach-first-words', 'ach-brave-speaker'],
+  classId: 'cls-main',
+  schoolName: 'English Speaking Academy',
+  subject: 'English Speaking & Fluency',
+  bio: 'Guru & Pelatih Berbicara Bahasa Inggris. Membimbing murid berani mengekspresikan opini dengan percaya diri.',
+  email: 'eleanor.vance@englisharena.edu',
+  phone: '+62 812-3456-7890'
 };
 
-export const SEED_CLASSROOMS: Classroom[] = [
+export const INITIAL_CLASSROOMS: Classroom[] = [
   {
-    id: 'cls-10a',
-    name: 'Class 10-A English Orators',
-    code: 'ORATOR-2026',
+    id: 'cls-main',
+    name: 'Kelas 10-A English Orators',
+    code: 'ENG-10A',
     teacherId: 'usr-teacher-01',
-    studentCount: 18,
-    description: 'Active speaking club focusing on spontaneous conversation, debate arguments, and speed reading.'
-  },
-  {
-    id: 'cls-beginner-squad',
-    name: 'Morning Fluency Jumpstart',
-    code: 'JUMP-2026',
-    teacherId: 'usr-teacher-01',
-    studentCount: 12,
-    description: 'Beginner foundational group building speaking confidence, daily vocabulary, and sentence flow.'
+    studentCount: 0,
+    description: 'Kelas aktif latihan speaking spontan, teleprompter reading, dan roleplay percakapan.',
+    gradeLevel: 'Grade 10'
   }
 ];
 
-export const SEED_SUBMISSIONS: StudentSubmission[] = [
-  {
-    id: 'sub-1',
-    studentId: 'usr-student-01',
-    studentName: 'Aria Pratama',
-    assignmentTitle: 'Hotel Complaint Roleplay - Secret Mission',
-    submittedAt: 'Yesterday, 16:30',
-    durationSeconds: 120,
-    transcriptOrNotes: 'Completed Role A: Polite resolution without saying "bad". Used phrases: "I was expecting...", "Could you check with the chef?".',
-    status: 'graded',
-    score: 92,
-    feedback: 'Excellent vocal modulation and respectful phrasing! Your vocabulary choices were spot-on.',
-    activityType: 'roleplay'
-  },
-  {
-    id: 'sub-2',
-    studentId: 'usr-student-02',
-    studentName: 'Kavita Sharma',
-    assignmentTitle: 'AI in the Workforce: Innovation or Threat?',
-    submittedAt: 'Today, 10:15',
-    durationSeconds: 135,
-    transcriptOrNotes: 'Emphasized cognitive augmentation over obsolescence. Addressed potential white-collar labor disruption with clear transitions.',
-    status: 'pending',
-    activityType: 'debate'
-  },
-  {
-    id: 'sub-3',
-    studentId: 'usr-student-03',
-    studentName: 'Budi Santoso',
-    assignmentTitle: 'Deep Sea Creatures Running Reading Challenge',
-    submittedAt: 'Today, 11:45',
-    durationSeconds: 98,
-    transcriptOrNotes: 'Completed text at 1.25x speed (approx 160 WPM). Scored 100% on the comprehension questions.',
-    status: 'graded',
-    score: 95,
-    feedback: 'Fantastic comprehension speed! Great focus on scientific terminology.',
-    activityType: 'running-reading'
-  }
-];
+// Completely clean initial submissions (No dummy data)
+export const INITIAL_SUBMISSIONS: StudentSubmission[] = [];
 
-export const WEEKLY_LEADERBOARD: LeaderboardUser[] = [
+// Clean initial students (No dummy data)
+export const INITIAL_STUDENTS: Student[] = [];
+
+// Optional sample students in case teacher wants to test with 1 click
+export const SAMPLE_STUDENTS_PRESET: Omit<Student, 'classId'>[] = [
   {
-    id: 'usr-lead-1',
-    name: 'Chloe Zhang',
-    username: 'chloe_speaks',
-    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=256&q=80',
-    level: 'advanced',
-    xp: 680,
-    completedChallenges: 24,
-    streak: 12,
-    rankTitle: 'Speaker',
-    categoryPill: 'Top Speaker'
-  },
-  {
-    id: 'usr-lead-2',
-    name: 'Kavita Sharma',
-    username: 'kavita_voice',
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80',
+    id: 'sample-st-1',
+    name: 'Ahmad Fauzi',
+    username: 'ahmad_fauzi',
     level: 'intermediate',
-    xp: 590,
-    completedChallenges: 19,
-    streak: 9,
+    xp: 240,
+    completedChallenges: 8,
+    streak: 3,
     rankTitle: 'Challenger',
-    categoryPill: 'Debate Pro'
+    categoryPill: 'Top Speaker',
+    createdAt: new Date().toISOString().split('T')[0]
   },
   {
-    id: 'usr-student-01',
-    name: 'Aria Pratama',
-    username: 'ariapratama',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
-    level: 'intermediate',
-    xp: 430,
-    completedChallenges: 14,
-    streak: 4,
-    rankTitle: 'Challenger',
-    categoryPill: 'Most Improved'
-  },
-  {
-    id: 'usr-lead-3',
-    name: 'Budi Santoso',
-    username: 'budi_learning',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80',
+    id: 'sample-st-2',
+    name: 'Bella Safira',
+    username: 'bella_safira',
     level: 'beginner',
-    xp: 410,
-    completedChallenges: 16,
-    streak: 8,
-    rankTitle: 'Challenger',
-    categoryPill: 'Beginner Rising Star'
-  },
-  {
-    id: 'usr-lead-4',
-    name: 'Liam O\'Connor',
-    username: 'liam_reads',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80',
-    level: 'intermediate',
-    xp: 380,
-    completedChallenges: 13,
-    streak: 14,
+    xp: 180,
+    completedChallenges: 5,
+    streak: 2,
     rankTitle: 'Explorer',
-    categoryPill: 'Consistency Star'
+    categoryPill: 'Beginner Rising Star',
+    createdAt: new Date().toISOString().split('T')[0]
   },
   {
-    id: 'usr-lead-5',
-    name: 'Maya Putri',
-    username: 'maya_speed',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80',
-    level: 'beginner',
+    id: 'sample-st-3',
+    name: 'Citra Dewi',
+    username: 'citra_dewi',
+    level: 'advanced',
     xp: 320,
     completedChallenges: 11,
-    streak: 6,
+    streak: 5,
+    rankTitle: 'Speaker',
+    categoryPill: 'Debate Pro',
+    createdAt: new Date().toISOString().split('T')[0]
+  },
+  {
+    id: 'sample-st-4',
+    name: 'Dimas Pratama',
+    username: 'dimas_pratama',
+    level: 'intermediate',
+    xp: 150,
+    completedChallenges: 4,
+    streak: 1,
     rankTitle: 'Explorer',
-    categoryPill: 'Reading Star'
-  }
-];
-
-export const MONTHLY_LEADERBOARD: LeaderboardUser[] = [
-  {
-    id: 'usr-lead-1',
-    name: 'Chloe Zhang',
-    username: 'chloe_speaks',
-    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=256&q=80',
-    level: 'advanced',
-    xp: 2450,
-    completedChallenges: 78,
-    streak: 28,
-    rankTitle: 'Fluent Performer',
-    categoryPill: 'Top Speaker'
-  },
-  {
-    id: 'usr-lead-4',
-    name: 'Liam O\'Connor',
-    username: 'liam_reads',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80',
-    level: 'intermediate',
-    xp: 1980,
-    completedChallenges: 62,
-    streak: 25,
-    rankTitle: 'Fluent Performer',
-    categoryPill: 'Consistency Star'
-  },
-  {
-    id: 'usr-lead-2',
-    name: 'Kavita Sharma',
-    username: 'kavita_voice',
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80',
-    level: 'intermediate',
-    xp: 1720,
-    completedChallenges: 55,
-    streak: 18,
-    rankTitle: 'Fluent Performer',
-    categoryPill: 'Debate Pro'
-  },
-  {
-    id: 'usr-student-01',
-    name: 'Aria Pratama (You)',
-    username: 'ariapratama',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
-    level: 'intermediate',
-    xp: 1450,
-    completedChallenges: 46,
-    streak: 14,
-    rankTitle: 'Speaker',
-    isCurrentUser: true,
-    categoryPill: 'Most Improved'
-  },
-  {
-    id: 'usr-lead-3',
-    name: 'Budi Santoso',
-    username: 'budi_learning',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80',
-    level: 'beginner',
-    xp: 1290,
-    completedChallenges: 42,
-    streak: 21,
-    rankTitle: 'Speaker',
-    categoryPill: 'Beginner Rising Star'
-  }
-];
-
-export const ALL_TIME_LEADERBOARD: LeaderboardUser[] = [
-  {
-    id: 'usr-lead-top',
-    name: 'Marcus Sterling',
-    username: 'marcus_debates',
-    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=256&q=80',
-    level: 'advanced',
-    xp: 5400,
-    completedChallenges: 184,
-    streak: 64,
-    rankTitle: 'Arena Champion',
-    categoryPill: 'Top Speaker'
-  },
-  {
-    id: 'usr-lead-1',
-    name: 'Chloe Zhang',
-    username: 'chloe_speaks',
-    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=256&q=80',
-    level: 'advanced',
-    xp: 4920,
-    completedChallenges: 156,
-    streak: 42,
-    rankTitle: 'Arena Champion',
-    categoryPill: 'Consistency Star'
-  },
-  {
-    id: 'usr-student-01',
-    name: 'Aria Pratama',
-    username: 'ariapratama',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
-    level: 'intermediate',
-    xp: 3120,
-    completedChallenges: 102,
-    streak: 28,
-    rankTitle: 'Arena Champion',
-    categoryPill: 'Most Improved'
+    categoryPill: 'Consistency Star',
+    createdAt: new Date().toISOString().split('T')[0]
   }
 ];
 
@@ -282,17 +102,9 @@ export const HEAD_TO_HEAD_BATTLES: HeadToHeadBattle[] = [
     prompt: 'Should companies enforce strict office return mandates or empower permanent remote flexibility? Both players speak on the topic for 60 seconds.',
     timeLimit: 60,
     opponent: {
-      name: 'Kavita Sharma',
+      name: 'Peserta 2',
       avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80',
-      rank: 'Challenger',
-      score: {
-        completion: 25,
-        vocabUsage: 22,
-        fluency: 23,
-        taskFulfillment: 24,
-        totalXP: 94,
-        comment: 'Brilliant structural arguments with strong transition words!'
-      }
+      rank: 'Challenger'
     }
   },
   {
@@ -303,17 +115,9 @@ export const HEAD_TO_HEAD_BATTLES: HeadToHeadBattle[] = [
     prompt: 'Describe your dream vacation destination using 5 vivid adjectives without pausing for more than 2 seconds.',
     timeLimit: 60,
     opponent: {
-      name: 'Budi Santoso',
+      name: 'Peserta 2',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80',
-      rank: 'Challenger',
-      score: {
-        completion: 24,
-        vocabUsage: 20,
-        fluency: 22,
-        taskFulfillment: 22,
-        totalXP: 88,
-        comment: 'High energy and natural enthusiasm!'
-      }
+      rank: 'Challenger'
     }
   },
   {
@@ -324,17 +128,9 @@ export const HEAD_TO_HEAD_BATTLES: HeadToHeadBattle[] = [
     prompt: 'You are the captain of a submarine that lost sonar contact near an underwater volcanic ridge. Brief the crew in 90 seconds.',
     timeLimit: 90,
     opponent: {
-      name: 'Chloe Zhang',
+      name: 'Peserta 2',
       avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=256&q=80',
-      rank: 'Speaker',
-      score: {
-        completion: 25,
-        vocabUsage: 24,
-        fluency: 24,
-        taskFulfillment: 25,
-        totalXP: 98,
-        comment: 'Exceptional poise under pressure and commanding vocabulary.'
-      }
+      rank: 'Speaker'
     }
   }
 ];

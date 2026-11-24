@@ -1,7 +1,6 @@
 import React from 'react';
 import { useArena } from '../../context/ArenaContext';
 import { storageService } from '../../services/storageService';
-import { WEEKLY_LEADERBOARD } from '../../data/seedUsersData';
 import { 
   GraduationCap, 
   Users, 
@@ -26,9 +25,10 @@ export const StudentDashboard: React.FC = () => {
   const { user, activeClassId, setActiveTab, toggleProjectorMode, isProjectorMode } = useArena();
   
   const classrooms = storageService.getClassrooms();
-  const currentClass = classrooms.find(c => c.id === activeClassId) || classrooms[0];
+  const currentClass = classrooms.find(c => c.id === activeClassId) || classrooms[0] || { id: 'cls-main', name: 'Kelas Utama', code: 'ENG-01', studentCount: 0 };
   const submissions = storageService.getSubmissions();
   const pendingSubmissions = submissions.filter(s => s.status === 'pending');
+  const classLeaderboard = storageService.getClassLeaderboard(activeClassId);
 
   return (
     <div className="space-y-8">
@@ -377,22 +377,30 @@ export const StudentDashboard: React.FC = () => {
             </div>
 
             <div className="space-y-3">
-              {submissions.slice(0, 3).map((sub) => (
-                <div
-                  key={sub.id}
-                  className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1.5 text-xs"
-                >
-                  <div className="flex items-center justify-between">
-                    <strong className="text-slate-900">{sub.studentName}</strong>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
-                      sub.status === 'graded' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                    }`}>
-                      {sub.status === 'graded' ? `${sub.score}/100` : 'Perlu Nilai'}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 truncate">{sub.assignmentTitle}</p>
+              {submissions.length === 0 ? (
+                <div className="p-5 text-center bg-slate-50 rounded-2xl border border-slate-100 text-slate-400 space-y-1">
+                  <FileText className="w-5 h-5 mx-auto text-slate-300" />
+                  <p className="text-xs font-bold text-slate-600">Belum ada tugas terkumpul</p>
+                  <p className="text-[11px]">Nilai rekaman siswa akan muncul di sini setelah sesi kelas selesai.</p>
                 </div>
-              ))}
+              ) : (
+                submissions.slice(0, 3).map((sub) => (
+                  <div
+                    key={sub.id}
+                    className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1.5 text-xs"
+                  >
+                    <div className="flex items-center justify-between">
+                      <strong className="text-slate-900">{sub.studentName}</strong>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
+                        sub.status === 'graded' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                      }`}>
+                        {sub.status === 'graded' ? `${sub.score}/100` : 'Perlu Nilai'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 truncate">{sub.assignmentTitle}</p>
+                  </div>
+                ))
+              )}
             </div>
 
             <button
@@ -414,38 +422,52 @@ export const StudentDashboard: React.FC = () => {
                 onClick={() => setActiveTab('arena')}
                 className="text-xs font-bold text-indigo-600 hover:text-indigo-800"
               >
-                Arena
+                Buka Arena
               </button>
             </div>
 
             <div className="space-y-2.5">
-              {WEEKLY_LEADERBOARD.slice(0, 4).map((person, idx) => (
-                <div
-                  key={person.id}
-                  className="p-3 rounded-2xl flex items-center justify-between bg-slate-50 border border-slate-100"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className={`w-5 text-center font-mono font-bold text-xs ${
-                      idx === 0 ? 'text-amber-500' : idx === 1 ? 'text-slate-400' : 'text-amber-700'
-                    }`}>
-                      #{idx + 1}
-                    </span>
-                    <img
-                      src={person.avatar}
-                      alt={person.name}
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                    <div>
-                      <span className="font-bold text-xs text-slate-800 block">{person.name}</span>
-                      <span className="text-[10px] text-slate-400">{person.categoryPill}</span>
-                    </div>
-                  </div>
-
-                  <span className="font-mono font-black text-xs text-indigo-700">
-                    {person.xp} XP
-                  </span>
+              {classLeaderboard.length === 0 ? (
+                <div className="p-5 text-center bg-slate-50 rounded-2xl border border-slate-100 text-slate-400 space-y-2">
+                  <p className="text-xs font-bold text-slate-600">Belum ada murid di kelas ini</p>
+                  <button
+                    onClick={() => setActiveTab('progress')}
+                    className="px-3 py-1.5 rounded-xl text-[11px] font-bold bg-indigo-600 text-white"
+                  >
+                    + Input Nama Siswa
+                  </button>
                 </div>
-              ))}
+              ) : (
+                classLeaderboard.slice(0, 4).map((person, idx) => (
+                  <div
+                    key={person.id}
+                    className="p-3 rounded-2xl flex items-center justify-between bg-slate-50 border border-slate-100"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className={`w-5 text-center font-mono font-bold text-xs ${
+                        idx === 0 ? 'text-amber-500' : idx === 1 ? 'text-slate-400' : 'text-amber-700'
+                      }`}>
+                        #{idx + 1}
+                      </span>
+                      <img
+                        src={person.avatar}
+                        alt={person.name}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                      <div>
+                        <span className="font-bold text-xs text-slate-800 block">{person.name}</span>
+                        {person.categoryPill && (
+                          <span className="text-[10px] text-slate-400">{person.categoryPill}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <span className="font-mono font-black text-xs text-indigo-700">
+                      {person.xp} XP
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

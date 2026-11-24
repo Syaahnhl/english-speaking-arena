@@ -124,9 +124,9 @@ export const Navbar: React.FC = () => {
           {/* Teacher Profile / Role Toggle */}
           <div className="flex items-center gap-2 pl-1 border-l border-slate-200">
             <button
-              onClick={() => setActiveTab('teacher')}
+              onClick={() => setActiveTab('progress')}
               className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-900 text-xs font-bold transition-all"
-              title="Profil Pengajar & Roster Siswa"
+              title="Profil Pengajar, Kelola Kelas & Input Siswa"
             >
               <img
                 src={user.avatar}
