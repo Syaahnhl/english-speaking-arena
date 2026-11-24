@@ -8,6 +8,8 @@ import { getRankByXp } from './gamificationService';
 const KEYS = {
   CURRENT_USER: 'esa_current_user',
   CURRENT_ROLE: 'esa_current_role',
+  TEACHERS: 'esa_teachers_list',
+  ACTIVE_TEACHER_ID: 'esa_active_teacher_id',
   SPEAKING_CARDS: 'esa_speaking_cards',
   READING_MATERIALS: 'esa_reading_materials',
   SPEAKING_CART: 'esa_speaking_cart',
@@ -26,8 +28,11 @@ class StorageService {
   private initDefaults() {
     if (typeof window === 'undefined') return;
 
-    if (!localStorage.getItem(KEYS.CURRENT_USER)) {
-      localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(DEFAULT_TEACHER));
+    if (!localStorage.getItem(KEYS.TEACHERS)) {
+      localStorage.setItem(KEYS.TEACHERS, JSON.stringify([DEFAULT_TEACHER]));
+    }
+    if (!localStorage.getItem(KEYS.ACTIVE_TEACHER_ID)) {
+      localStorage.setItem(KEYS.ACTIVE_TEACHER_ID, DEFAULT_TEACHER.id);
     }
     if (!localStorage.getItem(KEYS.CURRENT_ROLE)) {
       localStorage.setItem(KEYS.CURRENT_ROLE, 'teacher');
@@ -86,24 +91,116 @@ class StorageService {
     localStorage.setItem(KEYS.DAILY_CHALLENGES, JSON.stringify(initialChallenges));
   }
 
-  // --- USER / TEACHER PROFILE ---
-  public getCurrentUser(): UserProfile {
+  // --- MULTI-TEACHER & USER PROFILE ---
+  public getTeachers(): UserProfile[] {
     try {
-      const stored = localStorage.getItem(KEYS.CURRENT_USER);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        return { ...DEFAULT_TEACHER, ...parsed };
+      const data = localStorage.getItem(KEYS.TEACHERS);
+      if (data) {
+        const parsed: UserProfile[] = JSON.parse(data);
+        if (parsed.length > 0) return parsed;
       }
-    } catch {
-      // fallback
-    }
-    return DEFAULT_TEACHER;
+    } catch {}
+    return [DEFAULT_TEACHER];
+  }
+
+  public saveTeachers(teachers: UserProfile[]) {
+    localStorage.setItem(KEYS.TEACHERS, JSON.stringify(teachers));
+  }
+
+  public getActiveTeacherId(): string {
+    return localStorage.getItem(KEYS.ACTIVE_TEACHER_ID) || DEFAULT_TEACHER.id;
+  }
+
+  public setActiveTeacherId(teacherId: string) {
+    localStorage.setItem(KEYS.ACTIVE_TEACHER_ID, teacherId);
+  }
+
+  public getCurrentUser(): UserProfile {
+    const teachers = this.getTeachers();
+    const activeId = this.getActiveTeacherId();
+    const activeTeacher = teachers.find(t => t.id === activeId);
+    if (activeTeacher) return activeTeacher;
+    return teachers[0] || DEFAULT_TEACHER;
   }
 
   public saveCurrentUser(user: UserProfile) {
     const rankDef = getRankByXp(user.xp);
     user.rank = rankDef.name;
-    localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(user));
+
+    const teachers = this.getTeachers();
+    const index = teachers.findIndex(t => t.id === user.id);
+    if (index >= 0) {
+      teachers[index] = user;
+    } else {
+      teachers.push(user);
+    }
+    this.saveTeachers(teachers);
+    this.setActiveTeacherId(user.id);
+  }
+
+  public createTeacher(name: string, schoolName?: string, subject?: string): UserProfile {
+    const id = `teacher-${Date.now()}`;
+    const cleanName = name.trim() || `Teacher ${this.getTeachers().length + 1}`;
+    const newTeacher: UserProfile = {
+      ...DEFAULT_TEACHER,
+      id,
+      name: cleanName,
+      username: cleanName.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+      schoolName: schoolName?.trim() || '',
+      subject: subject?.trim() || 'Bahasa Inggris',
+      bio: 'Fasilitator pembelajaran bahasa Inggris aktif.',
+      lastActiveDate: new Date().toISOString().split('T')[0]
+    };
+
+    const list = this.getTeachers();
+    list.push(newTeacher);
+    this.saveTeachers(list);
+    this.setActiveTeacherId(id);
+
+    // Otomatis buat 1 kelas bersih awal untuk pengajar baru ini
+    const initialClass: Classroom = {
+      id: `cls-${Date.now()}`,
+      name: `Kelas 1 (${cleanName})`,
+      teacherId: id,
+      studentCount: 0,
+      description: 'Kelas aktif latihan speaking spontan dan teleprompter.',
+      gradeLevel: 'Umum'
+    };
+    this.addClassroom(initialClass);
+
+    return newTeacher;
+  }
+
+  public switchActiveTeacher(teacherId: string): UserProfile {
+    this.setActiveTeacherId(teacherId);
+    return this.getCurrentUser();
+  }
+
+  public deleteTeacher(teacherId: string): boolean {
+    const list = this.getTeachers();
+    if (list.length <= 1) {
+      return false; // Minimal harus ada 1 pengajar
+    }
+
+    const filtered = list.filter(t => t.id !== teacherId);
+    this.saveTeachers(filtered);
+
+    // Hapus juga kelas dan murid milik pengajar yang dihapus
+    const teacherClasses = this.getAllClassrooms().filter(c => c.teacherId === teacherId);
+    const teacherClassIds = teacherClasses.map(c => c.id);
+
+    const remainingClasses = this.getAllClassrooms().filter(c => c.teacherId !== teacherId);
+    this.saveClassrooms(remainingClasses);
+
+    const remainingStudents = this.getStudents().filter(s => !teacherClassIds.includes(s.classId));
+    this.saveStudents(remainingStudents);
+
+    // Jika yang dihapus adalah active teacher, ganti ke pengajar pertama
+    if (this.getActiveTeacherId() === teacherId) {
+      this.setActiveTeacherId(filtered[0].id);
+    }
+
+    return true;
   }
 
   public updateTeacherProfile(updates: Partial<UserProfile>): UserProfile {
@@ -160,15 +257,20 @@ class StorageService {
     };
   }
 
-  // --- CLASSROOMS ---
-  public getClassrooms(): Classroom[] {
+  // --- CLASSROOMS (ISOLATED PER TEACHER) ---
+  public getAllClassrooms(): Classroom[] {
     try {
       const data = localStorage.getItem(KEYS.CLASSROOMS);
       if (data) return JSON.parse(data);
-    } catch {
-      // fallback
-    }
+    } catch {}
     return INITIAL_CLASSROOMS;
+  }
+
+  public getClassrooms(teacherId?: string): Classroom[] {
+    const targetTeacherId = teacherId || this.getActiveTeacherId();
+    const all = this.getAllClassrooms();
+    const filtered = all.filter(c => c.teacherId === targetTeacherId);
+    return filtered;
   }
 
   public saveClassrooms(classrooms: Classroom[]) {
@@ -176,20 +278,23 @@ class StorageService {
   }
 
   public addClassroom(classroom: Classroom) {
-    const list = this.getClassrooms();
-    list.push(classroom);
-    this.saveClassrooms(list);
+    const currentTeacher = this.getCurrentUser();
+    classroom.teacherId = classroom.teacherId || currentTeacher.id;
+
+    const all = this.getAllClassrooms();
+    all.push(classroom);
+    this.saveClassrooms(all);
   }
 
   public updateClassroom(classroom: Classroom) {
-    const list = this.getClassrooms().map(c => c.id === classroom.id ? classroom : c);
-    this.saveClassrooms(list);
+    const all = this.getAllClassrooms().map(c => c.id === classroom.id ? classroom : c);
+    this.saveClassrooms(all);
   }
 
   public deleteClassroom(classId: string) {
-    const list = this.getClassrooms().filter(c => c.id !== classId);
-    this.saveClassrooms(list);
-    // Delete students in this class
+    const all = this.getAllClassrooms().filter(c => c.id !== classId);
+    this.saveClassrooms(all);
+    // Hapus murid di kelas ini
     const students = this.getStudents().filter(s => s.classId !== classId);
     this.saveStudents(students);
   }
@@ -199,18 +304,16 @@ class StorageService {
     try {
       const data = localStorage.getItem(KEYS.STUDENTS);
       if (data) return JSON.parse(data);
-    } catch {
-      // fallback
-    }
+    } catch {}
     return [];
   }
 
   public saveStudents(students: Student[]) {
     localStorage.setItem(KEYS.STUDENTS, JSON.stringify(students));
-    // sync student counts across classrooms
-    const classrooms = this.getClassrooms();
+    // update student count across all classrooms
+    const allClassrooms = this.getAllClassrooms();
     let changed = false;
-    classrooms.forEach(cls => {
+    allClassrooms.forEach(cls => {
       const count = students.filter(s => s.classId === cls.id).length;
       if (cls.studentCount !== count) {
         cls.studentCount = count;
@@ -218,7 +321,7 @@ class StorageService {
       }
     });
     if (changed) {
-      this.saveClassrooms(classrooms);
+      this.saveClassrooms(allClassrooms);
     }
   }
 
@@ -267,13 +370,16 @@ class StorageService {
     }
   }
 
+  public addStudentPoints(studentId: string, points: number) {
+    this.awardStudentXp(studentId, points);
+  }
+
   public loadSampleStudents(classId: string) {
     const currentStudents = this.getStudents();
     const sampleStudents: Student[] = SAMPLE_STUDENTS_PRESET.map((st, i) => ({
       ...st,
       id: `sample-${Date.now()}-${i}`,
-      classId,
-      avatar: `https://images.unsplash.com/photo-${1534528741775 + i * 100}?auto=format&fit=crop&w=256&q=80`
+      classId
     }));
     this.saveStudents([...currentStudents, ...sampleStudents]);
     return sampleStudents;
@@ -296,7 +402,7 @@ class StorageService {
         id: st.id,
         name: st.name,
         username: st.username || st.name.toLowerCase().replace(/[^a-z0-9]/g, '_'),
-        avatar: st.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(st.name)}`,
+        avatar: '',
         level: st.level,
         xp: st.xp || 0,
         completedChallenges: st.completedChallenges || 0,
@@ -312,9 +418,7 @@ class StorageService {
     try {
       const data = localStorage.getItem(KEYS.SUBMISSIONS);
       if (data) return JSON.parse(data);
-    } catch {
-      // fallback
-    }
+    } catch {}
     return INITIAL_SUBMISSIONS;
   }
 
@@ -323,7 +427,6 @@ class StorageService {
     list.unshift(sub);
     localStorage.setItem(KEYS.SUBMISSIONS, JSON.stringify(list));
 
-    // Also award student XP if they exist in class
     if (sub.score) {
       const xp = Math.round(sub.score * 0.4);
       this.awardStudentXp(sub.studentName, xp);
@@ -347,9 +450,7 @@ class StorageService {
     try {
       const data = localStorage.getItem(KEYS.DAILY_CHALLENGES);
       if (data) return JSON.parse(data);
-    } catch {
-      // fallback
-    }
+    } catch {}
     return [];
   }
 
@@ -370,9 +471,7 @@ class StorageService {
     try {
       const data = localStorage.getItem(KEYS.SPEAKING_CARDS);
       if (data) return JSON.parse(data);
-    } catch {
-      // fallback
-    }
+    } catch {}
     return SPEAKING_CARDS;
   }
 
@@ -387,9 +486,7 @@ class StorageService {
     try {
       const data = localStorage.getItem(KEYS.READING_MATERIALS);
       if (data) return JSON.parse(data);
-    } catch {
-      // fallback
-    }
+    } catch {}
     return READING_MATERIALS;
   }
 
@@ -404,9 +501,7 @@ class StorageService {
     try {
       const data = localStorage.getItem(KEYS.SPEAKING_CART);
       if (data) return JSON.parse(data);
-    } catch {
-      // fallback
-    }
+    } catch {}
     return [];
   }
 
@@ -434,6 +529,8 @@ class StorageService {
   // --- RESET ALL DATA ---
   public resetToFactory() {
     localStorage.removeItem(KEYS.CURRENT_USER);
+    localStorage.removeItem(KEYS.TEACHERS);
+    localStorage.removeItem(KEYS.ACTIVE_TEACHER_ID);
     localStorage.removeItem(KEYS.SUBMISSIONS);
     localStorage.removeItem(KEYS.CLASSROOMS);
     localStorage.removeItem(KEYS.STUDENTS);

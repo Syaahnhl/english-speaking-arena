@@ -45,13 +45,13 @@ const MainContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans selection:bg-teal-600 selection:text-white">
       {/* Top Navbar */}
       <Navbar />
 
-      {/* Main Workspace */}
-      <div className="flex-1 flex max-w-7xl w-full mx-auto">
-        {/* Desktop Sidebar */}
+      {/* Main Workspace with sidebar anchored to left */}
+      <div className="flex-1 flex w-full">
+        {/* Desktop Sidebar (Anchored Left) */}
         <Sidebar />
 
         {/* Content Pane */}

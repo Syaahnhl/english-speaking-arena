@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useArena } from '../../context/ArenaContext';
 import { storageService } from '../../services/storageService';
 import { 
@@ -7,44 +7,75 @@ import {
   Layers, 
   Gauge, 
   Theater, 
-  ShoppingBag, 
   Trophy, 
   Mic2, 
   ArrowRight, 
-  CheckCircle, 
-  Clock, 
-  FileText, 
-  Monitor, 
-  Play, 
-  Zap, 
-  Award 
+  CheckCircle2, 
+  Sparkles,
+  Dices,
+  PlusCircle,
+  Play,
+  Volume2,
+  FolderOpen
 } from 'lucide-react';
 import { soundService } from '../../services/soundService';
 
 export const StudentDashboard: React.FC = () => {
-  const { user, activeClassId, setActiveTab, toggleProjectorMode, isProjectorMode } = useArena();
+  const { 
+    activeTeacher, 
+    classrooms, 
+    activeClassId, 
+    setActiveClassId, 
+    setActiveTab
+  } = useArena();
   
-  const classrooms = storageService.getClassrooms();
-  const currentClass = classrooms.find(c => c.id === activeClassId) || classrooms[0] || { id: 'cls-main', name: 'Kelas Utama', code: 'ENG-01', studentCount: 0 };
-  const submissions = storageService.getSubmissions();
-  const pendingSubmissions = submissions.filter(s => s.status === 'pending');
-  const classLeaderboard = storageService.getClassLeaderboard(activeClassId);
+  const currentClass = classrooms.find(c => c.id === activeClassId) || classrooms[0];
+  const students = currentClass ? storageService.getStudentsByClass(currentClass.id) : [];
+
+  // Random student picker state
+  const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
+  const [isPicking, setIsPicking] = useState(false);
+
+  const handlePickRandomStudent = () => {
+    if (students.length === 0) return;
+    soundService.playClick();
+    setIsPicking(true);
+    let counter = 0;
+    const interval = setInterval(() => {
+      const randomIndex = Math.floor(Math.random() * students.length);
+      setSelectedStudent(students[randomIndex].name);
+      counter++;
+      if (counter > 12) {
+        clearInterval(interval);
+        setIsPicking(false);
+        soundService.playSuccess();
+      }
+    }, 90);
+  };
+
+  const handleAwardStudent = (studentId: string) => {
+    soundService.playSuccess();
+    storageService.addStudentPoints(studentId, 25);
+    // trigger refresh if needed
+  };
+
+  const totalStudents = classrooms.reduce((acc, c) => acc + c.studentCount, 0);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-6xl mx-auto">
       {/* 1. TEACHER HERO BANNER */}
-      <div className="relative overflow-hidden rounded-3xl bg-slate-900 text-white p-6 sm:p-10 shadow-card flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+      <div className="relative overflow-hidden rounded-2xl bg-slate-900 text-white p-6 sm:p-8 border border-slate-800 shadow-sm flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
         <div className="relative z-10 max-w-2xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold tracking-wide border border-indigo-400/20">
-            <GraduationCap className="w-4 h-4 text-indigo-400" />
-            <span>Pusat Kendali Pengajar • {currentClass.name}</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-950 text-teal-300 text-xs font-semibold tracking-wide border border-teal-800">
+            <GraduationCap className="w-3.5 h-3.5 text-teal-400" />
+            <span>Fasilitasi Kelas • {currentClass ? currentClass.name : 'Belum Ada Kelas'}</span>
           </div>
 
-          <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
-            Selamat Mengajar, {user.name}!
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+            Selamat Mengajar, {activeTeacher?.name || 'Teacher 1'}!
           </h1>
-          <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
-            Fasilitasi kelas interaktif hari ini: tampilkan kartu pemantik di proyektor, jalankan teleprompter kecepatan baca bersama murid, dan pimpin duel bicara langsung.
+          <p className="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-xl">
+            Aplikasi ini dirancang khusus untuk memandu aktivitas speaking di depan kelas. Tampilkan kartu topik, jalankan teleprompter kecepatan baca bersama murid, atau undi giliran bicara secara acak.
           </p>
 
           <div className="pt-2 flex flex-wrap items-center gap-3">
@@ -53,7 +84,7 @@ export const StudentDashboard: React.FC = () => {
                 soundService.playClick();
                 setActiveTab('reading');
               }}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20 transition-all"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-teal-600 hover:bg-teal-500 text-white shadow-sm transition-all"
             >
               <Gauge className="w-4 h-4" />
               <span>Buka Teleprompter Kelas</span>
@@ -65,413 +96,420 @@ export const StudentDashboard: React.FC = () => {
                 soundService.playClick();
                 setActiveTab('cards');
               }}
-              className="flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/15 transition-all backdrop-blur-sm"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all"
             >
               <Layers className="w-4 h-4 text-amber-400" />
               <span>Bank Speaking Cards</span>
             </button>
 
-            <button
-              onClick={toggleProjectorMode}
-              className={`flex items-center gap-2 px-4 py-3 rounded-2xl text-xs font-bold transition-all border ${
-                isProjectorMode
-                  ? 'bg-amber-400 text-slate-900 border-amber-400 shadow-md'
-                  : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'
-              }`}
-              title="Aktifkan Mode Proyektor Layar Penuh"
-            >
-              <Monitor className="w-4 h-4" />
-              <span>{isProjectorMode ? 'Layar Proyektor Aktif' : 'Mode Proyektor'}</span>
-            </button>
+            {students.length > 0 && (
+              <button
+                onClick={handlePickRandomStudent}
+                disabled={isPicking}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 transition-all"
+              >
+                <Dices className={`w-4 h-4 ${isPicking ? 'animate-spin' : ''}`} />
+                <span>{isPicking ? 'Mengundi...' : '🎲 Undi Siswa Maju'}</span>
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Class Quick Overview Card */}
-        <div className="relative z-10 w-full lg:w-80 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 p-6 space-y-4">
-          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+        {/* Current Active Class Overview Card */}
+        <div className="relative z-10 w-full lg:w-72 bg-slate-800/80 rounded-2xl border border-slate-700 p-5 space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-700 pb-3">
             <div>
               <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Kelas Aktif</span>
-              <h3 className="text-base font-black text-white truncate max-w-[180px]">{currentClass.name}</h3>
+              <h3 className="text-sm font-bold text-white truncate max-w-[160px]">
+                {currentClass ? currentClass.name : 'Belum Ada'}
+              </h3>
             </div>
-            <span className="px-2.5 py-1 rounded-xl bg-indigo-500/20 text-indigo-300 text-xs font-mono font-bold">
-              {currentClass.code}
+            <span className="px-2.5 py-1 rounded-lg bg-teal-900/60 text-teal-300 text-xs font-semibold">
+              {students.length} Siswa
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="p-3 rounded-2xl bg-white/5 border border-white/5">
-              <span className="text-slate-400 block text-[11px]">Total Murid</span>
-              <strong className="text-lg text-white font-mono">{currentClass.studentCount} Siswa</strong>
-            </div>
-            <div className="p-3 rounded-2xl bg-white/5 border border-white/5">
-              <span className="text-slate-400 block text-[11px]">Tugas Masuk</span>
-              <strong className={`text-lg font-mono ${pendingSubmissions.length > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
-                {pendingSubmissions.length} Menunggu
-              </strong>
-            </div>
+          <div className="space-y-1.5 text-xs">
+            <label className="text-[11px] text-slate-400 font-medium">Ganti Kelas Berjalan:</label>
+            <select
+              value={activeClassId}
+              onChange={(e) => setActiveClassId(e.target.value)}
+              className="w-full text-xs font-semibold text-white bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 cursor-pointer focus:outline-none focus:border-teal-500"
+            >
+              {classrooms.map(c => (
+                <option key={c.id} value={c.id}>
+                  {c.name} ({c.studentCount} murid)
+                </option>
+              ))}
+            </select>
           </div>
 
           <button
-            onClick={() => setActiveTab('teacher')}
-            className="w-full py-2.5 rounded-xl text-xs font-bold bg-white text-slate-900 hover:bg-slate-100 transition-all text-center block"
+            onClick={() => setActiveTab('progress')}
+            className="w-full py-2 rounded-lg text-xs font-semibold bg-slate-700 hover:bg-slate-600 text-slate-200 transition-colors text-center block"
           >
-            Buka Roster & Periksa Nilai
+            + Kelola Kelas & Siswa
           </button>
         </div>
       </div>
 
-      {/* 2. TEACHER STATS OVERVIEW */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5">
-        <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-soft space-y-1">
-          <div className="flex items-center gap-2 text-indigo-600 text-xs font-bold">
+      {/* 2. RANDOM STUDENT WINNER BANNER (IF PICKED) */}
+      {selectedStudent && (
+        <div className="p-4 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-between animate-fadeIn">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center font-bold text-lg">
+              🎯
+            </div>
+            <div>
+              <span className="text-[11px] font-bold text-teal-700 uppercase tracking-wider block">Giliran Maju Bicara</span>
+              <h4 className="text-base font-extrabold text-slate-900">
+                {selectedStudent}
+              </h4>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                soundService.playClick();
+                setActiveTab('cards');
+              }}
+              className="px-3 py-1.5 bg-teal-700 text-white text-xs font-semibold rounded-lg hover:bg-teal-800 transition-colors"
+            >
+              Pilihkan Topik Bicara →
+            </button>
+            <button
+              onClick={() => setSelectedStudent(null)}
+              className="px-2.5 py-1.5 text-slate-400 hover:text-slate-600 text-xs"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 3. TEACHER STATS OVERVIEW */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="p-4 rounded-xl bg-white border border-slate-200 space-y-1">
+          <div className="flex items-center gap-2 text-teal-700 text-xs font-semibold">
+            <FolderOpen className="w-4 h-4" />
+            <span>Kelas Anda</span>
+          </div>
+          <div className="text-2xl font-bold text-slate-900">
+            {classrooms.length} Kelas
+          </div>
+          <p className="text-[11px] text-slate-500">Milik {activeTeacher?.name || 'Anda'}</p>
+        </div>
+
+        <div className="p-4 rounded-xl bg-white border border-slate-200 space-y-1">
+          <div className="flex items-center gap-2 text-teal-700 text-xs font-semibold">
             <Users className="w-4 h-4" />
-            <span>Total Siswa Terdaftar</span>
+            <span>Total Siswa</span>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono">
-            {classrooms.reduce((acc, c) => acc + c.studentCount, 0)} Murid
+          <div className="text-2xl font-bold text-slate-900">
+            {totalStudents} Siswa
           </div>
-          <p className="text-[11px] text-slate-400">Lintas {classrooms.length} kelompok kelas</p>
+          <p className="text-[11px] text-slate-500">Terdaftar di semua kelas</p>
         </div>
 
-        <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-soft space-y-1">
-          <div className="flex items-center gap-2 text-amber-600 text-xs font-bold">
-            <FileText className="w-4 h-4" />
-            <span>Tugas Butuh Nilai</span>
+        <div className="p-4 rounded-xl bg-white border border-slate-200 space-y-1">
+          <div className="flex items-center gap-2 text-teal-700 text-xs font-semibold">
+            <CheckCircle2 className="w-4 h-4" />
+            <span>Siswa Kelas Aktif</span>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-amber-600 font-mono">
-            {pendingSubmissions.length} Tugas
+          <div className="text-2xl font-bold text-slate-900">
+            {students.length} Siswa
           </div>
-          <p className="text-[11px] text-slate-400">Terkumpul dari rekaman murid</p>
+          <p className="text-[11px] text-slate-500">{currentClass?.name || 'Kelas Terpilih'}</p>
         </div>
 
-        <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-soft space-y-1">
-          <div className="flex items-center gap-2 text-emerald-600 text-xs font-bold">
-            <Clock className="w-4 h-4" />
-            <span>Total Jam Mengajar</span>
+        <div className="p-4 rounded-xl bg-white border border-slate-200 space-y-1">
+          <div className="flex items-center gap-2 text-teal-700 text-xs font-semibold">
+            <Sparkles className="w-4 h-4" />
+            <span>Mode Latihan</span>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono">
-            {user.speakingMinutes} Menit
+          <div className="text-2xl font-bold text-slate-900">
+            6 Modul
           </div>
-          <p className="text-[11px] text-slate-400">Fasilitasi speaking aktif</p>
-        </div>
-
-        <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-soft space-y-1">
-          <div className="flex items-center gap-2 text-purple-600 text-xs font-bold">
-            <Award className="w-4 h-4" />
-            <span>Rata-Rata Kelancaran</span>
-          </div>
-          <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono">
-            93.4%
-          </div>
-          <p className="text-[11px] text-slate-400">Pencapaian rubrik kelas</p>
+          <p className="text-[11px] text-slate-500">Speaking, Reading, Roleplay, Arena</p>
         </div>
       </div>
 
-      {/* 3. QUICK LESSON PRESETS FOR TODAY'S CLASS */}
-      <section className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-soft space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+      {/* 4. CLASS SELECTION CARDS (BISA MASUK KELAS YG UDAH DIBUAT) */}
+      <section className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
           <div>
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-amber-500" />
-              <h2 className="text-lg font-black text-slate-900">Rencana Latihan Kelas Siap Pakai</h2>
-            </div>
+            <h2 className="text-base font-bold text-slate-900">Pilih Kelas yang Sedang Diajar</h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Pilih paket sesi mengajar instan yang siap Anda tampilkan langsung di layar kelas atau Google Meet/Zoom.
+              Klik salah satu kelas di bawah untuk langsung mengaktifkan roster siswa dan leaderboard kelas tersebut.
             </p>
           </div>
           <button
-            onClick={() => setActiveTab('cart')}
-            className="text-xs font-bold text-indigo-600 hover:text-indigo-800"
+            onClick={() => setActiveTab('progress')}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-700 hover:text-teal-800"
           >
-            Kustomisasi Rangkaian (Cart) →
+            <PlusCircle className="w-3.5 h-3.5" />
+            <span>Tambah Kelas Baru</span>
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Preset 1 */}
-          <div className="p-5 rounded-3xl bg-slate-50/80 border border-slate-200 hover:border-indigo-300 hover:bg-white transition-all flex flex-col justify-between space-y-3">
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-lg bg-amber-100 text-amber-800">
-                  Ice Breaking
-                </span>
-                <span className="text-xs font-mono font-bold text-slate-500">5 Menit</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          {classrooms.map((cls) => {
+            const isSelected = cls.id === activeClassId;
+            return (
+              <div
+                key={cls.id}
+                onClick={() => {
+                  soundService.playClick();
+                  setActiveClassId(cls.id);
+                }}
+                className={`p-4 rounded-xl border text-left cursor-pointer transition-all ${
+                  isSelected
+                    ? 'bg-teal-50/70 border-teal-500 ring-1 ring-teal-500'
+                    : 'bg-slate-50 border-slate-200 hover:bg-white hover:border-slate-300'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                    isSelected ? 'bg-teal-700 text-white' : 'bg-slate-200 text-slate-700'
+                  }`}>
+                    {isSelected ? 'Kelas Aktif' : 'Klik Masuk'}
+                  </span>
+                  <span className="text-xs font-semibold text-slate-500">
+                    {cls.studentCount} Murid
+                  </span>
+                </div>
+                <h4 className="font-bold text-sm text-slate-900 truncate">{cls.name}</h4>
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Tingkat: {cls.grade || 'Umum'} • Guru: {activeTeacher?.name}
+                </p>
               </div>
-              <h4 className="font-extrabold text-sm text-slate-900">Morning Voice Warm-Up</h4>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* 5. CLASSROOM ACTIVITIES TOOLKIT */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-bold text-base text-slate-900">Pilih Aktivitas Belajar Hari Ini</h3>
+          <span className="text-xs text-slate-500">Tampilkan ke proyektor / layar kelas</span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Running Reading */}
+          <div
+            onClick={() => setActiveTab('reading')}
+            className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-teal-400 hover:shadow-sm transition-all cursor-pointer group flex flex-col justify-between"
+          >
+            <div className="space-y-2.5">
+              <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center font-bold">
+                <Gauge className="w-5 h-5" />
+              </div>
+              <h4 className="font-bold text-sm text-slate-900 group-hover:text-teal-700 transition-colors">
+                Teleprompter Reading
+              </h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Pemanasan small talk singkat + tongue twister seru untuk melatih kelenturan artikulasi murid di awal jam pelajaran.
+                Tampilkan teks bacaan berjalan naik secara kontinu. Guru memegang kendali kecepatan untuk melatih kelancaran membaca bersama.
               </p>
             </div>
-            <button
-              onClick={() => setActiveTab('cart')}
-              className="w-full py-2.5 rounded-xl text-xs font-bold bg-white hover:bg-indigo-50 border border-slate-200 text-indigo-700 transition-all flex items-center justify-center gap-1.5 shadow-sm"
-            >
-              <Play className="w-3.5 h-3.5 fill-indigo-700" />
-              <span>Jalankan Sesi Pemanasan</span>
-            </button>
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-teal-700">
+              <span>Buka Teleprompter</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
           </div>
 
-          {/* Preset 2 */}
-          <div className="p-5 rounded-3xl bg-slate-50/80 border border-slate-200 hover:border-indigo-300 hover:bg-white transition-all flex flex-col justify-between space-y-3">
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-lg bg-indigo-100 text-indigo-800">
-                  Speed Drill
-                </span>
-                <span className="text-xs font-mono font-bold text-slate-500">10 Menit</span>
+          {/* Speaking Cards */}
+          <div
+            onClick={() => setActiveTab('cards')}
+            className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-amber-400 hover:shadow-sm transition-all cursor-pointer group flex flex-col justify-between"
+          >
+            <div className="space-y-2.5">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold">
+                <Layers className="w-5 h-5" />
               </div>
-              <h4 className="font-extrabold text-sm text-slate-900">Teleprompter Reading Sprint</h4>
+              <h4 className="font-bold text-sm text-slate-900 group-hover:text-amber-700 transition-colors">
+                Bank Speaking Cards
+              </h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Tampilkan teks bacaan bergerak ke atas di layar kelas. Minta murid membaca bergantian sesuai kecepatan sebelum teks hilang.
+                Pilih topik bicara terarah dengan timer hitung mundur, kosakata bantuan, dan contoh pembuka kalimat untuk siswa.
               </p>
             </div>
-            <button
-              onClick={() => setActiveTab('reading')}
-              className="w-full py-2.5 rounded-xl text-xs font-bold bg-white hover:bg-indigo-50 border border-slate-200 text-indigo-700 transition-all flex items-center justify-center gap-1.5 shadow-sm"
-            >
-              <Gauge className="w-3.5 h-3.5 text-indigo-700" />
-              <span>Buka Teleprompter Kelas</span>
-            </button>
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-amber-700">
+              <span>Pilih Kartu Topik</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
           </div>
 
-          {/* Preset 3 */}
-          <div className="p-5 rounded-3xl bg-slate-50/80 border border-slate-200 hover:border-indigo-300 hover:bg-white transition-all flex flex-col justify-between space-y-3">
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-lg bg-purple-100 text-purple-800">
-                  Roleplay Misi
-                </span>
-                <span className="text-xs font-mono font-bold text-slate-500">15 Menit</span>
+          {/* Roleplay Secret Mission */}
+          <div
+            onClick={() => setActiveTab('roleplay')}
+            className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition-all cursor-pointer group flex flex-col justify-between"
+          >
+            <div className="space-y-2.5">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
+                <Theater className="w-5 h-5" />
               </div>
-              <h4 className="font-extrabold text-sm text-slate-900">Simulasi Konflik Berpasangan</h4>
+              <h4 className="font-bold text-sm text-slate-900 group-hover:text-emerald-700 transition-colors">
+                Roleplay Misi Rahasia
+              </h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Tugaskan Murid A dan B maju ke depan. Buka kartu misi rahasia masing-masing dan saksikan negosiasi bahasa Inggris mereka!
+                Tugaskan dua siswa maju ke depan. Setiap peran memiliki misi tersembunyi yang harus dicapai dalam dialog bahasa Inggris.
               </p>
             </div>
-            <button
-              onClick={() => setActiveTab('roleplay')}
-              className="w-full py-2.5 rounded-xl text-xs font-bold bg-white hover:bg-indigo-50 border border-slate-200 text-indigo-700 transition-all flex items-center justify-center gap-1.5 shadow-sm"
-            >
-              <Theater className="w-3.5 h-3.5 text-indigo-700" />
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-emerald-700">
               <span>Buka Simulasi Roleplay</span>
-            </button>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </div>
+
+          {/* Speaking Arena Duel 1v1 */}
+          <div
+            onClick={() => setActiveTab('arena')}
+            className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-slate-400 hover:shadow-sm transition-all cursor-pointer group flex flex-col justify-between"
+          >
+            <div className="space-y-2.5">
+              <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center font-bold">
+                <Trophy className="w-5 h-5" />
+              </div>
+              <h4 className="font-bold text-sm text-slate-900 group-hover:text-slate-800 transition-colors">
+                Arena Duel 1v1 & Leaderboard
+              </h4>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Adu argumen dua murid pada topik yang sama di depan kelas, berikan poin berdasarkan rubrik 4 kriteria, dan catat skornya.
+              </p>
+            </div>
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-slate-700">
+              <span>Mulai Duel Siswa</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </div>
+
+          {/* Studio Games */}
+          <div
+            onClick={() => setActiveTab('interactive')}
+            className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-teal-400 hover:shadow-sm transition-all cursor-pointer group flex flex-col justify-between"
+          >
+            <div className="space-y-2.5">
+              <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center font-bold">
+                <Mic2 className="w-5 h-5" />
+              </div>
+              <h4 className="font-bold text-sm text-slate-900 group-hover:text-teal-700 transition-colors">
+                Studio Games & Pemanasan
+              </h4>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Permainan cepat: Word Chain, Alibi Detective, Tongue Twister, dan Rapid Fire untuk mencairkan suasana sebelum materi utama.
+              </p>
+            </div>
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-teal-700">
+              <span>Buka Studio Games</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </div>
+
+          {/* Roster & Penilaian Siswa */}
+          <div
+            onClick={() => setActiveTab('teacher')}
+            className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-slate-400 hover:shadow-sm transition-all cursor-pointer group flex flex-col justify-between"
+          >
+            <div className="space-y-2.5">
+              <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold">
+                <GraduationCap className="w-5 h-5" />
+              </div>
+              <h4 className="font-bold text-sm text-slate-900 group-hover:text-slate-800 transition-colors">
+                Roster Murid & Poin Kelas
+              </h4>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Lihat daftar murid di kelas aktif, catat poin partisipasi, atau ekspor rekap keikutsertaan berbicara siswa.
+              </p>
+            </div>
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-slate-700">
+              <span>Buka Roster Kelas</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* 4. CLASSROOM ACTIVITIES TOOLKIT */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column (2 spans): Interactive Activities for Class */}
-        <div className="lg:col-span-2 space-y-5">
-          <div className="flex items-center justify-between">
-            <h3 className="font-black text-lg text-slate-900">Fasilitasi Aktivitas Mengajar</h3>
-            <span className="text-xs text-slate-400">Siap Ditampilkan ke Siswa</span>
+      {/* 6. ACTIVE CLASS STUDENT ROSTER PREVIEW */}
+      <section className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div>
+            <h3 className="font-bold text-base text-slate-900 flex items-center gap-2">
+              <Users className="w-4 h-4 text-teal-700" />
+              <span>Siswa di {currentClass ? currentClass.name : 'Kelas Terpilih'} ({students.length} Siswa)</span>
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Daftar murid yang siap dipanggil berbicara atau diberi poin partisipasi hari ini.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            {/* Running Reading */}
-            <div
-              onClick={() => setActiveTab('reading')}
-              className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-soft hover:shadow-card hover:border-indigo-300 transition-all cursor-pointer group flex flex-col justify-between"
-            >
-              <div className="space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold group-hover:scale-105 transition-transform">
-                  <Gauge className="w-6 h-6 text-indigo-600" />
-                </div>
-                <h4 className="font-extrabold text-base text-slate-900 group-hover:text-indigo-600 transition-colors">
-                  Teleprompter Reading
-                </h4>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Proyeksikan teks bergerak naik secara kontinu. Guru memegang kendali kecepatan (0.5x–2.0x) untuk melatih kelancaran membaca serempak murid.
-                </p>
-              </div>
-              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-indigo-600">
-                <span>Mulai Sesi Membaca Kelas</span>
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </div>
-
-            {/* Speaking Cards */}
-            <div
-              onClick={() => setActiveTab('cards')}
-              className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-soft hover:shadow-card hover:border-indigo-300 transition-all cursor-pointer group flex flex-col justify-between"
-            >
-              <div className="space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold group-hover:scale-105 transition-transform">
-                  <Layers className="w-6 h-6 text-amber-600" />
-                </div>
-                <h4 className="font-extrabold text-base text-slate-900 group-hover:text-amber-600 transition-colors">
-                  Bank Kartu Bicara (Speaking Cards)
-                </h4>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Panggil giliran bicara murid dengan kartu topik acak. Dilengkapi timer hitung mundur, kosakata panduan, dan inspirasi contoh respons.
-                </p>
-              </div>
-              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-amber-600">
-                <span>Pilih Kartu Topik</span>
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </div>
-
-            {/* Roleplay Secret Mission */}
-            <div
-              onClick={() => setActiveTab('roleplay')}
-              className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-soft hover:shadow-card hover:border-purple-300 transition-all cursor-pointer group flex flex-col justify-between"
-            >
-              <div className="space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold group-hover:scale-105 transition-transform">
-                  <Theater className="w-6 h-6 text-purple-600" />
-                </div>
-                <h4 className="font-extrabold text-base text-slate-900 group-hover:text-purple-600 transition-colors">
-                  Roleplay Misi Rahasia
-                </h4>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Tugaskan dua siswa untuk maju. Berikan misi rahasia masing-masing tanpa saling melihat, lalu nilai kemampuan diplomasi bahasa Inggris mereka.
-                </p>
-              </div>
-              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-purple-600">
-                <span>Mulai Simulasi Kelas</span>
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </div>
-
-            {/* Speaking Arena Showdowns */}
-            <div
-              onClick={() => setActiveTab('arena')}
-              className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-soft hover:shadow-card hover:border-rose-300 transition-all cursor-pointer group flex flex-col justify-between"
-            >
-              <div className="space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold group-hover:scale-105 transition-transform">
-                  <Trophy className="w-6 h-6 text-rose-600" />
-                </div>
-                <h4 className="font-extrabold text-base text-slate-900 group-hover:text-rose-600 transition-colors">
-                  Duel Head-to-Head & Leaderboard
-                </h4>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Tandingkan dua murid dalam satu topik debat yang sama di depan kelas, gunakan rubrik 4 kriteria penilaian, dan perbarui peringkat kelas.
-                </p>
-              </div>
-              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-rose-600">
-                <span>Fasilitasi Duel Kelas</span>
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column (1 span): Submissions to Grade & Class Leaderboard */}
-        <div className="space-y-6">
-          {/* Submissions Pending Grade */}
-          <div className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-soft space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-amber-500" />
-                <span>Tugas Siswa Masuk</span>
-              </h3>
+          <div className="flex items-center gap-2">
+            {students.length > 0 && (
               <button
-                onClick={() => setActiveTab('teacher')}
-                className="text-xs font-bold text-indigo-600 hover:text-indigo-800"
+                onClick={handlePickRandomStudent}
+                disabled={isPicking}
+                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-teal-50 text-teal-800 border border-teal-200 hover:bg-teal-100 transition-colors flex items-center gap-1.5"
               >
-                Lihat Semua ({submissions.length})
+                <Dices className={`w-3.5 h-3.5 ${isPicking ? 'animate-spin' : ''}`} />
+                <span>Undi Maju</span>
               </button>
-            </div>
-
-            <div className="space-y-3">
-              {submissions.length === 0 ? (
-                <div className="p-5 text-center bg-slate-50 rounded-2xl border border-slate-100 text-slate-400 space-y-1">
-                  <FileText className="w-5 h-5 mx-auto text-slate-300" />
-                  <p className="text-xs font-bold text-slate-600">Belum ada tugas terkumpul</p>
-                  <p className="text-[11px]">Nilai rekaman siswa akan muncul di sini setelah sesi kelas selesai.</p>
-                </div>
-              ) : (
-                submissions.slice(0, 3).map((sub) => (
-                  <div
-                    key={sub.id}
-                    className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1.5 text-xs"
-                  >
-                    <div className="flex items-center justify-between">
-                      <strong className="text-slate-900">{sub.studentName}</strong>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
-                        sub.status === 'graded' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                      }`}>
-                        {sub.status === 'graded' ? `${sub.score}/100` : 'Perlu Nilai'}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 truncate">{sub.assignmentTitle}</p>
-                  </div>
-                ))
-              )}
-            </div>
-
+            )}
             <button
-              onClick={() => setActiveTab('teacher')}
-              className="w-full py-2.5 rounded-xl text-xs font-bold bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 transition-all text-center"
+              onClick={() => setActiveTab('progress')}
+              className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
             >
-              Buka Meja Penilaian Guru
+              + Input Nama Siswa
             </button>
           </div>
+        </div>
 
-          {/* Classroom Leaderboard Preview */}
-          <div className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-soft space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-amber-500" />
-                <span>Peringkat Teraktif {currentClass.name.split(' ')[0]}</span>
-              </h4>
-              <button
-                onClick={() => setActiveTab('arena')}
-                className="text-xs font-bold text-indigo-600 hover:text-indigo-800"
+        {students.length === 0 ? (
+          <div className="py-8 text-center bg-slate-50 rounded-xl border border-dashed border-slate-300 text-slate-500 space-y-2">
+            <Users className="w-8 h-8 mx-auto text-slate-400" />
+            <p className="text-xs font-bold text-slate-700">Belum ada murid di kelas ini</p>
+            <p className="text-[11px] text-slate-500 max-w-sm mx-auto">
+              Silakan input nama-nama siswa kelas ini agar Anda dapat mengundi giliran bicara dan mencatat poin partisipasi.
+            </p>
+            <button
+              onClick={() => setActiveTab('progress')}
+              className="mt-2 px-4 py-2 bg-teal-700 hover:bg-teal-800 text-white text-xs font-semibold rounded-lg shadow-sm"
+            >
+              + Input Nama Murid Sekarang
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+            {students.map((student, idx) => (
+              <div
+                key={student.id}
+                className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between hover:bg-slate-100/80 transition-colors"
               >
-                Buka Arena
-              </button>
-            </div>
-
-            <div className="space-y-2.5">
-              {classLeaderboard.length === 0 ? (
-                <div className="p-5 text-center bg-slate-50 rounded-2xl border border-slate-100 text-slate-400 space-y-2">
-                  <p className="text-xs font-bold text-slate-600">Belum ada murid di kelas ini</p>
-                  <button
-                    onClick={() => setActiveTab('progress')}
-                    className="px-3 py-1.5 rounded-xl text-[11px] font-bold bg-indigo-600 text-white"
-                  >
-                    + Input Nama Siswa
-                  </button>
-                </div>
-              ) : (
-                classLeaderboard.slice(0, 4).map((person, idx) => (
-                  <div
-                    key={person.id}
-                    className="p-3 rounded-2xl flex items-center justify-between bg-slate-50 border border-slate-100"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className={`w-5 text-center font-mono font-bold text-xs ${
-                        idx === 0 ? 'text-amber-500' : idx === 1 ? 'text-slate-400' : 'text-amber-700'
-                      }`}>
-                        #{idx + 1}
-                      </span>
-                      <img
-                        src={person.avatar}
-                        alt={person.name}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                      <div>
-                        <span className="font-bold text-xs text-slate-800 block">{person.name}</span>
-                        {person.categoryPill && (
-                          <span className="text-[10px] text-slate-400">{person.categoryPill}</span>
-                        )}
-                      </div>
-                    </div>
-
-                    <span className="font-mono font-black text-xs text-indigo-700">
-                      {person.xp} XP
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-7 h-7 rounded-lg bg-teal-100 text-teal-800 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                    {idx + 1}
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-xs font-bold text-slate-800 block truncate">
+                      {student.name}
+                    </span>
+                    <span className="text-[10px] text-slate-500">
+                      Poin: <strong className="text-teal-700">{student.xp || 0} XP</strong>
                     </span>
                   </div>
-                ))
-              )}
-            </div>
+                </div>
+
+                <button
+                  onClick={() => handleAwardStudent(student.id)}
+                  title="Beri +25 XP Partisipasi Bicara"
+                  className="px-2 py-1 bg-white hover:bg-teal-50 border border-slate-200 text-teal-700 text-[10px] font-bold rounded shadow-2xs hover:border-teal-300 transition-colors"
+                >
+                  +25 XP
+                </button>
+              </div>
+            ))}
           </div>
-        </div>
-      </div>
+        )}
+      </section>
     </div>
   );
 };

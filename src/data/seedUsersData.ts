@@ -1,37 +1,36 @@
 import { UserProfile, Classroom, StudentSubmission, HeadToHeadBattle, Student } from '../types';
 
 export const DEFAULT_TEACHER: UserProfile = {
-  id: 'usr-teacher-01',
-  name: 'Ms. Eleanor Vance',
-  username: 'teacher_eleanor',
+  id: 'teacher-1',
+  name: 'Teacher 1',
+  username: 'teacher_1',
   role: 'teacher',
-  avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80',
-  level: 'advanced',
-  xp: 1200,
-  rank: 'Arena Champion',
-  streakDays: 7,
+  avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=Teacher+1',
+  level: 'intermediate',
+  xp: 0,
+  rank: 'Instructor',
+  streakDays: 1,
   lastActiveDate: new Date().toISOString().split('T')[0],
   completedActivities: 0,
   speakingMinutes: 0,
   wordsRead: 0,
-  achievements: ['ach-first-words', 'ach-brave-speaker'],
+  achievements: [],
   classId: 'cls-main',
-  schoolName: 'English Speaking Academy',
-  subject: 'English Speaking & Fluency',
-  bio: 'Guru & Pelatih Berbicara Bahasa Inggris. Membimbing murid berani mengekspresikan opini dengan percaya diri.',
-  email: 'eleanor.vance@englisharena.edu',
-  phone: '+62 812-3456-7890'
+  schoolName: 'School / Institution',
+  subject: 'Bahasa Inggris',
+  bio: 'Fasilitator pembelajaran bahasa Inggris interaktif di kelas.',
+  email: '',
+  phone: ''
 };
 
 export const INITIAL_CLASSROOMS: Classroom[] = [
   {
     id: 'cls-main',
-    name: 'Kelas 10-A English Orators',
-    code: 'ENG-10A',
-    teacherId: 'usr-teacher-01',
+    name: 'Kelas Bahasa Inggris 1',
+    teacherId: 'teacher-1',
     studentCount: 0,
-    description: 'Kelas aktif latihan speaking spontan, teleprompter reading, dan roleplay percakapan.',
-    gradeLevel: 'Grade 10'
+    description: 'Kelas aktif latihan speaking spontan, teleprompter reading, dan simulasi percakapan.',
+    gradeLevel: 'Umum'
   }
 ];
 

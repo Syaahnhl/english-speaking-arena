@@ -12,21 +12,23 @@ import {
   CheckCircle, 
   Sparkles, 
   Building2, 
-  Mail, 
-  Phone, 
-  FileText, 
   BookOpen, 
-  Upload, 
   Check, 
   AlertCircle,
   HelpCircle,
-  Award
+  FolderOpen,
+  UserPlus,
+  RefreshCw
 } from 'lucide-react';
 
 export const ProfileProgressView: React.FC = () => {
   const { 
-    user, 
-    updateTeacherProfile, 
+    teachers,
+    activeTeacher,
+    switchActiveTeacher,
+    createTeacher,
+    deleteTeacher,
+    updateTeacherProfile,
     classrooms, 
     activeClassId, 
     setActiveClassId, 
@@ -36,79 +38,97 @@ export const ProfileProgressView: React.FC = () => {
     addStudent, 
     addStudentsBatch, 
     deleteStudent,
-    loadSampleStudents,
-    addToast
+    loadSampleStudents
   } = useArena();
 
-  const [activeSubTab, setActiveSubTab] = useState<'profile' | 'classrooms' | 'students'>('profile');
+  const [activeSubTab, setActiveSubTab] = useState<'teachers' | 'classrooms' | 'students'>('teachers');
 
-  // --- TEACHER PROFILE FORM STATE ---
-  const [teacherName, setTeacherName] = useState(user.name);
-  const [username, setUsername] = useState(user.username);
-  const [schoolName, setSchoolName] = useState(user.schoolName || '');
-  const [subject, setSubject] = useState(user.subject || 'Bahasa Inggris');
-  const [email, setEmail] = useState(user.email || '');
-  const [phone, setPhone] = useState(user.phone || '');
-  const [bio, setBio] = useState(user.bio || '');
-  const [avatar, setAvatar] = useState(user.avatar);
+  // --- NEW TEACHER FORM STATE ---
+  const [newTeacherName, setNewTeacherName] = useState('');
+  const [newTeacherSchool, setNewTeacherSchool] = useState('');
+  const [newTeacherSubject, setNewTeacherSubject] = useState('Bahasa Inggris');
+
+  // --- EDIT CURRENT TEACHER STATE ---
+  const [editTeacherName, setEditTeacherName] = useState(activeTeacher?.name || 'Teacher 1');
+  const [editSchoolName, setEditSchoolName] = useState(activeTeacher?.schoolName || '');
+  const [editSubject, setEditSubject] = useState(activeTeacher?.subject || 'Bahasa Inggris');
+
+  // Keep edit state synced if activeTeacher changes
+  React.useEffect(() => {
+    if (activeTeacher) {
+      setEditTeacherName(activeTeacher.name);
+      setEditSchoolName(activeTeacher.schoolName || '');
+      setEditSubject(activeTeacher.subject || 'Bahasa Inggris');
+    }
+  }, [activeTeacher?.id]);
 
   // --- CLASSROOM CREATION FORM STATE ---
   const [newClassName, setNewClassName] = useState('');
-  const [newClassGrade, setNewClassGrade] = useState('Grade 10');
+  const [newClassGrade, setNewClassGrade] = useState('Kelas 10');
   const [newClassDesc, setNewClassDesc] = useState('');
-  const [newClassCode, setNewClassCode] = useState('');
 
   // --- STUDENT CREATION STATE ---
-  const [selectedClassForStudent, setSelectedClassForStudent] = useState<string>(activeClassId);
+  const [selectedClassForStudent, setSelectedClassForStudent] = useState<string>(activeClassId || classrooms[0]?.id || '');
   const [singleStudentName, setSingleStudentName] = useState('');
-  const [singleStudentLevel, setSingleStudentLevel] = useState<ProficiencyLevel>('intermediate');
   const [batchNamesText, setBatchNamesText] = useState('');
   const [inputMode, setInputMode] = useState<'single' | 'batch'>('single');
+
+  // Sync selectedClassForStudent with activeClassId
+  React.useEffect(() => {
+    if (activeClassId) {
+      setSelectedClassForStudent(activeClassId);
+    } else if (classrooms.length > 0) {
+      setSelectedClassForStudent(classrooms[0].id);
+    }
+  }, [activeClassId, classrooms]);
 
   const currentClassObj = classrooms.find(c => c.id === selectedClassForStudent) || classrooms[0];
   const studentsInSelectedClass = students.filter(s => s.classId === selectedClassForStudent);
 
-  // Save Teacher Profile
+  // Handle Create New Teacher
+  const handleCreateTeacher = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTeacherName.trim()) return;
+
+    createTeacher(newTeacherName.trim(), newTeacherSchool.trim(), newTeacherSubject.trim());
+    setNewTeacherName('');
+    setNewTeacherSchool('');
+    setNewTeacherSubject('Bahasa Inggris');
+  };
+
+  // Handle Save Current Teacher Profile
   const handleSaveTeacherProfile = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!editTeacherName.trim()) return;
+
     updateTeacherProfile({
-      name: teacherName.trim() || 'Pengajar Bahasa Inggris',
-      username: username.trim() || 'teacher',
-      schoolName: schoolName.trim(),
-      subject: subject.trim(),
-      email: email.trim(),
-      phone: phone.trim(),
-      bio: bio.trim(),
-      avatar
+      name: editTeacherName.trim(),
+      schoolName: editSchoolName.trim(),
+      subject: editSubject.trim()
     });
   };
 
-  // Create Classroom
+  // Handle Create Classroom for Active Teacher
   const handleCreateClassroom = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newClassName.trim()) return;
-
-    const generatedCode = newClassCode.trim() || 
-      `${newClassName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
+    if (!newClassName.trim() || !activeTeacher) return;
 
     const newClass: Classroom = {
       id: `cls-${Date.now()}`,
       name: newClassName.trim(),
-      code: generatedCode,
-      teacherId: user.id,
+      teacherId: activeTeacher.id,
       studentCount: 0,
       description: newClassDesc.trim() || 'Kelompok kelas aktif latihan berbicara dan membaca.',
-      gradeLevel: newClassGrade
+      grade: newClassGrade
     };
 
     addClassroom(newClass);
     setNewClassName('');
     setNewClassDesc('');
-    setNewClassCode('');
     setSelectedClassForStudent(newClass.id);
   };
 
-  // Add Single Student
+  // Handle Add Single Student
   const handleAddSingleStudent = (e: React.FormEvent) => {
     e.preventDefault();
     if (!singleStudentName.trim() || !selectedClassForStudent) return;
@@ -118,7 +138,7 @@ export const ProfileProgressView: React.FC = () => {
       classId: selectedClassForStudent,
       name: singleStudentName.trim(),
       username: singleStudentName.trim().toLowerCase().replace(/[^a-z0-9]/g, '_'),
-      level: singleStudentLevel,
+      level: 'intermediate',
       xp: 0,
       completedChallenges: 0,
       streak: 1,
@@ -130,13 +150,13 @@ export const ProfileProgressView: React.FC = () => {
     setSingleStudentName('');
   };
 
-  // Add Batch Students
+  // Handle Add Batch Students
   const handleAddBatchStudents = (e: React.FormEvent) => {
     e.preventDefault();
     if (!batchNamesText.trim() || !selectedClassForStudent) return;
 
     const lines = batchNamesText
-      .split('\n')
+      .split(/[\n,]/)
       .map(line => line.trim())
       .filter(line => line.length > 0);
 
@@ -159,355 +179,409 @@ export const ProfileProgressView: React.FC = () => {
     setBatchNamesText('');
   };
 
-  const avatarPresets = [
-    'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80',
-    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
-    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80',
-    'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80',
-    'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=256&q=80'
-  ];
-
   return (
-    <div className="max-w-5xl mx-auto space-y-8 pb-12">
+    <div className="max-w-5xl mx-auto space-y-6 pb-12">
       {/* 1. TOP HEADER BANNER */}
-      <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-card flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
         <div className="flex items-center gap-4">
-          <img
-            src={user.avatar}
-            alt={user.name}
-            className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl object-cover border-2 border-indigo-600 shadow-md"
-          />
+          <div className="w-14 h-14 rounded-2xl bg-teal-700 text-white flex items-center justify-center font-bold text-xl flex-shrink-0">
+            {activeTeacher?.name ? activeTeacher.name.charAt(0).toUpperCase() : 'T'}
+          </div>
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900">{user.name}</h1>
-              <span className="text-xs font-extrabold uppercase px-2.5 py-0.5 rounded-lg bg-indigo-50 text-indigo-700">
-                Pengajar
+              <h1 className="text-xl font-bold text-slate-900">{activeTeacher?.name || 'Teacher 1'}</h1>
+              <span className="text-[11px] font-bold uppercase px-2 py-0.5 rounded bg-teal-100 text-teal-800">
+                Pengajar Aktif
               </span>
             </div>
-            <p className="text-xs text-slate-500 font-medium">
-              {user.schoolName ? `${user.schoolName} • ` : ''}{user.subject || 'Bahasa Inggris'}
+            <p className="text-xs text-slate-600">
+              {activeTeacher?.schoolName ? `${activeTeacher.schoolName} • ` : ''}{activeTeacher?.subject || 'Bahasa Inggris'}
             </p>
-            <p className="text-[11px] text-slate-400">
-              {classrooms.length} Kelas Terdaftar • {students.length} Siswa Terkelola
+            <p className="text-[11px] text-slate-500">
+              {classrooms.length} Kelas • {students.length} Total Siswa Terkelola
             </p>
           </div>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex flex-wrap gap-2 p-1.5 bg-slate-100 rounded-2xl border border-slate-200 text-xs">
+        <div className="flex flex-wrap gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs">
           <button
             onClick={() => {
-              setActiveSubTab('profile');
+              setActiveSubTab('teachers');
               soundService.playClick();
             }}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold transition-all ${
-              activeSubTab === 'profile'
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+            className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
+              activeSubTab === 'teachers'
+                ? 'bg-teal-700 text-white shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <UserCheck className="w-4 h-4" />
-            <span>Profil Pengajar</span>
+            1. Kelola Pengajar ({teachers.length})
           </button>
-
           <button
             onClick={() => {
               setActiveSubTab('classrooms');
               soundService.playClick();
             }}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold transition-all ${
+            className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
               activeSubTab === 'classrooms'
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                ? 'bg-teal-700 text-white shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <GraduationCap className="w-4 h-4" />
-            <span>Input Nama Kelas ({classrooms.length})</span>
+            2. Kelola Kelas ({classrooms.length})
           </button>
-
           <button
             onClick={() => {
               setActiveSubTab('students');
               soundService.playClick();
             }}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold transition-all ${
+            className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
               activeSubTab === 'students'
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                ? 'bg-teal-700 text-white shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Users className="w-4 h-4" />
-            <span>Input Nama Siswa ({studentsInSelectedClass.length})</span>
+            3. Input Siswa ({studentsInSelectedClass.length})
           </button>
         </div>
       </div>
 
-      {/* ============================================================== */}
-      {/* 2. SUBTAB: TEACHER PROFILE FORM */}
-      {/* ============================================================== */}
-      {activeSubTab === 'profile' && (
-        <form onSubmit={handleSaveTeacherProfile} className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-10 shadow-soft space-y-6 animate-slide-up">
-          <div className="border-b border-slate-100 pb-4">
-            <h2 className="text-lg font-black text-slate-900">Identitas & Biodata Pengajar</h2>
-            <p className="text-xs text-slate-500 mt-1">
-              Data ini ditampilkan pada rapor siswa, sertifikat turnamen arena, dan dasbor fasilitator kelas.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700">Nama Lengkap & Gelar Guru</label>
-              <input
-                type="text"
-                value={teacherName}
-                onChange={(e) => setTeacherName(e.target.value)}
-                placeholder="Contoh: Ms. Eleanor Vance / Budi Rahardjo, S.Pd."
-                className="w-full px-4 py-3 rounded-2xl text-xs bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700">Username Pengajar</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Contoh: teacher_eleanor"
-                className="w-full px-4 py-3 rounded-2xl text-xs bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700">Sekolah / Lembaga / Kursus</label>
-              <div className="relative">
-                <Building2 className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
-                <input
-                  type="text"
-                  value={schoolName}
-                  onChange={(e) => setSchoolName(e.target.value)}
-                  placeholder="Contoh: SMA Bintang Bangsa / English First Academy"
-                  className="w-full pl-10 pr-4 py-3 rounded-2xl text-xs bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
-                />
+      {/* 2. SUBTAB: TEACHERS MANAGEMENT */}
+      {activeSubTab === 'teachers' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column: Form Tambah Pengajar Baru & Edit Pengajar Aktif */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Box 1: Tambah Pengajar Baru */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-5">
+              <div className="border-b border-slate-100 pb-3">
+                <h3 className="font-bold text-base text-slate-900 flex items-center gap-2">
+                  <UserPlus className="w-4 h-4 text-teal-700" />
+                  <span>Tambah Pengajar Baru</span>
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Setiap pengajar memiliki daftar kelas dan muridnya masing-masing secara terpisah.
+                </p>
               </div>
-            </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700">Mata Pelajaran / Fokus Latihan</label>
-              <div className="relative">
-                <BookOpen className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
-                <input
-                  type="text"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  placeholder="Contoh: English Speaking & Public Fluency"
-                  className="w-full pl-10 pr-4 py-3 rounded-2xl text-xs bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
-                />
-              </div>
-            </div>
+              <form onSubmit={handleCreateTeacher} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-700">Nama Pengajar *</label>
+                    <input
+                      type="text"
+                      value={newTeacherName}
+                      onChange={(e) => setNewTeacherName(e.target.value)}
+                      placeholder="Contoh: Teacher Ahmad, S.Pd."
+                      required
+                      className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-teal-600"
+                    />
+                  </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700">Email Pengajar</label>
-              <div className="relative">
-                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Contoh: guru@sekolah.sch.id"
-                  className="w-full pl-10 pr-4 py-3 rounded-2xl text-xs bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
-                />
-              </div>
-            </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-700">Asal Sekolah / Lembaga</label>
+                    <input
+                      type="text"
+                      value={newTeacherSchool}
+                      onChange={(e) => setNewTeacherSchool(e.target.value)}
+                      placeholder="Contoh: SMA Negeri 1 / English Center"
+                      className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-teal-600"
+                    />
+                  </div>
+                </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700">No. WhatsApp / Kontak</label>
-              <div className="relative">
-                <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
-                <input
-                  type="text"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Contoh: +62 812-3456-7890"
-                  className="w-full pl-10 pr-4 py-3 rounded-2xl text-xs bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
-                />
-              </div>
-            </div>
-          </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700">Mata Pelajaran / Spesialisasi</label>
+                  <input
+                    type="text"
+                    value={newTeacherSubject}
+                    onChange={(e) => setNewTeacherSubject(e.target.value)}
+                    placeholder="Contoh: English Speaking & Fluency"
+                    className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-teal-600"
+                  />
+                </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700">Motto Mengajar / Bio Pengajar</label>
-            <textarea
-              rows={2}
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              placeholder="Tuliskan pesan motivasi atau visi kelas untuk murid..."
-              className="w-full px-4 py-3 rounded-2xl text-xs bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium leading-relaxed"
-            />
-          </div>
-
-          {/* Avatar Preset Picker */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-700 block">Pilih Foto Profil Pengajar</label>
-            <div className="flex flex-wrap items-center gap-3">
-              {avatarPresets.map((imgUrl, i) => (
                 <button
-                  type="button"
-                  key={i}
-                  onClick={() => setAvatar(imgUrl)}
-                  className={`w-12 h-12 rounded-2xl overflow-hidden border-2 transition-all ${
-                    avatar === imgUrl ? 'border-indigo-600 ring-2 ring-indigo-400/30 scale-105' : 'border-slate-200 opacity-60 hover:opacity-100'
-                  }`}
+                  type="submit"
+                  className="px-4 py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-2xs transition-colors flex items-center gap-1.5"
                 >
-                  <img src={imgUrl} alt="Avatar option" className="w-full h-full object-cover" />
+                  <Plus className="w-4 h-4" />
+                  <span>Daftarkan Pengajar Ini</span>
                 </button>
-              ))}
+              </form>
+            </div>
+
+            {/* Box 2: Edit Profil Pengajar Aktif Saat Ini */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+              <div className="border-b border-slate-100 pb-3">
+                <h3 className="font-bold text-base text-slate-900 flex items-center gap-2">
+                  <Edit3 className="w-4 h-4 text-teal-700" />
+                  <span>Ubah Nama & Data Pengajar Aktif ({activeTeacher?.name})</span>
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Perbarui nama yang akan tampil di sapaan kelas dan dasbor.
+                </p>
+              </div>
+
+              <form onSubmit={handleSaveTeacherProfile} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-700">Nama Pengajar</label>
+                    <input
+                      type="text"
+                      value={editTeacherName}
+                      onChange={(e) => setEditTeacherName(e.target.value)}
+                      placeholder="Nama Pengajar"
+                      required
+                      className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-teal-600"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-700">Sekolah / Instansi</label>
+                    <input
+                      type="text"
+                      value={editSchoolName}
+                      onChange={(e) => setEditSchoolName(e.target.value)}
+                      placeholder="Nama Sekolah"
+                      className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-teal-600"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700">Bidang / Subjek</label>
+                  <input
+                    type="text"
+                    value={editSubject}
+                    onChange={(e) => setEditSubject(e.target.value)}
+                    placeholder="Contoh: English Speaking"
+                    className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-teal-600"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Simpan Perubahan Pengajar</span>
+                </button>
+              </form>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-end">
-            <button
-              type="submit"
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-xs bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20 transition-all"
-            >
-              <Check className="w-4 h-4" />
-              <span>Simpan Perubahan Profil</span>
-            </button>
+          {/* Right Column: Daftar Semua Pengajar Terdaftar & Tombol Ganti */}
+          <div className="space-y-4">
+            <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
+              <div className="border-b border-slate-100 pb-2">
+                <h4 className="font-bold text-sm text-slate-900">
+                  Daftar Pengajar ({teachers.length})
+                </h4>
+                <p className="text-[11px] text-slate-500">
+                  Pilih pengajar untuk berganti akun dan membuka kelas masing-masing.
+                </p>
+              </div>
+
+              <div className="space-y-2.5">
+                {teachers.map((teacher) => {
+                  const isActive = teacher.id === activeTeacher?.id;
+                  return (
+                    <div
+                      key={teacher.id}
+                      className={`p-3.5 rounded-xl border transition-all ${
+                        isActive
+                          ? 'bg-teal-50 border-teal-500 ring-1 ring-teal-500'
+                          : 'bg-slate-50 border-slate-200 hover:bg-white'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs ${
+                            isActive ? 'bg-teal-700 text-white' : 'bg-slate-200 text-slate-700'
+                          }`}>
+                            {teacher.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <strong className="text-xs text-slate-900 block truncate max-w-[130px]">
+                              {teacher.name}
+                            </strong>
+                            <span className="text-[10px] text-slate-500 block truncate max-w-[130px]">
+                              {teacher.schoolName || 'English Teacher'}
+                            </span>
+                          </div>
+                        </div>
+
+                        {isActive ? (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-700 text-white">
+                            Sedang Aktif
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => switchActiveTeacher(teacher.id)}
+                            className="px-2 py-1 text-[11px] font-semibold bg-white border border-slate-300 hover:border-teal-500 hover:text-teal-700 rounded text-slate-700 transition-colors"
+                          >
+                            Pilih
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Delete button if not the only teacher */}
+                      {!isActive && teachers.length > 1 && (
+                        <div className="pt-2 border-t border-slate-200/60 flex justify-end">
+                          <button
+                            onClick={() => {
+                              if (confirm(`Hapus akun pengajar ${teacher.name}? Semua kelas milik pengajar ini akan ikut terhapus.`)) {
+                                deleteTeacher(teacher.id);
+                              }
+                            }}
+                            className="text-[10px] text-rose-600 hover:text-rose-800 flex items-center gap-1"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            <span>Hapus Akun</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
-        </form>
+        </div>
       )}
 
-      {/* ============================================================== */}
-      {/* 2. SUBTAB: CLASSROOMS MANAGEMENT (INPUT NAMA KELAS) */}
-      {/* ============================================================== */}
+      {/* 3. SUBTAB: CLASSROOMS MANAGEMENT */}
       {activeSubTab === 'classrooms' && (
-        <div className="space-y-8 animate-slide-up">
-          {/* Form Buat Kelas Baru */}
-          <form onSubmit={handleCreateClassroom} className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-soft space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <Plus className="w-5 h-5 text-indigo-600" />
-                <h3 className="font-extrabold text-base text-slate-900">Input / Tambah Kelas Baru</h3>
-              </div>
-              <span className="text-xs text-slate-400">Guru dapat membuat beberapa rombel kelas</span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Create New Classroom Form */}
+          <div className="lg:col-span-1 bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+            <div className="border-b border-slate-100 pb-3">
+              <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                <FolderOpen className="w-4 h-4 text-teal-700" />
+                <span>Buat Kelas Baru</span>
+              </h3>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Milik pengajar: <strong className="text-slate-800">{activeTeacher?.name}</strong>
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-slate-700">Nama Kelas</label>
+            <form onSubmit={handleCreateClassroom} className="space-y-3.5">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700">Nama Kelas *</label>
                 <input
                   type="text"
                   value={newClassName}
                   onChange={(e) => setNewClassName(e.target.value)}
-                  placeholder="Contoh: Kelas 10-A English Orators / Speaking Club B"
-                  className="w-full px-4 py-2.5 rounded-xl text-xs bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="Contoh: Kelas 10-A English Orators"
                   required
+                  className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-teal-600"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Tingkat / Grade</label>
-                <input
-                  type="text"
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700">Tingkat / Jenjang</label>
+                <select
                   value={newClassGrade}
                   onChange={(e) => setNewClassGrade(e.target.value)}
-                  placeholder="Contoh: Grade 10 / Pemula"
-                  className="w-full px-4 py-2.5 rounded-xl text-xs bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 bg-white focus:outline-none focus:border-teal-600"
+                >
+                  <option value="Kelas 7 (SMP)">Kelas 7 (SMP)</option>
+                  <option value="Kelas 8 (SMP)">Kelas 8 (SMP)</option>
+                  <option value="Kelas 9 (SMP)">Kelas 9 (SMP)</option>
+                  <option value="Kelas 10 (SMA/SMK)">Kelas 10 (SMA/SMK)</option>
+                  <option value="Kelas 11 (SMA/SMK)">Kelas 11 (SMA/SMK)</option>
+                  <option value="Kelas 12 (SMA/SMK)">Kelas 12 (SMA/SMK)</option>
+                  <option value="Kuliah / Umum">Kuliah / Umum</option>
+                  <option value="English Course / Bimbel">English Course / Bimbel</option>
+                </select>
               </div>
 
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-slate-700">Deskripsi / Catatan Kelas</label>
-                <input
-                  type="text"
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700">Catatan Kelas (Opsional)</label>
+                <textarea
+                  rows={2}
                   value={newClassDesc}
                   onChange={(e) => setNewClassDesc(e.target.value)}
-                  placeholder="Contoh: Fokus latihan bicara percaya diri dan fluency..."
-                  className="w-full px-4 py-2.5 rounded-xl text-xs bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="Contoh: Fokus speaking setiap Kamis pukul 08:00"
+                  className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-teal-600"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Kode Kelas (Opsional)</label>
-                <input
-                  type="text"
-                  value={newClassCode}
-                  onChange={(e) => setNewClassCode(e.target.value)}
-                  placeholder="Contoh: ENG-10A (otomatis jika kosong)"
-                  className="w-full px-4 py-2.5 rounded-xl text-xs bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-2">
               <button
                 type="submit"
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20 transition-all"
+                className="w-full py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-2xs transition-colors flex items-center justify-center gap-1.5"
               >
                 <Plus className="w-4 h-4" />
-                <span>Simpan Kelas Baru</span>
+                <span>Simpan Kelas Ini</span>
               </button>
-            </div>
-          </form>
+            </form>
+          </div>
 
-          {/* List Kelas Yang Sudah Ada */}
-          <div className="space-y-4">
-            <h3 className="font-extrabold text-base text-slate-900 flex items-center justify-between">
-              <span>Daftar Kelompok Kelas ({classrooms.length})</span>
-              <span className="text-xs font-normal text-slate-400">Pilih salah satu kelas untuk memfasilitasi sesi</span>
-            </h3>
+          {/* List of Classrooms */}
+          <div className="lg:col-span-2 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+              <h3 className="font-bold text-sm text-slate-900">
+                Daftar Kelas {activeTeacher?.name} ({classrooms.length} Kelas)
+              </h3>
+              <span className="text-[11px] text-slate-500">
+                Klik kartu untuk menjadikannya kelas aktif di layar
+              </span>
+            </div>
 
             {classrooms.length === 0 ? (
-              <div className="p-8 text-center bg-white rounded-3xl border border-slate-200 text-slate-400 space-y-2">
-                <GraduationCap className="w-8 h-8 mx-auto text-slate-300" />
-                <p className="text-xs font-bold text-slate-600">Belum ada kelas yang dibuat.</p>
-                <p className="text-[11px]">Gunakan formulir di atas untuk menginput nama kelas pertama Anda.</p>
+              <div className="p-8 text-center bg-white rounded-2xl border border-dashed border-slate-300 text-slate-400 space-y-2">
+                <FolderOpen className="w-8 h-8 mx-auto text-slate-300" />
+                <p className="text-xs font-bold text-slate-700">Belum ada kelas untuk pengajar ini</p>
+                <p className="text-[11px] text-slate-500">Buat kelas pertama Anda di formulir sebelah kiri.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 {classrooms.map((cls) => {
                   const isActive = cls.id === activeClassId;
-                  const countInClass = students.filter(s => s.classId === cls.id).length;
-
                   return (
                     <div
                       key={cls.id}
-                      className={`p-6 rounded-3xl border transition-all space-y-4 ${
+                      className={`p-4 rounded-xl border transition-all ${
                         isActive
-                          ? 'bg-indigo-50/70 border-2 border-indigo-600 shadow-md ring-2 ring-indigo-400/20'
-                          : 'bg-white border-slate-200 hover:border-slate-300 shadow-soft'
+                          ? 'bg-teal-50/80 border-teal-500 ring-1 ring-teal-500'
+                          : 'bg-white border-slate-200 hover:border-slate-300'
                       }`}
                     >
-                      <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start justify-between gap-2 mb-2">
                         <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded bg-indigo-100 text-indigo-700">
-                              {cls.code}
-                            </span>
-                            {cls.gradeLevel && (
-                              <span className="text-[10px] font-semibold text-slate-500">
-                                • {cls.gradeLevel}
-                              </span>
-                            )}
-                          </div>
-                          <h4 className="text-lg font-black text-slate-900 mt-1">{cls.name}</h4>
-                          <p className="text-xs text-slate-500 leading-relaxed line-clamp-2 mt-0.5">
-                            {cls.description}
-                          </p>
+                          <span className="text-[10px] font-bold text-teal-800 bg-teal-100/70 px-2 py-0.5 rounded">
+                            {cls.grade || 'Umum'}
+                          </span>
+                          <h4 className="font-bold text-sm text-slate-900 mt-1 truncate max-w-[200px]">
+                            {cls.name}
+                          </h4>
                         </div>
 
-                        {isActive && (
-                          <span className="flex-shrink-0 text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-500 text-white flex items-center gap-1 shadow-sm">
-                            <CheckCircle className="w-3 h-3" />
-                            <span>Aktif</span>
+                        {isActive ? (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-700 text-white">
+                            Aktif
                           </span>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setActiveClassId(cls.id);
+                              soundService.playClick();
+                            }}
+                            className="text-[11px] font-semibold text-slate-700 bg-slate-100 hover:bg-teal-50 hover:text-teal-700 px-2.5 py-1 rounded transition-colors"
+                          >
+                            Pilih Kelas
+                          </button>
                         )}
                       </div>
 
-                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-                        <span className="font-bold text-slate-600 flex items-center gap-1.5">
-                          <Users className="w-4 h-4 text-indigo-600" />
-                          <span>{countInClass} Siswa Terdaftar</span>
+                      <p className="text-[11px] text-slate-500 line-clamp-2 mb-3">
+                        {cls.description || 'Kelompok kelas latihan berbicara.'}
+                      </p>
+
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                        <span className="font-semibold text-slate-600">
+                          {cls.studentCount} Siswa Terdaftar
                         </span>
 
                         <div className="flex items-center gap-2">
@@ -515,37 +589,23 @@ export const ProfileProgressView: React.FC = () => {
                             onClick={() => {
                               setSelectedClassForStudent(cls.id);
                               setActiveSubTab('students');
-                              soundService.playClick();
                             }}
-                            className="px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50 transition-all"
+                            className="text-teal-700 hover:underline font-semibold"
                           >
-                            Kelola Siswa
+                            + Input Siswa
                           </button>
-
-                          {!isActive && (
-                            <button
-                              onClick={() => {
-                                setActiveClassId(cls.id);
-                                soundService.playSuccess();
-                                addToast({
-                                  type: 'info',
-                                  title: 'Kelas Aktif Berpindah',
-                                  message: `Sesi sekarang menggunakan rombel "${cls.name}".`
-                                });
-                              }}
-                              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition-all shadow-sm"
-                            >
-                              Pilih Kelas
-                            </button>
-                          )}
 
                           {classrooms.length > 1 && (
                             <button
-                              onClick={() => deleteClassroom(cls.id)}
-                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+                              onClick={() => {
+                                if (confirm(`Hapus kelas "${cls.name}"? Data siswa di kelas ini akan dihapus.`)) {
+                                  deleteClassroom(cls.id);
+                                }
+                              }}
+                              className="text-slate-400 hover:text-rose-600 p-1"
                               title="Hapus Kelas"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           )}
                         </div>
@@ -559,221 +619,189 @@ export const ProfileProgressView: React.FC = () => {
         </div>
       )}
 
-      {/* ============================================================== */}
-      {/* 3. SUBTAB: STUDENTS MANAGEMENT (INPUT NAMA SISWA) */}
-      {/* ============================================================== */}
+      {/* 4. SUBTAB: STUDENTS INPUT & ROSTER */}
       {activeSubTab === 'students' && (
-        <div className="space-y-6 animate-slide-up">
-          {/* Class Target Switcher & Quick Sample Loader */}
-          <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-soft flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-bold text-slate-500">Kelola Siswa untuk Kelas:</span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column: Form Input Siswa */}
+          <div className="lg:col-span-1 bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+            <div className="border-b border-slate-100 pb-3">
+              <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                <Users className="w-4 h-4 text-teal-700" />
+                <span>Input Siswa ke Kelas</span>
+              </h3>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Masukkan nama-nama siswa agar bisa diundi bicara dan dicatat nilainya.
+              </p>
+            </div>
+
+            {/* Pilih Kelas Sasaran */}
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-700">Pilih Kelas Sasaran:</label>
               <select
                 value={selectedClassForStudent}
                 onChange={(e) => setSelectedClassForStudent(e.target.value)}
-                className="font-black text-sm text-indigo-900 bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-200 focus:outline-none cursor-pointer"
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 bg-white focus:outline-none focus:border-teal-600"
               >
                 {classrooms.map(c => (
                   <option key={c.id} value={c.id}>
-                    {c.name} ({students.filter(s => s.classId === c.id).length} Siswa)
+                    {c.name} ({c.studentCount} siswa)
                   </option>
                 ))}
               </select>
             </div>
 
-            <div className="flex items-center gap-2">
+            {/* Toggle Mode: Satu-per-satu vs Sekaligus (Batch) */}
+            <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-lg text-xs font-semibold">
               <button
-                onClick={loadSampleStudents}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition-all"
-                title="Muat 4 contoh nama murid untuk uji coba cepat"
+                type="button"
+                onClick={() => setInputMode('single')}
+                className={`py-1.5 rounded transition-all ${
+                  inputMode === 'single'
+                    ? 'bg-white text-slate-900 shadow-2xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                <span>+ Muat Contoh Siswa (Opsional)</span>
+                Input 1 Nama
+              </button>
+              <button
+                type="button"
+                onClick={() => setInputMode('batch')}
+                className={`py-1.5 rounded transition-all ${
+                  inputMode === 'batch'
+                    ? 'bg-white text-slate-900 shadow-2xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Paste Banyak Nama
               </button>
             </div>
-          </div>
 
-          {/* Input Mode Selector */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setInputMode('single')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                inputMode === 'single'
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
-              }`}
-            >
-              + Input Satu per Satu
-            </button>
-            <button
-              onClick={() => setInputMode('batch')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                inputMode === 'batch'
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
-              }`}
-            >
-              📋 Paste Daftar Siswa Sekaligus (Batch)
-            </button>
-          </div>
-
-          {/* Form: Single Student Input */}
-          {inputMode === 'single' && (
-            <form onSubmit={handleAddSingleStudent} className="p-6 bg-white rounded-3xl border border-slate-200 shadow-soft space-y-4 animate-slide-up">
-              <h4 className="font-extrabold text-sm text-slate-900">Input Nama Siswa Baru</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="space-y-1.5 sm:col-span-2">
-                  <label className="text-xs font-bold text-slate-700">Nama Lengkap Siswa</label>
+            {inputMode === 'single' ? (
+              <form onSubmit={handleAddSingleStudent} className="space-y-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700">Nama Siswa</label>
                   <input
                     type="text"
                     value={singleStudentName}
                     onChange={(e) => setSingleStudentName(e.target.value)}
-                    placeholder="Contoh: Muhammad Rizky / Anisa Rahma"
-                    className="w-full px-4 py-2.5 rounded-xl text-xs bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Contoh: Dimas Aditya Pratama"
                     required
+                    className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-teal-600"
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">Tingkat Kemampuan</label>
-                  <select
-                    value={singleStudentLevel}
-                    onChange={(e) => setSingleStudentLevel(e.target.value as ProficiencyLevel)}
-                    className="w-full px-4 py-2.5 rounded-xl text-xs bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold cursor-pointer"
-                  >
-                    <option value="beginner">Beginner (Pemula)</option>
-                    <option value="intermediate">Intermediate (Menengah)</option>
-                    <option value="advanced">Advanced (Mahir)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex justify-end pt-1">
                 <button
                   type="submit"
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20 transition-all"
+                  className="w-full py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-2xs transition-colors flex items-center justify-center gap-1.5"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Tambahkan ke {currentClassObj?.name}</span>
+                  <span>Tambahkan Siswa</span>
                 </button>
-              </div>
-            </form>
-          )}
+              </form>
+            ) : (
+              <form onSubmit={handleAddBatchStudents} className="space-y-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700">
+                    Paste Daftar Nama Siswa (1 per baris / koma)
+                  </label>
+                  <textarea
+                    rows={6}
+                    value={batchNamesText}
+                    onChange={(e) => setBatchNamesText(e.target.value)}
+                    placeholder={"Ahmad Fauzi\nBella Safira\nCitra Kirana\nDavid Maulana"}
+                    required
+                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-teal-600 font-mono"
+                  />
+                </div>
 
-          {/* Form: Batch Student Input */}
-          {inputMode === 'batch' && (
-            <form onSubmit={handleAddBatchStudents} className="p-6 bg-white rounded-3xl border border-slate-200 shadow-soft space-y-4 animate-slide-up">
-              <div>
-                <h4 className="font-extrabold text-sm text-slate-900">Paste Daftar Siswa (Satu Nama per Baris)</h4>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Salin dari Excel, Word, atau daftar absensi kelas lalu tempel langsung di bawah ini.
-                </p>
-              </div>
-
-              <textarea
-                rows={5}
-                value={batchNamesText}
-                onChange={(e) => setBatchNamesText(e.target.value)}
-                placeholder={"Contoh:\nAhmad Fauzi\nBella Safira\nCitra Dewi\nDimas Pratama\nEka Saputra"}
-                className="w-full px-4 py-3 rounded-2xl text-xs bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium leading-relaxed font-mono"
-                required
-              />
-
-              <div className="flex items-center justify-between pt-1">
-                <span className="text-xs text-slate-400">
-                  {batchNamesText.split('\n').filter(l => l.trim().length > 0).length} nama terdeteksi
-                </span>
                 <button
                   type="submit"
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20 transition-all"
+                  className="w-full py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-2xs transition-colors flex items-center justify-center gap-1.5"
                 >
-                  <Upload className="w-4 h-4" />
-                  <span>Simpan Semua Nama Siswa</span>
+                  <Plus className="w-4 h-4" />
+                  <span>Tambahkan Semua Nama</span>
                 </button>
-              </div>
-            </form>
-          )}
+              </form>
+            )}
 
-          {/* Table of Students in Selected Class */}
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-soft overflow-hidden">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+            {/* Tombol Muat Siswa Contoh */}
+            <div className="pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => {
+                  if (selectedClassForStudent) {
+                    loadSampleStudents(selectedClassForStudent);
+                  }
+                }}
+                className="w-full py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>+ Muat 6 Nama Siswa Contoh</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Right Column: Daftar Siswa di Kelas Terpilih */}
+          <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
               <div>
-                <h3 className="font-extrabold text-base text-slate-900">
-                  Daftar Siswa Terdaftar di {currentClassObj?.name}
+                <h3 className="font-bold text-sm text-slate-900">
+                  Daftar Siswa di {currentClassObj?.name || 'Kelas Terpilih'} ({studentsInSelectedClass.length} Siswa)
                 </h3>
-                <p className="text-xs text-slate-500">
-                  Siswa ini akan otomatis muncul pada undian Speaking Cards, Roleplay, dan Turnamen Duel
+                <p className="text-[11px] text-slate-500">
+                  Siswa yang terdaftar di kelas ini akan muncul di dasbor dan undian giliran bicara.
                 </p>
               </div>
-              <span className="text-xs font-mono font-bold px-3 py-1 bg-slate-100 rounded-full text-slate-700">
-                {studentsInSelectedClass.length} Siswa
-              </span>
+
+              {studentsInSelectedClass.length > 0 && (
+                <span className="text-xs font-bold text-teal-800 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200">
+                  {studentsInSelectedClass.length} Siswa Siap Berlatih
+                </span>
+              )}
             </div>
 
             {studentsInSelectedClass.length === 0 ? (
-              <div className="p-12 text-center text-slate-400 space-y-3">
-                <Users className="w-10 h-10 mx-auto text-slate-300" />
-                <p className="text-sm font-bold text-slate-600">Belum ada data siswa di kelas ini.</p>
-                <p className="text-xs max-w-md mx-auto text-slate-400">
-                  Tambahkan nama siswa melalui form di atas atau klik tombol <strong>"+ Muat Contoh Siswa"</strong> untuk memasukkan data uji coba kelas.
+              <div className="p-8 text-center bg-slate-50 rounded-xl border border-dashed border-slate-300 text-slate-400 space-y-2">
+                <Users className="w-8 h-8 mx-auto text-slate-300" />
+                <p className="text-xs font-bold text-slate-700">Belum ada murid di kelas ini</p>
+                <p className="text-[11px] text-slate-500">
+                  Gunakan formulir di sebelah kiri untuk menginput nama murid satu per satu atau paste daftar nama dari Excel / Word.
                 </p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead>
-                    <tr className="border-b border-slate-200 text-slate-400 uppercase text-[10px] tracking-wider font-bold bg-slate-50/60">
-                      <th className="py-3 px-4">No</th>
-                      <th className="py-3 px-4">Nama Siswa</th>
-                      <th className="py-3 px-4">Level</th>
-                      <th className="py-3 px-4">Pangkat / Gelar</th>
-                      <th className="py-3 px-4 text-center">Tantangan</th>
-                      <th className="py-3 px-4 text-right">Total XP</th>
-                      <th className="py-3 px-4 text-center">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {studentsInSelectedClass.map((st, idx) => (
-                      <tr key={st.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="py-3.5 px-4 font-mono text-slate-400 font-bold">{idx + 1}</td>
-                        <td className="py-3.5 px-4 font-bold text-slate-900 flex items-center gap-2.5">
-                          <img
-                            src={st.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(st.name)}`}
-                            alt={st.name}
-                            className="w-7 h-7 rounded-full object-cover border border-slate-200"
-                          />
-                          <span>{st.name}</span>
-                        </td>
-                        <td className="py-3.5 px-4 capitalize">
-                          <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-indigo-50 text-indigo-700">
-                            {st.level}
-                          </span>
-                        </td>
-                        <td className="py-3.5 px-4">
-                          <span className="inline-flex items-center gap-1 font-bold text-slate-700">
-                            <Award className="w-3.5 h-3.5 text-amber-500" />
-                            {st.rankTitle || 'Rookie'}
-                          </span>
-                        </td>
-                        <td className="py-3.5 px-4 text-center font-mono font-bold text-slate-600">
-                          {st.completedChallenges} Selesai
-                        </td>
-                        <td className="py-3.5 px-4 text-right font-black font-mono text-indigo-600">
-                          {st.xp || 0} XP
-                        </td>
-                        <td className="py-3.5 px-4 text-center">
-                          <button
-                            onClick={() => deleteStudent(st.id)}
-                            className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
-                            title="Hapus Siswa"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[480px] overflow-y-auto pr-1">
+                {studentsInSelectedClass.map((student, idx) => (
+                  <div
+                    key={student.id}
+                    className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between hover:bg-slate-100/80 transition-colors"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-6 h-6 rounded-md bg-teal-700 text-white flex items-center justify-center font-bold text-[11px] flex-shrink-0">
+                        {idx + 1}
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-xs font-bold text-slate-900 block truncate">
+                          {student.name}
+                        </span>
+                        <span className="text-[10px] text-slate-500">
+                          Skor: <strong className="text-teal-700">{student.xp || 0} XP</strong>
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        if (confirm(`Hapus ${student.name} dari kelas?`)) {
+                          deleteStudent(student.id);
+                        }
+                      }}
+                      className="text-slate-400 hover:text-rose-600 p-1"
+                      title="Hapus Siswa"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
           </div>

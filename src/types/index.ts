@@ -260,9 +260,10 @@ export interface Student {
 export interface Classroom {
   id: string;
   name: string;
-  code: string;
+  code?: string;
   teacherId: string;
   studentCount: number;
   description: string;
   gradeLevel?: string;
+  grade?: string;
 }
