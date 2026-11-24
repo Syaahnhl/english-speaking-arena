@@ -33,11 +33,53 @@ export const InteractiveHubView: React.FC = () => {
   const [activeSubTab, setActiveSubTab] = useState<'taboo' | 'yes-and' | '432' | 'speed-talk' | 'shadowing' | 'visual-story'>('taboo');
   const [showHowToPlay, setShowHowToPlay] = useState<boolean>(true);
 
-  // --- 1. TABOO STATE ---
+  // --- 1. TABOO STATE (PENALTY SYSTEM) ---
   const [tabooIndex, setTabooIndex] = useState(0);
   const [tabooTimeLeft, setTabooTimeLeft] = useState(60);
   const [tabooRunning, setTabooRunning] = useState(false);
+  const [tabooViolations, setTabooViolations] = useState<{ [word: string]: number }>({});
   const currentTaboo = TABOO_CARDS[tabooIndex];
+
+  const totalTabooViolations = Object.values(tabooViolations).reduce((a, b) => a + b, 0);
+  const penaltyPerViolation = 10;
+  const currentTabooScore = Math.max(0, 100 - (totalTabooViolations * penaltyPerViolation));
+
+  const handleForbiddenWordViolation = (word: string) => {
+    soundService.playBuzzer();
+    setTabooViolations(prev => ({
+      ...prev,
+      [word]: (prev[word] || 0) + 1
+    }));
+  };
+
+  const handleDecrementViolation = (word: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    soundService.playClick();
+    setTabooViolations(prev => {
+      const current = prev[word] || 0;
+      if (current <= 1) {
+        const next = { ...prev };
+        delete next[word];
+        return next;
+      }
+      return { ...prev, [word]: current - 1 };
+    });
+  };
+
+  const handleResetViolations = () => {
+    soundService.playClick();
+    setTabooViolations({});
+  };
+
+  const handleNextTabooCard = () => {
+    soundService.playSuccess();
+    const earnedXp = Math.max(5, Math.round(currentTabooScore / 4));
+    awardXp(earnedXp, `Taboo "${currentTaboo.word}" (Skor: ${currentTabooScore}/100, ${totalTabooViolations} Pelanggaran)`);
+    setTabooIndex((tabooIndex + 1) % TABOO_CARDS.length);
+    setTabooViolations({});
+    setTabooTimeLeft(60);
+    setTabooRunning(false);
+  };
 
   // --- 2. YES, AND STATE ---
   const [yesAndIndex, setYesAndIndex] = useState(0);
@@ -186,23 +228,23 @@ export const InteractiveHubView: React.FC = () => {
             <div className="bg-gradient-to-br from-rose-50/70 via-white to-slate-50 rounded-3xl border border-rose-100 p-6 shadow-soft space-y-3 animate-slide-up text-xs text-slate-700">
               <div className="flex items-center gap-2 font-extrabold text-sm text-rose-950">
                 <AlertOctagon className="w-4 h-4 text-rose-600" />
-                <span>Cara Bermain Taboo / Hot Seat:</span>
+                <span>Aturan Bermain Taboo (Sistem Penalti Kata Terlarang):</span>
               </div>
               <p className="text-slate-600 leading-relaxed">
-                Tantangan mendeskripsikan sebuah kata target kepada teman atau partner bicara Anda <strong>TANPA</strong> menyebutkan kata-kata terlarang yang tercantum di kartu!
+                Tantangan bagi siswa untuk mendeskripsikan kata target kepada audiens <strong>TANPA</strong> menyebutkan kata-kata terlarang. Siswa memulai dengan modal <strong>100 Poin</strong>, dan pengajar akan mengeklik kata terlarang yang terucap untuk memotong skornya!
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
                 <div className="p-3.5 bg-white rounded-2xl border border-rose-100 space-y-1">
-                  <strong className="block text-slate-900">1. Lihat Kata Target</strong>
-                  <p className="text-slate-500">Kata besar di tengah adalah kata yang harus ditebak oleh lawan bicara Anda.</p>
+                  <strong className="block text-slate-900">1. Target Kata Bicara</strong>
+                  <p className="text-slate-500">Siswa mendeskripsikan kata target di tengah layar dengan bahasa Inggris.</p>
                 </div>
                 <div className="p-3.5 bg-white rounded-2xl border border-rose-100 space-y-1">
-                  <strong className="block text-slate-900">2. Hindari Kata Terlarang</strong>
-                  <p className="text-slate-500">Dilarang menyebut 5 kata di kotak merah! Gunakan sinonim, perumpamaan, atau fungsinya.</p>
+                  <strong className="block text-rose-700">2. Klik Kata yang Terucap (-10 Poin)</strong>
+                  <p className="text-slate-500">Setiap kali siswa mengucapkan kata terlarang, klik tombol kata tersebut untuk memotong skor.</p>
                 </div>
                 <div className="p-3.5 bg-white rounded-2xl border border-rose-100 space-y-1">
-                  <strong className="block text-slate-900">3. Kejar Batas Waktu</strong>
-                  <p className="text-slate-500">Deskripsikan terus selama 60 detik. Jika berhasil tertebak, klaim reward +20 XP.</p>
+                  <strong className="block text-slate-900">3. Pertahankan Skor Tertinggi</strong>
+                  <p className="text-slate-500">Makin sedikit kata terlarang yang diucapkan dalam 60 detik, makin tinggi skor akhirnya.</p>
                 </div>
               </div>
             </div>
@@ -216,52 +258,134 @@ export const InteractiveHubView: React.FC = () => {
               <span className="text-xs font-mono text-slate-400">Kartu {tabooIndex + 1} dari {TABOO_CARDS.length}</span>
             </div>
 
-            <div className="text-center py-8 bg-gradient-to-b from-indigo-50/60 to-white rounded-3xl border border-indigo-100">
+            {/* Score & Penalty Live Status Bar */}
+            <div className="p-4 rounded-2xl bg-slate-900 text-white flex items-center justify-between shadow-sm">
+              <div>
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Sisa Skor Siswa</span>
+                <div className="flex items-baseline gap-2">
+                  <span className={`text-2xl sm:text-3xl font-mono font-black ${
+                    currentTabooScore >= 80 ? 'text-emerald-400' : currentTabooScore >= 50 ? 'text-amber-400' : 'text-rose-400'
+                  }`}>
+                    {currentTabooScore}
+                  </span>
+                  <span className="text-xs text-slate-400 font-mono">/ 100 Poin</span>
+                </div>
+              </div>
+
+              <div className="text-right">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Pelanggaran Kata</span>
+                <span className={`text-xs font-bold font-mono px-2.5 py-1 rounded-lg ${
+                  totalTabooViolations > 0 ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-slate-800 text-slate-400'
+                }`}>
+                  {totalTabooViolations === 0 ? '0 Pelanggaran (Bersih)' : `${totalTabooViolations}x Terucap (-${totalTabooViolations * penaltyPerViolation} Poin)`}
+                </span>
+              </div>
+            </div>
+
+            <div className="text-center py-7 bg-gradient-to-b from-teal-50/40 to-white rounded-3xl border border-teal-100">
               <span className="text-xs font-bold uppercase tracking-widest text-slate-400 block mb-2">
                 KATA TARGET YANG HARUS DIDESKRIPSIKAN:
               </span>
               <h2 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-wider font-mono">
                 {currentTaboo.word}
               </h2>
-              <p className="text-xs text-slate-500 mt-3 max-w-md mx-auto italic">
+              <p className="text-xs text-slate-500 mt-2.5 max-w-md mx-auto italic">
                 Tips Bantuan: "{currentTaboo.hints}"
               </p>
             </div>
 
-            {/* FORBIDDEN WORDS */}
-            <div className="p-6 rounded-3xl bg-rose-50/70 border-2 border-rose-200 space-y-3">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-rose-800 flex items-center gap-2">
-                <AlertOctagon className="w-4 h-4 text-rose-600" />
-                DILARANG KERAS MENGUCAPKAN KATA BERIKUT:
-              </span>
+            {/* FORBIDDEN WORDS (INTERACTIVE PENALTY CLICKER) */}
+            <div className="p-5 sm:p-6 rounded-3xl bg-rose-50/60 border-2 border-rose-200 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                <span className="text-xs font-extrabold uppercase tracking-wider text-rose-800 flex items-center gap-1.5">
+                  <AlertOctagon className="w-4 h-4 text-rose-600" />
+                  KATA TERLARANG (KLIK JIKA DIUCAPKAN SISWA):
+                </span>
+                <span className="text-[11px] text-rose-600 font-medium">
+                  -10 Poin per klik kata
+                </span>
+              </div>
+
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                {currentTaboo.forbiddenWords.map((word, wIdx) => (
-                  <div key={wIdx} className="p-3 bg-white rounded-2xl border border-rose-200 text-center font-bold text-sm text-rose-700 shadow-sm">
-                    {word}
-                  </div>
-                ))}
+                {currentTaboo.forbiddenWords.map((word, wIdx) => {
+                  const count = tabooViolations[word] || 0;
+                  const isViolated = count > 0;
+                  return (
+                    <button
+                      key={wIdx}
+                      type="button"
+                      onClick={() => handleForbiddenWordViolation(word)}
+                      className={`relative p-3.5 rounded-2xl border text-center transition-all cursor-pointer select-none text-left flex flex-col justify-between ${
+                        isViolated
+                          ? 'bg-rose-600 border-rose-700 text-white shadow-md ring-2 ring-rose-400/50'
+                          : 'bg-white border-rose-200 text-rose-800 hover:border-rose-400 hover:bg-rose-100/40 shadow-xs'
+                      }`}
+                      title={`Klik jika siswa mengucapkan "${word}"`}
+                    >
+                      <div className="flex items-center justify-between gap-1">
+                        <span className={`text-[10px] font-bold uppercase tracking-wider ${isViolated ? 'text-rose-200' : 'text-slate-400'}`}>
+                          Kata #{wIdx + 1}
+                        </span>
+                        {isViolated && (
+                          <span
+                            onClick={(e) => handleDecrementViolation(word, e)}
+                            className="px-1.5 py-0.5 rounded bg-white text-rose-700 text-[10px] font-extrabold hover:bg-rose-100"
+                            title="Batal 1x Pelanggaran"
+                          >
+                            -1
+                          </span>
+                        )}
+                      </div>
+
+                      <div className={`font-black text-sm sm:text-base mt-1 truncate ${isViolated ? 'line-through text-white' : 'text-rose-900'}`}>
+                        {word}
+                      </div>
+
+                      {isViolated ? (
+                        <div className="mt-1.5 text-[10px] font-bold text-rose-100 bg-rose-700/80 px-1.5 py-0.5 rounded text-center">
+                          🚨 Terucap {count}x (-{count * penaltyPerViolation})
+                        </div>
+                      ) : (
+                        <div className="mt-1.5 text-[10px] text-rose-500 font-medium text-center">
+                          Klik jika terucap
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* Timer & Controls */}
-            <div className="flex items-center justify-between p-5 rounded-3xl bg-slate-50 border border-slate-200">
+            <div className="flex flex-col sm:flex-row items-center justify-between p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 gap-3">
               <div className="flex items-center gap-3">
                 <span className="text-3xl font-mono font-black text-slate-900">
                   {tabooTimeLeft}s
                 </span>
-                <span className="text-xs text-slate-400 uppercase font-semibold">
-                  {tabooRunning ? 'Mendeskripsikan' : 'Jeda'}
+                <span className="text-xs text-slate-500 uppercase font-semibold">
+                  {tabooRunning ? 'Bicara Aktif' : 'Jeda Timer'}
                 </span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                {totalTabooViolations > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleResetViolations}
+                    className="px-3 py-2 rounded-xl text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 transition-colors"
+                  >
+                    Reset Penalti
+                  </button>
+                )}
+
                 <button
+                  type="button"
                   onClick={() => {
                     if (!tabooRunning) soundService.playStart();
                     setTabooRunning(!tabooRunning);
                   }}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white shadow-md transition-all ${
-                    tabooRunning ? 'bg-amber-500 hover:bg-amber-600' : 'bg-indigo-600 hover:bg-indigo-700'
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white shadow-sm transition-all ${
+                    tabooRunning ? 'bg-amber-600 hover:bg-amber-700' : 'bg-slate-800 hover:bg-slate-900'
                   }`}
                 >
                   {tabooRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-white" />}
@@ -269,17 +393,12 @@ export const InteractiveHubView: React.FC = () => {
                 </button>
 
                 <button
-                  onClick={() => {
-                    soundService.playSuccess();
-                    awardXp(20, `Menebak Kata Taboo: "${currentTaboo.word}"`);
-                    setTabooIndex((tabooIndex + 1) % TABOO_CARDS.length);
-                    setTabooTimeLeft(60);
-                    setTabooRunning(false);
-                  }}
-                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md transition-all"
+                  type="button"
+                  onClick={handleNextTabooCard}
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-teal-700 hover:bg-teal-800 text-white shadow-sm transition-all"
                 >
                   <CheckCircle className="w-4 h-4" />
-                  <span>Berhasil Tebak (+20 XP)</span>
+                  <span>Selesai & Kartu Berikutnya →</span>
                 </button>
               </div>
             </div>

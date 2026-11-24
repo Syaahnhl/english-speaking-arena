@@ -35,7 +35,6 @@ export const ReadingReader: React.FC<Props> = ({ material, onBack }) => {
   const [speedMultiplier, setSpeedMultiplier] = useState<number>(1.0);
   const [theme, setTheme] = useState<ReadingTheme>('dark'); // Teleprompter dark by default for optimal readability
   const [fontSize, setFontSize] = useState<FontSize>('lg');
-  const [showGuideLine, setShowGuideLine] = useState<boolean>(true);
   const [showGuideModal, setShowGuideModal] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [showQuiz, setShowQuiz] = useState<boolean>(false);
@@ -177,22 +176,22 @@ export const ReadingReader: React.FC<Props> = ({ material, onBack }) => {
     dark: {
       outer: 'bg-slate-950 border-slate-800 text-slate-100',
       teleprompter: 'bg-[#090d16] text-slate-100',
-      paragraph: 'text-slate-200',
-      guideLine: 'border-indigo-400/40 bg-indigo-500/10 text-indigo-300',
+      paragraph: 'text-slate-200 text-center',
+      guideLine: '',
       mask: 'from-[#090d16] via-transparent to-[#090d16]'
     },
     light: {
       outer: 'bg-white border-slate-200 text-slate-900',
       teleprompter: 'bg-slate-50 text-slate-900',
-      paragraph: 'text-slate-800',
-      guideLine: 'border-indigo-500/30 bg-indigo-50/50 text-indigo-700',
+      paragraph: 'text-slate-800 text-center',
+      guideLine: '',
       mask: 'from-slate-50 via-transparent to-slate-50'
     },
     warm: {
       outer: 'bg-[#faf6ee] border-[#e8dfcf] text-[#2c2419]',
       teleprompter: 'bg-[#f4ede1] text-[#2c2419]',
-      paragraph: 'text-[#382f22]',
-      guideLine: 'border-amber-600/30 bg-amber-100/50 text-amber-900',
+      paragraph: 'text-[#382f22] text-center',
+      guideLine: '',
       mask: 'from-[#f4ede1] via-transparent to-[#f4ede1]'
     }
   };
@@ -303,7 +302,7 @@ export const ReadingReader: React.FC<Props> = ({ material, onBack }) => {
 
       {/* Settings Bar (Collapsible) */}
       {showSettings && (
-        <div className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-soft grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs animate-slide-up">
+        <div className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-soft grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs animate-slide-up">
           {/* Theme */}
           <div>
             <label className="block font-bold text-slate-700 mb-1.5">Tema Warna Layar</label>
@@ -311,7 +310,7 @@ export const ReadingReader: React.FC<Props> = ({ material, onBack }) => {
               <button
                 onClick={() => setTheme('dark')}
                 className={`flex-1 py-1.5 rounded-lg border flex items-center justify-center gap-1 ${
-                  theme === 'dark' ? 'bg-slate-900 border-indigo-500 font-bold text-white' : 'bg-slate-100 text-slate-600'
+                  theme === 'dark' ? 'bg-slate-900 border-teal-500 font-bold text-white' : 'bg-slate-100 text-slate-600'
                 }`}
               >
                 <Moon className="w-3.5 h-3.5" /> Studio Gelap
@@ -319,7 +318,7 @@ export const ReadingReader: React.FC<Props> = ({ material, onBack }) => {
               <button
                 onClick={() => setTheme('light')}
                 className={`flex-1 py-1.5 rounded-lg border flex items-center justify-center gap-1 ${
-                  theme === 'light' ? 'bg-indigo-50 border-indigo-500 font-bold text-indigo-700' : 'bg-slate-100 text-slate-600'
+                  theme === 'light' ? 'bg-teal-50 border-teal-600 font-bold text-teal-800' : 'bg-slate-100 text-slate-600'
                 }`}
               >
                 <Sun className="w-3.5 h-3.5" /> Terang
@@ -344,27 +343,13 @@ export const ReadingReader: React.FC<Props> = ({ material, onBack }) => {
                   key={sz}
                   onClick={() => setFontSize(sz)}
                   className={`flex-1 py-1.5 rounded-lg border uppercase font-bold text-[11px] ${
-                    fontSize === sz ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-50 border-slate-200 text-slate-600'
+                    fontSize === sz ? 'bg-teal-700 text-white border-teal-700' : 'bg-slate-50 border-slate-200 text-slate-600'
                   }`}
                 >
                   {sz === 'sm' ? 'Sedang' : sz === 'md' ? 'Besar' : sz === 'lg' ? 'XL' : 'XXL'}
                 </button>
               ))}
             </div>
-          </div>
-
-          {/* Guide Line Toggle */}
-          <div>
-            <label className="block font-bold text-slate-700 mb-1.5">Garis Fokus Baca</label>
-            <button
-              onClick={() => setShowGuideLine(!showGuideLine)}
-              className={`w-full py-2 rounded-lg border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                showGuideLine ? 'bg-indigo-50 text-indigo-700 border-indigo-300' : 'bg-slate-50 text-slate-600'
-              }`}
-            >
-              <Eye className="w-3.5 h-3.5" />
-              <span>{showGuideLine ? 'Garis Pandu Aktif' : 'Garis Pandu Mati'}</span>
-            </button>
           </div>
         </div>
       )}
@@ -374,7 +359,7 @@ export const ReadingReader: React.FC<Props> = ({ material, onBack }) => {
         {/* Teleprompter Top Status Bar */}
         <div className="px-6 py-4 border-b border-inherit/20 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2">
-            <span className="font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-400">
+            <span className="font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-teal-500/20 text-teal-400">
               {material.genre.replace('-', ' ')}
             </span>
             <span className="opacity-70 font-medium">
@@ -385,7 +370,7 @@ export const ReadingReader: React.FC<Props> = ({ material, onBack }) => {
           {/* Active speed indicator */}
           <div className="flex items-center gap-2 font-mono">
             <span className="opacity-70">Kecepatan:</span>
-            <span className="px-2 py-0.5 rounded bg-indigo-500/20 font-bold text-indigo-400">
+            <span className="px-2 py-0.5 rounded bg-teal-500/20 font-bold text-teal-400">
               {speedMultiplier}x ({Math.round(160 * speedMultiplier)} WPM)
             </span>
           </div>
@@ -399,25 +384,15 @@ export const ReadingReader: React.FC<Props> = ({ material, onBack }) => {
           {/* Bottom Fade Gradient Mask */}
           <div className={`absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t ${currentTheme.mask} z-20 pointer-events-none`} />
 
-          {/* Center Eye-Level Reading Guide Line */}
-          {showGuideLine && (
-            <div className={`absolute top-1/2 left-0 right-0 -translate-y-1/2 z-20 pointer-events-none border-y py-2.5 px-6 flex items-center justify-between text-[11px] font-mono tracking-wider opacity-85 transition-opacity ${currentTheme.guideLine}`}>
-              <span className="flex items-center gap-1 font-bold">
-                <ChevronUp className="w-3.5 h-3.5" /> AREA BACA AKTIF
-              </span>
-              <span>BACA DI SINI SEBELUM BERGULIR NAIK</span>
-            </div>
-          )}
-
           {/* Scrollable Viewport Container */}
           <div
             ref={viewportRef}
             className={`w-full h-full overflow-y-hidden px-8 sm:px-16 pt-32 pb-48 transition-all ${currentTheme.teleprompter}`}
           >
-            <div ref={contentRef} className="max-w-2xl mx-auto space-y-12">
+            <div ref={contentRef} className="max-w-2xl mx-auto space-y-12 text-center">
               {/* Title & Introduction */}
               <div className="text-center pt-8 pb-4 border-b border-inherit/20">
-                <span className="text-xs uppercase font-extrabold tracking-widest text-indigo-400 block mb-2">
+                <span className="text-xs uppercase font-extrabold tracking-widest text-teal-400 block mb-2">
                   TELEPROMPTER SPEED DRILL
                 </span>
                 <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-snug">
@@ -428,11 +403,11 @@ export const ReadingReader: React.FC<Props> = ({ material, onBack }) => {
                 </p>
               </div>
 
-              {/* Reading Paragraphs that scroll continuously upwards */}
+              {/* Reading Paragraphs that scroll continuously upwards (CENTER ALIGNED) */}
               {material.paragraphs.map((paragraph, pIdx) => (
                 <p
                   key={pIdx}
-                  className={`font-medium transition-all ${fontSizes[fontSize]} ${currentTheme.paragraph}`}
+                  className={`font-medium transition-all text-center ${fontSizes[fontSize]} ${currentTheme.paragraph}`}
                 >
                   {paragraph}
                 </p>

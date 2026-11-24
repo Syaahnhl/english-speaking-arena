@@ -161,6 +161,29 @@ class SoundService {
     });
   }
 
+  // Penalty / Forbidden word buzzer
+  public playBuzzer() {
+    if (!this.soundEnabled) return;
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(160, ctx.currentTime);
+    osc.frequency.linearRampToValueAtTime(110, ctx.currentTime + 0.2);
+
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.22);
+  }
+
   // Times up warning sound
   public playTimesUp() {
     if (!this.soundEnabled) return;
