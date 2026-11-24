@@ -7,16 +7,19 @@ import {
   Play, 
   Pause, 
   RotateCcw, 
-  Volume2, 
-  VolumeX, 
   Sliders, 
   Sun, 
   Moon, 
   Coffee, 
   CheckCircle, 
-  ChevronLeft,
-  ChevronRight,
-  ArrowLeft
+  ArrowLeft,
+  HelpCircle,
+  Eye,
+  FastForward,
+  ChevronUp,
+  Volume2,
+  VolumeX,
+  Gauge
 } from 'lucide-react';
 
 interface Props {
@@ -24,54 +27,39 @@ interface Props {
   onBack: () => void;
 }
 
-type ReadingDisplayMode = 'auto-scroll' | 'manual-scroll' | 'sentence-by-sentence' | 'paragraph';
-type ReadingTheme = 'light' | 'warm' | 'dark';
+type ReadingTheme = 'dark' | 'light' | 'warm';
 type FontSize = 'sm' | 'md' | 'lg' | 'xl';
-type LineSpacing = 'normal' | 'relaxed' | 'loose';
 
 export const ReadingReader: React.FC<Props> = ({ material, onBack }) => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [speedMultiplier, setSpeedMultiplier] = useState<number>(1.0);
-  const [displayMode, setDisplayMode] = useState<ReadingDisplayMode>('auto-scroll');
-  const [theme, setTheme] = useState<ReadingTheme>('light');
-  const [fontSize, setFontSize] = useState<FontSize>('md');
-  const [lineSpacing, setLineSpacing] = useState<LineSpacing>('relaxed');
+  const [theme, setTheme] = useState<ReadingTheme>('dark'); // Teleprompter dark by default for optimal readability
+  const [fontSize, setFontSize] = useState<FontSize>('lg');
+  const [showGuideLine, setShowGuideLine] = useState<boolean>(true);
+  const [showGuideModal, setShowGuideModal] = useState<boolean>(false);
+  const [showSettings, setShowSettings] = useState<boolean>(false);
+  const [showQuiz, setShowQuiz] = useState<boolean>(false);
   const [ttsEnabled, setTtsEnabled] = useState<boolean>(false);
 
-  // Time tracking
+  // Time & scroll tracking
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
-  const [activeSentenceIndex, setActiveSentenceIndex] = useState<number>(0);
-  const [activeParagraphIndex, setActiveParagraphIndex] = useState<number>(0);
-  const [showQuiz, setShowQuiz] = useState<boolean>(false);
-  const [showControls, setShowControls] = useState<boolean>(false);
+  const [scrollProgress, setScrollProgress] = useState<number>(0); // 0 to 100%
 
-  const containerRef = useRef<HTMLDivElement>(null);
-  const activeElementRef = useRef<HTMLSpanElement | null>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const animFrameIdRef = useRef<number | null>(null);
+  const lastTimestampRef = useRef<number | null>(null);
+  const currentScrollTopRef = useRef<number>(0);
 
-  // Extract all sentences across paragraphs
-  const sentences: { text: string; paragraphIndex: number; sentenceIndexInPara: number }[] = [];
-  material.paragraphs.forEach((p, pIdx) => {
-    // Regex splits sentences preserving punctuation
-    const matches = p.match(/[^.!?]+[.!?]+(\s|$)/g) || [p];
-    matches.forEach((s, sIdx) => {
-      sentences.push({
-        text: s.trim(),
-        paragraphIndex: pIdx,
-        sentenceIndexInPara: sIdx
-      });
-    });
-  });
-
-  // Calculate standard baseline reading duration
-  // Baseline: 150 words per minute at 1.0x
-  // Duration for sentence = (words in sentence / (150 * speedMultiplier)) * 60 seconds
-  const currentSentence = sentences[activeSentenceIndex] || sentences[0];
-  const wordsInCurrentSentence = currentSentence ? currentSentence.text.split(/\s+/).length : 5;
-  const sentenceDurationMs = Math.max(1200, Math.round(((wordsInCurrentSentence / (160 * speedMultiplier)) * 60) * 1000));
+  // Pixel velocity:
+  // At 1.0x, typical comfortable reading scroll speed is ~35 pixels per second.
+  // With multiplier: 0.5x = 18px/s, 1.0x = 36px/s, 1.5x = 54px/s, 2.0x = 72px/s
+  const basePixelsPerSecond = 38;
+  const pixelsPerSecond = basePixelsPerSecond * speedMultiplier;
 
   // Elapsed timer
   useEffect(() => {
-    let timer: NodeJS.Timeout | null = null;
+    let timer: any = null;
     if (isPlaying) {
       timer = setInterval(() => {
         setElapsedSeconds(prev => prev + 1);
@@ -82,76 +70,95 @@ export const ReadingReader: React.FC<Props> = ({ material, onBack }) => {
     };
   }, [isPlaying]);
 
-  // Sentence advancement when playing
+  // Teleprompter animation loop
   useEffect(() => {
-    let advanceTimer: NodeJS.Timeout | null = null;
-    if (isPlaying) {
-      // If TTS enabled, speak sentence
-      if (ttsEnabled && currentSentence) {
-        speechService.speak(currentSentence.text, speedMultiplier, () => {
-          // On speech finish, advance if still playing
-          handleNextSentence();
-        });
-      } else {
-        advanceTimer = setTimeout(() => {
-          handleNextSentence();
-        }, sentenceDurationMs);
+    if (!isPlaying) {
+      if (animFrameIdRef.current) {
+        cancelAnimationFrame(animFrameIdRef.current);
+        animFrameIdRef.current = null;
       }
-    } else {
-      speechService.stop();
+      lastTimestampRef.current = null;
+      return;
     }
+
+    const viewport = viewportRef.current;
+    const content = contentRef.current;
+    if (!viewport || !content) return;
+
+    const maxScroll = Math.max(0, content.offsetHeight + viewport.offsetHeight * 0.4);
+
+    const step = (timestamp: number) => {
+      if (lastTimestampRef.current === null) {
+        lastTimestampRef.current = timestamp;
+      }
+      const deltaSec = (timestamp - lastTimestampRef.current) / 1000;
+      lastTimestampRef.current = timestamp;
+
+      // Advance scroll position upwards
+      currentScrollTopRef.current += pixelsPerSecond * deltaSec;
+
+      if (viewport) {
+        viewport.scrollTop = currentScrollTopRef.current;
+
+        const maxReadableScroll = content.offsetHeight - viewport.offsetHeight * 0.3;
+        const progress = Math.min(100, Math.round((currentScrollTopRef.current / maxReadableScroll) * 100));
+        setScrollProgress(Math.max(0, progress));
+
+        // When text has scrolled past the viewport
+        if (currentScrollTopRef.current >= maxScroll) {
+          setIsPlaying(false);
+          soundService.playSuccess();
+          return;
+        }
+      }
+
+      animFrameIdRef.current = requestAnimationFrame(step);
+    };
+
+    animFrameIdRef.current = requestAnimationFrame(step);
 
     return () => {
-      if (advanceTimer) clearTimeout(advanceTimer);
+      if (animFrameIdRef.current) {
+        cancelAnimationFrame(animFrameIdRef.current);
+      }
     };
-  }, [isPlaying, activeSentenceIndex, speedMultiplier, ttsEnabled]);
-
-  // Auto scroll effect
-  useEffect(() => {
-    if (displayMode === 'auto-scroll' && activeElementRef.current && containerRef.current) {
-      activeElementRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
-      });
-    }
-  }, [activeSentenceIndex, displayMode]);
-
-  const handleNextSentence = () => {
-    if (activeSentenceIndex < sentences.length - 1) {
-      setActiveSentenceIndex(prev => {
-        const next = prev + 1;
-        setActiveParagraphIndex(sentences[next].paragraphIndex);
-        return next;
-      });
-    } else {
-      // Reached the end of text!
-      setIsPlaying(false);
-      soundService.playSuccess();
-    }
-  };
-
-  const handlePrevSentence = () => {
-    if (activeSentenceIndex > 0) {
-      setActiveSentenceIndex(prev => {
-        const next = prev - 1;
-        setActiveParagraphIndex(sentences[next].paragraphIndex);
-        return next;
-      });
-    }
-  };
+  }, [isPlaying, speedMultiplier]);
 
   const handleTogglePlay = () => {
     soundService.playClick();
-    setIsPlaying(prev => !prev);
+    if (!isPlaying) {
+      // Start
+      setIsPlaying(true);
+      if (ttsEnabled) {
+        speechService.speak(material.paragraphs.join(' '), speedMultiplier);
+      }
+    } else {
+      // Pause
+      setIsPlaying(false);
+      speechService.stop();
+    }
+  };
+
+  const handleRewind = () => {
+    soundService.playClick();
+    if (viewportRef.current) {
+      const rewindPixels = 150;
+      currentScrollTopRef.current = Math.max(0, currentScrollTopRef.current - rewindPixels);
+      viewportRef.current.scrollTop = currentScrollTopRef.current;
+      setScrollProgress(Math.round((currentScrollTopRef.current / (contentRef.current?.offsetHeight || 1)) * 100));
+    }
   };
 
   const handleRestart = () => {
     soundService.playClick();
     setIsPlaying(false);
-    setActiveSentenceIndex(0);
-    setActiveParagraphIndex(0);
-    setElapsedSeconds(0);
     speechService.stop();
+    currentScrollTopRef.current = 0;
+    if (viewportRef.current) {
+      viewportRef.current.scrollTop = 0;
+    }
+    setScrollProgress(0);
+    setElapsedSeconds(0);
   };
 
   const handleFinish = () => {
@@ -161,113 +168,176 @@ export const ReadingReader: React.FC<Props> = ({ material, onBack }) => {
     setShowQuiz(true);
   };
 
-  // Estimate WPM
+  // Estimated WPM calculation
   const timeInMinutes = Math.max(0.1, elapsedSeconds / 60);
   const calculatedWpm = Math.round(material.wordCount / timeInMinutes);
 
-  // Theme styles
-  const themeClasses = {
-    light: 'bg-white text-slate-800 border-slate-200',
-    warm: 'bg-[#faf6ee] text-[#3c3328] border-[#e6decf]',
-    dark: 'bg-[#0f172a] text-slate-200 border-slate-800'
+  // Theme styling definitions
+  const themeStyles = {
+    dark: {
+      outer: 'bg-slate-950 border-slate-800 text-slate-100',
+      teleprompter: 'bg-[#090d16] text-slate-100',
+      paragraph: 'text-slate-200',
+      guideLine: 'border-indigo-400/40 bg-indigo-500/10 text-indigo-300',
+      mask: 'from-[#090d16] via-transparent to-[#090d16]'
+    },
+    light: {
+      outer: 'bg-white border-slate-200 text-slate-900',
+      teleprompter: 'bg-slate-50 text-slate-900',
+      paragraph: 'text-slate-800',
+      guideLine: 'border-indigo-500/30 bg-indigo-50/50 text-indigo-700',
+      mask: 'from-slate-50 via-transparent to-slate-50'
+    },
+    warm: {
+      outer: 'bg-[#faf6ee] border-[#e8dfcf] text-[#2c2419]',
+      teleprompter: 'bg-[#f4ede1] text-[#2c2419]',
+      paragraph: 'text-[#382f22]',
+      guideLine: 'border-amber-600/30 bg-amber-100/50 text-amber-900',
+      mask: 'from-[#f4ede1] via-transparent to-[#f4ede1]'
+    }
   };
 
   const fontSizes = {
-    sm: 'text-sm leading-relaxed',
-    md: 'text-base sm:text-lg leading-relaxed',
-    lg: 'text-lg sm:text-xl leading-loose',
-    xl: 'text-xl sm:text-2xl leading-loose'
+    sm: 'text-base leading-relaxed',
+    md: 'text-lg sm:text-xl leading-loose',
+    lg: 'text-xl sm:text-2xl leading-loose tracking-wide',
+    xl: 'text-2xl sm:text-3xl leading-loose tracking-wider'
   };
 
-  const lineSpacings = {
-    normal: 'leading-normal',
-    relaxed: 'leading-relaxed',
-    loose: 'leading-loose'
-  };
-
-  const progressPercentage = Math.round(((activeSentenceIndex + 1) / sentences.length) * 100);
+  const currentTheme = themeStyles[theme];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4">
-      {/* Top Bar: Back & Title */}
-      <div className="flex items-center justify-between">
+    <div className="max-w-4xl mx-auto space-y-5">
+      {/* Top Header & Navigation */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <button
           onClick={() => {
             speechService.stop();
             onBack();
           }}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all"
+          className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 shadow-sm transition-all"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Exit to Library</span>
+          <span>Kembali ke Perpustakaan</span>
         </button>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-slate-500">
-            {material.wordCount} words • {material.level.toUpperCase()}
-          </span>
+          {/* How to Play Guide Button */}
           <button
-            onClick={() => setShowControls(prev => !prev)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all"
+            onClick={() => setShowGuideModal(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition-all"
           >
-            <Sliders className="w-3.5 h-3.5" />
-            <span>Settings</span>
+            <HelpCircle className="w-3.5 h-3.5 text-amber-600" />
+            <span>Cara Main & Aturan</span>
+          </button>
+
+          {/* Settings Toggle */}
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-sm transition-all"
+          >
+            <Sliders className="w-3.5 h-3.5 text-slate-500" />
+            <span>Kustomisasi Tampilan</span>
           </button>
         </div>
       </div>
 
-      {/* Settings Panel (Collapsible) */}
-      {showControls && (
-        <div className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-soft grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 animate-slide-up text-xs">
+      {/* HOW TO PLAY MODAL / POPUP */}
+      {showGuideModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-float border border-slate-200 animate-slide-up space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="p-2 rounded-xl bg-amber-100 text-amber-800">
+                  <Gauge className="w-5 h-5 text-amber-600" />
+                </span>
+                <div>
+                  <h3 className="font-extrabold text-base text-slate-900">Panduan Running Reading</h3>
+                  <span className="text-xs text-slate-500">Mekanisme Teleprompter Velocity</span>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowGuideModal(false)}
+                className="text-xs text-slate-400 hover:text-slate-700 font-semibold px-2 py-1"
+              >
+                Tutup
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs text-slate-600 leading-relaxed">
+              <div className="p-3 bg-indigo-50/70 rounded-2xl border border-indigo-100">
+                <strong className="text-indigo-900 block mb-1">Konsep Permainan:</strong>
+                Teks bacaan akan bergerak merayap ke atas secara berkelanjutan seperti layar teleprompter berita profesional. Kalimat yang sudah lewat ke atas akan menghilang. Tantangannya: Anda harus membaca dan mencerna isi bacaan sebelum teks tersebut tergulung habis!
+              </div>
+
+              <div className="space-y-2">
+                <strong className="text-slate-800 block">Langkah & Aturan Main:</strong>
+                <div className="flex items-start gap-2">
+                  <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center flex-shrink-0">1</span>
+                  <span><strong>Atur Kecepatan:</strong> Pilih multiplier kecepatan (0.5x untuk santai, 1.0x kecepatan normal, hingga 2.0x untuk tantangan membaca cepat).</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center flex-shrink-0">2</span>
+                  <span><strong>Fokuskan Pandangan:</strong> Letakkan mata Anda di sekitar <em>Garis Pandu Tengah</em>. Baca kalimat saat bergerak melintasi garis tersebut.</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center flex-shrink-0">3</span>
+                  <span><strong>Jangan Terlalu Lambat:</strong> Jika Anda berhenti terlalu lama, teks akan hilang ke atas dan Anda kehilangan informasi penting!</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center flex-shrink-0">4</span>
+                  <span><strong>Kuis Pemahaman:</strong> Segera setelah teks habis bergulir ke atas, jawab pertanyaan pemahaman untuk membuktikan retensi ingatan Anda dan mengklaim XP.</span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowGuideModal(false)}
+              className="w-full py-2.5 rounded-xl font-bold text-xs bg-indigo-600 hover:bg-indigo-700 text-white shadow-md transition-all"
+            >
+              Saya Siap Membaca!
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Settings Bar (Collapsible) */}
+      {showSettings && (
+        <div className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-soft grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs animate-slide-up">
           {/* Theme */}
           <div>
-            <label className="block font-semibold text-slate-700 mb-1.5">Reading Theme</label>
+            <label className="block font-bold text-slate-700 mb-1.5">Tema Warna Layar</label>
             <div className="flex gap-1.5">
               <button
-                onClick={() => setTheme('light')}
-                className={`flex-1 py-1.5 px-2 rounded-lg border flex items-center justify-center gap-1 ${
-                  theme === 'light' ? 'bg-indigo-50 border-indigo-500 font-bold text-indigo-700' : 'bg-white border-slate-200 text-slate-600'
+                onClick={() => setTheme('dark')}
+                className={`flex-1 py-1.5 rounded-lg border flex items-center justify-center gap-1 ${
+                  theme === 'dark' ? 'bg-slate-900 border-indigo-500 font-bold text-white' : 'bg-slate-100 text-slate-600'
                 }`}
               >
-                <Sun className="w-3.5 h-3.5" /> Light
+                <Moon className="w-3.5 h-3.5" /> Studio Gelap
+              </button>
+              <button
+                onClick={() => setTheme('light')}
+                className={`flex-1 py-1.5 rounded-lg border flex items-center justify-center gap-1 ${
+                  theme === 'light' ? 'bg-indigo-50 border-indigo-500 font-bold text-indigo-700' : 'bg-slate-100 text-slate-600'
+                }`}
+              >
+                <Sun className="w-3.5 h-3.5" /> Terang
               </button>
               <button
                 onClick={() => setTheme('warm')}
-                className={`flex-1 py-1.5 px-2 rounded-lg border flex items-center justify-center gap-1 ${
-                  theme === 'warm' ? 'bg-amber-100 border-amber-600 font-bold text-amber-900' : 'bg-amber-50/50 border-amber-200 text-slate-600'
+                className={`flex-1 py-1.5 rounded-lg border flex items-center justify-center gap-1 ${
+                  theme === 'warm' ? 'bg-amber-100 border-amber-600 font-bold text-amber-900' : 'bg-slate-100 text-slate-600'
                 }`}
               >
-                <Coffee className="w-3.5 h-3.5" /> Warm
-              </button>
-              <button
-                onClick={() => setTheme('dark')}
-                className={`flex-1 py-1.5 px-2 rounded-lg border flex items-center justify-center gap-1 ${
-                  theme === 'dark' ? 'bg-slate-900 border-indigo-500 font-bold text-white' : 'bg-slate-800 border-slate-700 text-slate-300'
-                }`}
-              >
-                <Moon className="w-3.5 h-3.5" /> Dark
+                <Coffee className="w-3.5 h-3.5" /> Kertas Hangat
               </button>
             </div>
           </div>
 
-          {/* Mode */}
-          <div>
-            <label className="block font-semibold text-slate-700 mb-1.5">Display Mode</label>
-            <select
-              value={displayMode}
-              onChange={(e) => setDisplayMode(e.target.value as ReadingDisplayMode)}
-              className="w-full py-1.5 px-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium"
-            >
-              <option value="auto-scroll">Auto Scroll</option>
-              <option value="manual-scroll">Manual Scroll</option>
-              <option value="sentence-by-sentence">Sentence-by-Sentence</option>
-              <option value="paragraph">Paragraph Focus</option>
-            </select>
-          </div>
-
           {/* Font Size */}
           <div>
-            <label className="block font-semibold text-slate-700 mb-1.5">Font Size</label>
+            <label className="block font-bold text-slate-700 mb-1.5">Ukuran Teks</label>
             <div className="flex gap-1">
               {(['sm', 'md', 'lg', 'xl'] as FontSize[]).map(sz => (
                 <button
@@ -277,205 +347,190 @@ export const ReadingReader: React.FC<Props> = ({ material, onBack }) => {
                     fontSize === sz ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-50 border-slate-200 text-slate-600'
                   }`}
                 >
-                  {sz}
+                  {sz === 'sm' ? 'Sedang' : sz === 'md' ? 'Besar' : sz === 'lg' ? 'XL' : 'XXL'}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Line Spacing */}
+          {/* Guide Line Toggle */}
           <div>
-            <label className="block font-semibold text-slate-700 mb-1.5">Line Spacing</label>
-            <div className="flex gap-1">
-              {(['normal', 'relaxed', 'loose'] as LineSpacing[]).map(ls => (
-                <button
-                  key={ls}
-                  onClick={() => setLineSpacing(ls)}
-                  className={`flex-1 py-1.5 rounded-lg border capitalize font-medium text-[11px] ${
-                    lineSpacing === ls ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-50 border-slate-200 text-slate-600'
-                  }`}
-                >
-                  {ls}
-                </button>
-              ))}
-            </div>
+            <label className="block font-bold text-slate-700 mb-1.5">Garis Fokus Baca</label>
+            <button
+              onClick={() => setShowGuideLine(!showGuideLine)}
+              className={`w-full py-2 rounded-lg border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                showGuideLine ? 'bg-indigo-50 text-indigo-700 border-indigo-300' : 'bg-slate-50 text-slate-600'
+              }`}
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>{showGuideLine ? 'Garis Pandu Aktif' : 'Garis Pandu Mati'}</span>
+            </button>
           </div>
         </div>
       )}
 
-      {/* Main Reading Card */}
-      <div className={`rounded-2xl border p-6 sm:p-10 shadow-card transition-colors duration-200 ${themeClasses[theme]}`}>
-        {/* Title & Metadata */}
-        <div className="border-b border-inherit/20 pb-4 mb-6">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-500">
+      {/* MAIN TELEPROMPTER CONTAINER */}
+      <div className={`rounded-3xl border shadow-card overflow-hidden transition-colors duration-200 ${currentTheme.outer}`}>
+        {/* Teleprompter Top Status Bar */}
+        <div className="px-6 py-4 border-b border-inherit/20 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-400">
               {material.genre.replace('-', ' ')}
             </span>
-            <span className="text-xs opacity-60">
-              Sentence {activeSentenceIndex + 1} of {sentences.length}
+            <span className="opacity-70 font-medium">
+              {material.wordCount} Kata • Level: {material.level.toUpperCase()}
             </span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-            {material.title}
-          </h2>
+
+          {/* Active speed indicator */}
+          <div className="flex items-center gap-2 font-mono">
+            <span className="opacity-70">Kecepatan:</span>
+            <span className="px-2 py-0.5 rounded bg-indigo-500/20 font-bold text-indigo-400">
+              {speedMultiplier}x ({Math.round(160 * speedMultiplier)} WPM)
+            </span>
+          </div>
         </div>
 
-        {/* Reading Text Display */}
-        <div
-          ref={containerRef}
-          className={`max-h-[55vh] overflow-y-auto pr-2 space-y-6 ${fontSizes[fontSize]} ${lineSpacings[lineSpacing]}`}
-        >
-          {displayMode === 'sentence-by-sentence' ? (
-            /* Sentence-by-Sentence Mode */
-            <div className="min-h-[160px] flex items-center justify-center p-6 bg-indigo-500/5 rounded-2xl border border-indigo-500/20 text-center">
-              <span className="font-semibold text-indigo-600 dark:text-indigo-400">
-                {currentSentence?.text}
+        {/* Viewport Frame with Fading Top and Bottom Edges */}
+        <div className="relative h-[420px] sm:h-[480px] overflow-hidden select-none">
+          {/* Top Fade Gradient Mask (Text disappears as it scrolls into here!) */}
+          <div className={`absolute top-0 left-0 right-0 h-24 bg-gradient-to-b ${currentTheme.mask} z-20 pointer-events-none`} />
+
+          {/* Bottom Fade Gradient Mask */}
+          <div className={`absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t ${currentTheme.mask} z-20 pointer-events-none`} />
+
+          {/* Center Eye-Level Reading Guide Line */}
+          {showGuideLine && (
+            <div className={`absolute top-1/2 left-0 right-0 -translate-y-1/2 z-20 pointer-events-none border-y py-2.5 px-6 flex items-center justify-between text-[11px] font-mono tracking-wider opacity-85 transition-opacity ${currentTheme.guideLine}`}>
+              <span className="flex items-center gap-1 font-bold">
+                <ChevronUp className="w-3.5 h-3.5" /> AREA BACA AKTIF
               </span>
+              <span>BACA DI SINI SEBELUM BERGULIR NAIK</span>
             </div>
-          ) : displayMode === 'paragraph' ? (
-            /* Paragraph Mode */
-            material.paragraphs.map((para, pIdx) => {
-              const isCurrentPara = pIdx === activeParagraphIndex;
-              return (
+          )}
+
+          {/* Scrollable Viewport Container */}
+          <div
+            ref={viewportRef}
+            className={`w-full h-full overflow-y-hidden px-8 sm:px-16 pt-32 pb-48 transition-all ${currentTheme.teleprompter}`}
+          >
+            <div ref={contentRef} className="max-w-2xl mx-auto space-y-12">
+              {/* Title & Introduction */}
+              <div className="text-center pt-8 pb-4 border-b border-inherit/20">
+                <span className="text-xs uppercase font-extrabold tracking-widest text-indigo-400 block mb-2">
+                  TELEPROMPTER SPEED DRILL
+                </span>
+                <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-snug">
+                  {material.title}
+                </h1>
+                <p className="text-xs opacity-60 mt-3 max-w-lg mx-auto">
+                  {material.summary}
+                </p>
+              </div>
+
+              {/* Reading Paragraphs that scroll continuously upwards */}
+              {material.paragraphs.map((paragraph, pIdx) => (
                 <p
                   key={pIdx}
-                  className={`p-4 rounded-xl transition-all ${
-                    isCurrentPara
-                      ? 'bg-indigo-500/10 border-l-4 border-indigo-600 font-medium'
-                      : 'opacity-40 hover:opacity-75'
-                  }`}
+                  className={`font-medium transition-all ${fontSizes[fontSize]} ${currentTheme.paragraph}`}
                 >
-                  {para}
+                  {paragraph}
                 </p>
-              );
-            })
-          ) : (
-            /* Auto or Manual Scroll Full Text with active sentence highlight */
-            material.paragraphs.map((para, pIdx) => {
-              // Find sentences for this paragraph
-              const paraSentences = sentences.filter(s => s.paragraphIndex === pIdx);
+              ))}
 
-              return (
-                <p key={pIdx} className="transition-all">
-                  {paraSentences.map((s, sIdx) => {
-                    const globalIndex = sentences.findIndex(
-                      item => item.paragraphIndex === pIdx && item.sentenceIndexInPara === sIdx
-                    );
-                    const isActive = globalIndex === activeSentenceIndex;
-
-                    return (
-                      <span
-                        key={sIdx}
-                        ref={isActive ? (el) => { activeElementRef.current = el; } : null}
-                        onClick={() => {
-                          setActiveSentenceIndex(globalIndex);
-                          setActiveParagraphIndex(pIdx);
-                        }}
-                        className={`cursor-pointer transition-all duration-200 rounded px-1 py-0.5 ${
-                          isActive
-                            ? 'bg-indigo-600 text-white font-semibold shadow-sm'
-                            : globalIndex < activeSentenceIndex
-                            ? 'opacity-70'
-                            : 'opacity-90 hover:bg-slate-200/40'
-                        }`}
-                      >
-                        {s.text}{' '}
-                      </span>
-                    );
-                  })}
+              {/* End of Text Marker */}
+              <div className="text-center py-12 border-t border-inherit/20">
+                <span className="text-xs uppercase font-bold tracking-widest text-emerald-400 block">
+                  ✓ AKHIR BACAAN
+                </span>
+                <p className="text-sm opacity-70 mt-1">
+                  Selamat! Teks telah selesai tergulung. Klik tombol di bawah untuk mengerjakan kuis.
                 </p>
-              );
-            })
-          )}
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Progress bar */}
-        <div className="mt-8 pt-4 border-t border-inherit/20">
-          <div className="flex items-center justify-between text-xs opacity-75 mb-1.5 font-medium">
-            <span>Reading Progress</span>
-            <span>{progressPercentage}%</span>
-          </div>
-          <div className="w-full h-2 bg-slate-200/50 rounded-full overflow-hidden">
+        {/* Real-time Progress Bar */}
+        <div className="px-6 py-2 border-t border-inherit/20 bg-inherit/40 flex items-center gap-3 text-xs">
+          <span className="opacity-70 font-mono text-[11px] w-20">Gulir: {scrollProgress}%</span>
+          <div className="flex-1 h-2 bg-slate-700/30 rounded-full overflow-hidden">
             <div
-              className="h-full bg-indigo-600 transition-all duration-300"
-              style={{ width: `${progressPercentage}%` }}
+              className="h-full bg-indigo-500 transition-all duration-150"
+              style={{ width: `${scrollProgress}%` }}
             />
           </div>
+          <span className="opacity-70 font-mono text-[11px]">
+            {Math.floor(elapsedSeconds / 60)}:{(elapsedSeconds % 60).toString().padStart(2, '0')}
+          </span>
         </div>
       </div>
 
-      {/* Control Console */}
-      <div className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-soft flex flex-wrap items-center justify-between gap-4">
-        {/* Playback Controls */}
+      {/* SPEED & PLAYBACK CONTROL CONSOLE */}
+      <div className="p-5 bg-white rounded-3xl border border-slate-200/80 shadow-soft flex flex-wrap items-center justify-between gap-4">
+        {/* Left: Play, Pause, Rewind, Reset */}
         <div className="flex items-center gap-2">
           <button
-            onClick={handlePrevSentence}
-            disabled={activeSentenceIndex === 0}
-            className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
-            title="Previous Sentence"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-
-          <button
             onClick={handleTogglePlay}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs shadow-md transition-all ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-xs shadow-md transition-all ${
               isPlaying
-                ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-amber-500/20'
+                ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20'
                 : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/20'
             }`}
           >
             {isPlaying ? (
               <>
                 <Pause className="w-4 h-4" />
-                <span>Pause</span>
+                <span>Jeda Gulir</span>
               </>
             ) : (
               <>
                 <Play className="w-4 h-4 fill-white" />
-                <span>Start Reading</span>
+                <span>{scrollProgress > 0 ? 'Lanjutkan Gulir' : 'Mulai Teleprompter'}</span>
               </>
             )}
           </button>
 
           <button
-            onClick={handleNextSentence}
-            disabled={activeSentenceIndex >= sentences.length - 1}
-            className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
-            title="Next Sentence"
+            onClick={handleRewind}
+            disabled={scrollProgress === 0}
+            className="p-3 rounded-2xl border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            title="Mundurkan Gulir Sedikit"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronUp className="w-4 h-4" />
           </button>
 
           <button
             onClick={handleRestart}
-            className="p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100"
-            title="Restart from beginning"
+            className="p-3 rounded-2xl border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-all"
+            title="Ulangi dari Awal"
           >
             <RotateCcw className="w-4 h-4" />
           </button>
 
-          {/* TTS Audio toggle */}
+          {/* Voice Assistant Toggle */}
           <button
             onClick={() => {
-              setTtsEnabled(prev => !prev);
-              speechService.stop();
+              setTtsEnabled(!ttsEnabled);
+              if (ttsEnabled) speechService.stop();
             }}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-2.5 rounded-2xl border text-xs font-semibold transition-all ${
               ttsEnabled
                 ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
             }`}
-            title="Toggle Text-To-Speech Pronunciation Audio"
+            title="Bantuan Suara Narator"
           >
             {ttsEnabled ? <Volume2 className="w-4 h-4 text-emerald-600" /> : <VolumeX className="w-4 h-4 text-slate-400" />}
-            <span className="hidden sm:inline">Voice Assistant</span>
+            <span className="hidden sm:inline">Narator Suara</span>
           </button>
         </div>
 
-        {/* Speed Controls: 0.5x, 0.75x, 1.0x, 1.25x, 1.5x, 2.0x & Slider */}
-        <div className="flex items-center gap-1 sm:gap-2">
-          <span className="text-xs font-semibold text-slate-500 mr-1 hidden sm:inline">Speed:</span>
+        {/* Center: Velocity Buttons (0.5x, 0.75x, 1.0x, 1.25x, 1.5x, 2.0x) */}
+        <div className="flex items-center gap-1 sm:gap-1.5">
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-1 hidden md:inline">
+            Kecepatan:
+          </span>
           {[0.5, 0.75, 1.0, 1.25, 1.5, 2.0].map((rate) => (
             <button
               key={rate}
@@ -483,7 +538,7 @@ export const ReadingReader: React.FC<Props> = ({ material, onBack }) => {
                 setSpeedMultiplier(rate);
                 soundService.playClick();
               }}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
+              className={`px-3 py-2 rounded-xl text-xs font-mono font-bold transition-all ${
                 speedMultiplier === rate
                   ? 'bg-indigo-600 text-white shadow-sm'
                   : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
@@ -494,46 +549,42 @@ export const ReadingReader: React.FC<Props> = ({ material, onBack }) => {
           ))}
         </div>
 
-        {/* Elapsed Time & Finish Button */}
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <span className="text-[11px] text-slate-400 block">Elapsed Time</span>
-            <span className="text-xs font-mono font-bold text-slate-800">
-              {Math.floor(elapsedSeconds / 60)}:{(elapsedSeconds % 60).toString().padStart(2, '0')}
-            </span>
-          </div>
-
-          <button
-            onClick={handleFinish}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-500/20 transition-all"
-          >
-            <CheckCircle className="w-4 h-4" />
-            <span>Finish Reading</span>
-          </button>
-        </div>
+        {/* Right: Quiz Trigger */}
+        <button
+          onClick={handleFinish}
+          className="flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-500/20 transition-all ml-auto sm:ml-0"
+        >
+          <CheckCircle className="w-4 h-4" />
+          <span>Selesai & Kuis Pemahaman</span>
+        </button>
       </div>
 
-      {/* Vocabulary Glossary Footer */}
+      {/* Vocabulary Glossary Drawer */}
       {material.vocabularyGlossary.length > 0 && (
-        <div className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-soft">
-          <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-3">
-            Key Vocabulary in this Article
-          </h4>
+        <div className="p-6 bg-white rounded-3xl border border-slate-200/80 shadow-soft">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h4 className="font-extrabold text-sm text-slate-900">Kosakata Kunci dalam Artikel Ini</h4>
+              <p className="text-xs text-slate-500">Klik ikon suara untuk mendengarkan pengucapan yang tepat.</p>
+            </div>
+            <span className="text-xs font-mono text-slate-400">{material.vocabularyGlossary.length} kosakata</span>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
             {material.vocabularyGlossary.map((vocab, vIdx) => (
-              <div key={vIdx} className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+              <div key={vIdx} className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-100 space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-xs text-indigo-700">{vocab.word}</span>
                   <button
                     onClick={() => speechService.speak(vocab.word, 0.9)}
-                    className="text-slate-400 hover:text-indigo-600 p-0.5"
-                    title="Pronounce word"
+                    className="text-slate-400 hover:text-indigo-600 p-1"
+                    title="Dengarkan pengucapan"
                   >
                     <Volume2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                <p className="text-[11px] text-slate-600 mt-1">{vocab.definition}</p>
-                <p className="text-[10px] text-slate-400 italic mt-1">"{vocab.example}"</p>
+                <p className="text-[11px] text-slate-600 leading-snug">{vocab.definition}</p>
+                <p className="text-[10px] text-slate-400 italic">"{vocab.example}"</p>
               </div>
             ))}
           </div>

@@ -15,7 +15,8 @@ import {
   CheckCircle2, 
   Clock, 
   Award, 
-  Compass 
+  Compass,
+  Gauge
 } from 'lucide-react';
 import { soundService } from '../../services/soundService';
 
@@ -26,32 +27,32 @@ export const StudentDashboard: React.FC = () => {
   const unlockedBadges = ACHIEVEMENTS_LIST.filter(a => user.achievements.includes(a.id));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* 1. Welcome Section & Hero Bar */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-700 via-indigo-600 to-violet-700 text-white p-6 sm:p-8 shadow-card flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div className="relative z-10 max-w-xl">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-semibold tracking-wide mb-3">
+      <div className="relative overflow-hidden rounded-3xl bg-slate-900 text-white p-6 sm:p-10 shadow-card flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+        <div className="relative z-10 max-w-xl space-y-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-xs font-semibold tracking-wide">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>Welcome back, {user.name.split(' ')[0]}!</span>
+            <span>Selamat datang kembali, {user.name.split(' ')[0]}!</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-            Ready to find your voice today?
+          <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
+            Tingkatkan Kelancaran Berbicara Anda Hari Ini
           </h1>
-          <p className="text-indigo-100 text-xs sm:text-sm mt-2 leading-relaxed">
-            Consistency is the secret to fluency. Complete your 3 daily challenges to keep your {user.streakDays}-day streak burning!
+          <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
+            Kuasai kosakata baru, hadapi duel bicara, dan latih kecepatan membaca dengan teleprompter. Konsistensi harian Anda sedang berjalan {user.streakDays} hari berturut-turut!
           </p>
 
-          <div className="mt-5 flex flex-wrap items-center gap-3">
+          <div className="pt-2 flex flex-wrap items-center gap-3">
             <button
               onClick={() => {
                 soundService.playClick();
                 setActiveTab('cards');
               }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-white text-indigo-700 hover:bg-indigo-50 shadow-md transition-all"
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20 transition-all"
             >
               <Layers className="w-4 h-4" />
-              <span>Start Speaking</span>
+              <span>Buka Speaking Cards</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
 
@@ -60,137 +61,134 @@ export const StudentDashboard: React.FC = () => {
                 soundService.playClick();
                 setActiveTab('reading');
               }}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-white/15 hover:bg-white/25 text-white border border-white/20 transition-all backdrop-blur-sm"
+              className="flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/15 transition-all backdrop-blur-sm"
             >
-              <BookOpen className="w-4 h-4" />
-              <span>Running Reading</span>
+              <Gauge className="w-4 h-4 text-amber-400" />
+              <span>Teleprompter Reading</span>
             </button>
           </div>
         </div>
 
         {/* Rank & XP Card in Hero */}
-        <div className="relative z-10 w-full md:w-72 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-5 space-y-3">
+        <div className="relative z-10 w-full md:w-80 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 p-6 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-[10px] uppercase font-bold text-indigo-200">Current Rank</span>
-              <h3 className="text-lg font-black text-white">{rankProgress.currentRank.name}</h3>
+              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Jenjang Peringkat</span>
+              <h3 className="text-xl font-black text-white">{rankProgress.currentRank.name}</h3>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-amber-400 text-slate-900 flex items-center justify-center font-bold">
-              <Trophy className="w-5 h-5 text-amber-900" />
+            <div className="w-12 h-12 rounded-2xl bg-amber-400 text-slate-900 flex items-center justify-center font-bold shadow-md">
+              <Trophy className="w-6 h-6 text-amber-950" />
             </div>
           </div>
 
-          <div>
-            <div className="flex items-center justify-between text-xs text-indigo-100 mb-1 font-mono">
-              <span>{user.xp} XP</span>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-xs text-slate-300 font-mono">
+              <span className="font-bold text-amber-400">{user.xp} XP</span>
               {rankProgress.nextRank ? (
-                <span>Next: {rankProgress.nextRank.minXp} XP</span>
+                <span>Target: {rankProgress.nextRank.minXp} XP</span>
               ) : (
-                <span>MAX RANK</span>
+                <span>Peringkat Tertinggi</span>
               )}
             </div>
-            <div className="w-full h-2.5 bg-black/20 rounded-full overflow-hidden">
+            <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-amber-400 to-amber-300 transition-all duration-500"
+                className="h-full bg-gradient-to-r from-amber-500 to-amber-300 transition-all duration-500 rounded-full"
                 style={{ width: `${rankProgress.progressPercent}%` }}
               />
             </div>
             {rankProgress.nextRank && (
-              <span className="text-[10px] text-indigo-200 block text-right mt-1 font-medium">
-                {rankProgress.xpNeeded} XP to {rankProgress.nextRank.name}
+              <span className="text-[10px] text-slate-400 block text-right font-medium">
+                Kurang {rankProgress.xpNeeded} XP lagi menuju {rankProgress.nextRank.name}
               </span>
             )}
           </div>
         </div>
-
-        {/* Decorative background glow */}
-        <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-white/5 skew-x-12 pointer-events-none" />
       </div>
 
-      {/* 2. Key Activity Stats Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-soft">
-          <div className="flex items-center gap-2 text-amber-600 text-xs font-bold mb-1">
+      {/* 2. Key Activity Stats Grid with generous breathing room */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5">
+        <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-soft space-y-1">
+          <div className="flex items-center gap-2 text-amber-600 text-xs font-bold">
             <Flame className="w-4 h-4 fill-amber-500" />
-            <span>Daily Streak</span>
+            <span>Streak Harian</span>
           </div>
-          <div className="text-2xl font-black text-slate-900 font-mono">{user.streakDays} Days</div>
-          <span className="text-[10px] text-slate-400">Keep it going tomorrow!</span>
+          <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono">{user.streakDays} Hari</div>
+          <p className="text-[11px] text-slate-400">Pertahankan latihan besok</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-soft">
-          <div className="flex items-center gap-2 text-indigo-600 text-xs font-bold mb-1">
+        <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-soft space-y-1">
+          <div className="flex items-center gap-2 text-indigo-600 text-xs font-bold">
             <Layers className="w-4 h-4" />
-            <span>Activities Done</span>
+            <span>Aktivitas Selesai</span>
           </div>
-          <div className="text-2xl font-black text-slate-900 font-mono">{user.completedActivities}</div>
-          <span className="text-[10px] text-slate-400">Speaking & reading drills</span>
+          <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono">{user.completedActivities}</div>
+          <p className="text-[11px] text-slate-400">Latihan bicara & membaca</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-soft">
-          <div className="flex items-center gap-2 text-emerald-600 text-xs font-bold mb-1">
+        <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-soft space-y-1">
+          <div className="flex items-center gap-2 text-emerald-600 text-xs font-bold">
             <Clock className="w-4 h-4" />
-            <span>Speaking Time</span>
+            <span>Waktu Bicara</span>
           </div>
-          <div className="text-2xl font-black text-slate-900 font-mono">{user.speakingMinutes} mins</div>
-          <span className="text-[10px] text-slate-400">Recorded speech practice</span>
+          <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono">{user.speakingMinutes} Menit</div>
+          <p className="text-[11px] text-slate-400">Akumulasi durasi latihan</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-soft">
-          <div className="flex items-center gap-2 text-purple-600 text-xs font-bold mb-1">
+        <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-soft space-y-1">
+          <div className="flex items-center gap-2 text-purple-600 text-xs font-bold">
             <BookOpen className="w-4 h-4" />
-            <span>Words Read</span>
+            <span>Total Kata Dibaca</span>
           </div>
-          <div className="text-2xl font-black text-slate-900 font-mono">{user.wordsRead.toLocaleString()}</div>
-          <span className="text-[10px] text-slate-400">Running Reading library</span>
+          <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono">{user.wordsRead.toLocaleString()}</div>
+          <p className="text-[11px] text-slate-400">Melalui Running Reading</p>
         </div>
       </div>
 
       {/* 3. Daily Challenges Section */}
-      <section className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-soft space-y-4">
-        <div className="flex items-center justify-between">
+      <section className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-soft space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
           <div>
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-amber-500" />
-              <h2 className="text-base font-extrabold text-slate-900">Today's Daily Missions</h2>
+              <h2 className="text-lg font-black text-slate-900">Misi Harian Anda</h2>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Complete these targeted routines to earn bonus XP and maintain your habit.
+              Tuntaskan 3 rutinitas latihan harian untuk mendapatkan akumulasi XP ekstra dan membakar streak.
             </p>
           </div>
-          <span className="text-xs font-bold text-slate-400 font-mono">
-            {dailyChallenges.filter(c => c.completed).length} / {dailyChallenges.length} Done
+          <span className="text-xs font-bold text-slate-400 font-mono bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+            {dailyChallenges.filter(c => c.completed).length} / {dailyChallenges.length} Selesai
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {dailyChallenges.map((challenge) => (
             <div
               key={challenge.id}
-              className={`p-4 rounded-2xl border transition-all flex flex-col justify-between ${
+              className={`p-5 rounded-3xl border transition-all flex flex-col justify-between ${
                 challenge.completed
                   ? 'bg-emerald-50/60 border-emerald-200'
-                  : 'bg-slate-50/80 border-slate-200/80 hover:border-indigo-200 hover:bg-white'
+                  : 'bg-slate-50/70 border-slate-200/80 hover:border-indigo-200 hover:bg-white'
               }`}
             >
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-lg ${
                     challenge.completed ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'
                   }`}>
                     {challenge.type}
                   </span>
                   <span className="text-xs font-bold text-amber-600 font-mono">+{challenge.xpReward} XP</span>
                 </div>
-                <h4 className="font-bold text-sm text-slate-900">{challenge.title}</h4>
-                <p className="text-xs text-slate-500 mt-1 line-clamp-2">{challenge.description}</p>
+                <h4 className="font-extrabold text-sm text-slate-900">{challenge.title}</h4>
+                <p className="text-xs text-slate-500 leading-relaxed">{challenge.description}</p>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-slate-200/60 flex items-center justify-between">
+              <div className="mt-5 pt-3 border-t border-slate-200/60 flex items-center justify-between">
                 {challenge.completed ? (
                   <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-700">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span>Completed</span>
+                    <span>Telah Selesai</span>
                   </span>
                 ) : (
                   <button
@@ -201,7 +199,7 @@ export const StudentDashboard: React.FC = () => {
                     }}
                     className="flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800"
                   >
-                    <span>Start Challenge</span>
+                    <span>Mulai Misi Ini</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 )}
@@ -211,34 +209,34 @@ export const StudentDashboard: React.FC = () => {
         </div>
       </section>
 
-      {/* 4. Two-Column Layout: Quick Practice Features + Leaderboard Preview */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column (2 spans): Fast Access to Key Features */}
-        <div className="lg:col-span-2 space-y-4">
+      {/* 4. Quick Access Hub & Leaderboard Preview */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column (2 spans): Primary Feature Cards */}
+        <div className="lg:col-span-2 space-y-5">
           <div className="flex items-center justify-between">
-            <h3 className="font-extrabold text-base text-slate-900">Recommended Next Activities</h3>
-            <span className="text-xs text-slate-400 capitalize">Tuned for {level} level</span>
+            <h3 className="font-black text-lg text-slate-900">Pilihan Latihan Cepat</h3>
+            <span className="text-xs text-slate-400 capitalize">Tingkat {level}</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {/* Running Reading Card */}
             <div
               onClick={() => setActiveTab('reading')}
-              className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-soft hover:shadow-card hover:border-indigo-300 transition-all cursor-pointer group flex flex-col justify-between"
+              className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-soft hover:shadow-card hover:border-indigo-300 transition-all cursor-pointer group flex flex-col justify-between"
             >
-              <div>
-                <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold mb-3 group-hover:scale-105 transition-transform">
-                  <BookOpen className="w-5 h-5" />
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold group-hover:scale-105 transition-transform">
+                  <Gauge className="w-6 h-6 text-indigo-600" />
                 </div>
                 <h4 className="font-extrabold text-base text-slate-900 group-hover:text-indigo-600 transition-colors">
-                  Running Reading Trainer
+                  Running Reading Teleprompter
                 </h4>
-                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  Improve your reading speed (0.5x to 2.0x), track real-time sentence velocity, and answer comprehension quizzes.
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Latih kecepatan membaca dengan teks yang bergerak naik secara kontinu. Jangan sampai kalimat tergulung habis sebelum Anda memahaminya!
                 </p>
               </div>
-              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-indigo-600">
-                <span>Go to Library</span>
+              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-indigo-600">
+                <span>Buka Teleprompter</span>
                 <ArrowRight className="w-4 h-4" />
               </div>
             </div>
@@ -246,21 +244,21 @@ export const StudentDashboard: React.FC = () => {
             {/* Speaking Cart / Menu */}
             <div
               onClick={() => setActiveTab('cart')}
-              className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-soft hover:shadow-card hover:border-indigo-300 transition-all cursor-pointer group flex flex-col justify-between"
+              className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-soft hover:shadow-card hover:border-amber-300 transition-all cursor-pointer group flex flex-col justify-between"
             >
-              <div>
-                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold mb-3 group-hover:scale-105 transition-transform">
-                  <ShoppingBag className="w-5 h-5" />
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold group-hover:scale-105 transition-transform">
+                  <ShoppingBag className="w-6 h-6 text-amber-600" />
                 </div>
                 <h4 className="font-extrabold text-base text-slate-900 group-hover:text-amber-600 transition-colors">
-                  Speaking Cart Menu
+                  Speaking Cart & Menu
                 </h4>
-                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  Build custom practice sessions with Appetizers (warm-up), Main Courses (roleplay & debate), and Desserts.
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Rangkai sesi latihan campuran Anda sendiri: pembuka Appetizer, debat Main Course, dan kelincahan kata Dessert dalam satu rangkaian.
                 </p>
               </div>
-              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-amber-600">
-                <span>Build Practice Menu</span>
+              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-amber-600">
+                <span>Rangkai Menu Latihan</span>
                 <ArrowRight className="w-4 h-4" />
               </div>
             </div>
@@ -268,21 +266,21 @@ export const StudentDashboard: React.FC = () => {
             {/* Roleplay Secret Mission */}
             <div
               onClick={() => setActiveTab('roleplay')}
-              className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-soft hover:shadow-card hover:border-indigo-300 transition-all cursor-pointer group flex flex-col justify-between"
+              className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-soft hover:shadow-card hover:border-purple-300 transition-all cursor-pointer group flex flex-col justify-between"
             >
-              <div>
-                <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold mb-3 group-hover:scale-105 transition-transform">
-                  <Theater className="w-5 h-5" />
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold group-hover:scale-105 transition-transform">
+                  <Theater className="w-6 h-6 text-purple-600" />
                 </div>
                 <h4 className="font-extrabold text-base text-slate-900 group-hover:text-purple-600 transition-colors">
-                  Roleplay Secret Missions
+                  Roleplay Misi Rahasia
                 </h4>
-                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  Navigate high-stakes conversations with hidden rules, forbidden words, and objective scoring.
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Simulasikan situasi negosiasi dan komplain nyata dengan kartu misi tersembunyi, frasa wajib, serta pantangan kata terlarang.
                 </p>
               </div>
-              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-purple-600">
-                <span>Enter Roleplay</span>
+              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-purple-600">
+                <span>Masuk ke Simulasi</span>
                 <ArrowRight className="w-4 h-4" />
               </div>
             </div>
@@ -290,88 +288,91 @@ export const StudentDashboard: React.FC = () => {
             {/* Speaking Arena Showdowns */}
             <div
               onClick={() => setActiveTab('arena')}
-              className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-soft hover:shadow-card hover:border-indigo-300 transition-all cursor-pointer group flex flex-col justify-between"
+              className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-soft hover:shadow-card hover:border-rose-300 transition-all cursor-pointer group flex flex-col justify-between"
             >
-              <div>
-                <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold mb-3 group-hover:scale-105 transition-transform">
-                  <Trophy className="w-5 h-5" />
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold group-hover:scale-105 transition-transform">
+                  <Trophy className="w-6 h-6 text-rose-600" />
                 </div>
                 <h4 className="font-extrabold text-base text-slate-900 group-hover:text-rose-600 transition-colors">
-                  Speaking Arena Battles
+                  Duel Arena & Turnamen
                 </h4>
-                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  Head-to-head topic showdowns and tournaments with peer comparative scoring rubrics.
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Adu kecakapan berbicara pada topik yang sama dengan teman sekelas. Pantau peringkat mingguan dan raih piala kejuaraan.
                 </p>
               </div>
-              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-rose-600">
-                <span>View Arena</span>
+              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-rose-600">
+                <span>Lihat Arena Tanding</span>
                 <ArrowRight className="w-4 h-4" />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right Column (1 span): Weekly Leaderboard Preview */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-extrabold text-base text-slate-900 flex items-center gap-1.5">
-              <Trophy className="w-4 h-4 text-amber-500" />
-              Weekly Top Orators
-            </h3>
-            <button
-              onClick={() => setActiveTab('arena')}
-              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800"
-            >
-              See All
-            </button>
-          </div>
-
-          <div className="p-4 bg-white rounded-3xl border border-slate-200/80 shadow-soft space-y-3">
-            {WEEKLY_LEADERBOARD.slice(0, 5).map((person, idx) => (
-              <div
-                key={person.id}
-                className={`p-2.5 rounded-xl flex items-center justify-between transition-colors ${
-                  person.isCurrentUser ? 'bg-indigo-50 border border-indigo-200' : 'hover:bg-slate-50'
-                }`}
+        {/* Right Column (1 span): Leaderboard & Badges */}
+        <div className="space-y-6">
+          {/* Leaderboard Preview */}
+          <div className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-soft space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-amber-500" />
+                <span>Peringkat Minggu Ini</span>
+              </h3>
+              <button
+                onClick={() => setActiveTab('arena')}
+                className="text-xs font-bold text-indigo-600 hover:text-indigo-800"
               >
-                <div className="flex items-center gap-2.5">
-                  <span className={`w-5 text-center font-mono font-bold text-xs ${
-                    idx === 0 ? 'text-amber-500' : idx === 1 ? 'text-slate-400' : idx === 2 ? 'text-amber-700' : 'text-slate-400'
-                  }`}>
-                    #{idx + 1}
-                  </span>
-                  <img
-                    src={person.avatar}
-                    alt={person.name}
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
-                  <div>
-                    <div className="font-bold text-xs text-slate-800 flex items-center gap-1">
-                      <span>{person.name.split(' ')[0]}</span>
-                      {person.isCurrentUser && (
-                        <span className="text-[9px] bg-indigo-600 text-white px-1 py-0.2 rounded font-extrabold">YOU</span>
-                      )}
-                    </div>
-                    <span className="text-[10px] text-slate-400">{person.categoryPill}</span>
-                  </div>
-                </div>
+                Selengkapnya
+              </button>
+            </div>
 
-                <span className="font-mono font-extrabold text-xs text-indigo-700">
-                  {person.xp} XP
-                </span>
-              </div>
-            ))}
+            <div className="space-y-2.5">
+              {WEEKLY_LEADERBOARD.slice(0, 5).map((person, idx) => (
+                <div
+                  key={person.id}
+                  className={`p-3 rounded-2xl flex items-center justify-between transition-colors ${
+                    person.isCurrentUser ? 'bg-indigo-50 border border-indigo-200' : 'hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className={`w-5 text-center font-mono font-bold text-xs ${
+                      idx === 0 ? 'text-amber-500' : idx === 1 ? 'text-slate-400' : idx === 2 ? 'text-amber-700' : 'text-slate-400'
+                    }`}>
+                      #{idx + 1}
+                    </span>
+                    <img
+                      src={person.avatar}
+                      alt={person.name}
+                      className="w-9 h-9 rounded-full object-cover border border-slate-200"
+                    />
+                    <div>
+                      <div className="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                        <span>{person.name.split(' ')[0]}</span>
+                        {person.isCurrentUser && (
+                          <span className="text-[9px] bg-indigo-600 text-white px-1.5 py-0.2 rounded font-extrabold">ANDA</span>
+                        )}
+                      </div>
+                      <span className="text-[10px] text-slate-400">{person.categoryPill}</span>
+                    </div>
+                  </div>
+
+                  <span className="font-mono font-black text-xs text-indigo-700">
+                    {person.xp} XP
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Badges Preview */}
-          <div className="p-4 bg-white rounded-3xl border border-slate-200/80 shadow-soft space-y-3">
-            <div className="flex items-center justify-between">
-              <h4 className="font-bold text-xs text-slate-900">Your Badges ({unlockedBadges.length})</h4>
+          <div className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-soft space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h4 className="font-extrabold text-sm text-slate-900">Lencana Anda ({unlockedBadges.length})</h4>
               <button
                 onClick={() => setActiveTab('progress')}
-                className="text-xs text-indigo-600 font-semibold"
+                className="text-xs font-bold text-indigo-600 hover:text-indigo-800"
               >
-                View
+                Lihat Semua
               </button>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -379,7 +380,7 @@ export const StudentDashboard: React.FC = () => {
                 <div
                   key={badge.id}
                   title={`${badge.title}: ${badge.description}`}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-purple-50 border border-purple-200 text-xs font-semibold text-purple-700"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 border border-purple-200 text-xs font-semibold text-purple-700"
                 >
                   <Award className="w-3.5 h-3.5 text-purple-600" />
                   <span>{badge.title}</span>
