@@ -155,5 +155,35 @@ export const ROLEPLAY_SCENARIOS: RoleplayScenario[] = [
       requiredPhrases: ['We take full accountability for our ecosystem', 'All customer credentials remained cryptographically salted and hashed', 'A third-party forensic audit is underway'],
       forbiddenWords: ['we panicked', 'we ignored it', 'no idea']
     }
+  },
+
+  // --- BEGINNER 2: Airport Baggage Claim Desk ---
+  {
+    id: 'role-beg-2',
+    title: 'The Lost Suitcase at Airport Baggage Claim',
+    level: 'beginner',
+    context: 'A tired passenger arrives at their destination airport, but their black luggage did not appear on the carousel belt.',
+    suggestedDuration: 120,
+    vocabularySupport: [
+      'Baggage carousel', 'Luggage tag', 'Boarding pass', 'Suitcase', 'Color and brand', 'Delivery address', 'Tracking number'
+    ],
+    playerA: {
+      playerRole: 'A',
+      roleName: 'The Exhausted Traveler',
+      situation: 'Your flight landed 45 minutes ago. All bags have cleared the belt, but your medium black hard-shell suitcase with a yellow ribbon is missing.',
+      rules: ['Speak politely despite being tired.', 'Provide clear descriptions of your bag.'],
+      secretObjective: 'Ask the agent to deliver the suitcase directly to your hotel for free once it is located.',
+      requiredPhrases: ['My bag did not come out on carousel 3', 'It has a bright yellow ribbon on the handle', 'Could you arrange delivery to my hotel?'],
+      forbiddenWords: ['terrible airline', 'thief', 'incompetent', 'sue you']
+    },
+    playerB: {
+      playerRole: 'B',
+      roleName: 'Airport Baggage Service Officer',
+      situation: 'A flight delay at the transit hub caused twenty bags to be transferred to the subsequent flight arriving in three hours.',
+      rules: ['Apologize for the inconvenience.', 'Collect luggage claim tags and passenger contact information.'],
+      secretObjective: 'Locate the bag in the baggage tracking database and confirm complimentary courier delivery within 6 hours.',
+      requiredPhrases: ['May I please see your baggage claim receipt?', 'I will trace your bag in our global locator system', 'We will deliver it directly to your address'],
+      forbiddenWords: ['not my problem', 'lost forever', 'too bad', 'go away']
+    }
   }
 ];

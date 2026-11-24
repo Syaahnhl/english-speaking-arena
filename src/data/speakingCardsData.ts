@@ -1,261 +1,1522 @@
 import { SpeakingCard } from '../types';
 
 export const SPEAKING_CARDS: SpeakingCard[] = [
-  // --- BEGINNER: Ice Breakers & Daily Conversation ---
   {
-    id: 'beg-ice-1',
-    title: 'Introduce Yourself',
-    level: 'beginner',
-    category: 'ice-breaker',
-    question: 'Tell us your name, where you live, your current occupation or grade, and what makes you happy.',
-    estimatedDuration: 60,
-    suggestedDurationOptions: [30, 60, 90, 120],
-    vocabularySuggestions: ['Passionate', 'Hometown', 'Student', 'Enjoy', 'Daily life'],
-    sentenceStarters: [
-      'Hello everyone, my name is...',
-      'I am currently living in...',
-      'In my free time, I really enjoy...',
-      'One thing that always makes me smile is...'
+    "id": "sc-beg-ice-1",
+    "title": "Introduce Yourself & Your Passions",
+    "level": "beginner",
+    "category": "ice-breaker",
+    "question": "Introduce yourself in 3 sentences: your name, your favorite weekend hobby, and why you love it.",
+    "estimatedDuration": 45,
+    "suggestedDurationOptions": [
+      30,
+      45,
+      60
     ],
-    hints: ['Speak slowly and smile', 'Mention at least one interesting hobby', 'Do not worry about perfect grammar'],
-    sampleResponse: 'Hello! My name is Alex. I live in Jakarta. I am a student who loves learning languages. In my free time, I really enjoy reading comics and playing badminton with my friends. Nice to meet you all!'
+    "vocabularySuggestions": [
+      "Passionate",
+      "Leisure",
+      "Enthusiastic",
+      "Unwind"
+    ],
+    "sentenceStarters": [
+      "My name is...",
+      "During my free time, I really enjoy...",
+      "It helps me to..."
+    ],
+    "hints": [
+      "Speak slowly and smile",
+      "Mention how long you have been doing this hobby"
+    ],
+    "sampleResponse": "Hello everyone! My name is Alex. In my free time, I am passionate about landscape photography because it allows me to unwind in nature.",
+    "targetTone": "Casual & Friendly"
   },
   {
-    id: 'beg-ice-2',
-    title: 'My Family & Loved Ones',
-    level: 'beginner',
-    category: 'ice-breaker',
-    question: 'Describe your family members. Who do you spend the most time with, and why?',
-    estimatedDuration: 60,
-    suggestedDurationOptions: [30, 60, 90],
-    vocabularySuggestions: ['Sibling', 'Supportive', 'Gathering', 'Close-knit', 'Kind-hearted'],
-    sentenceStarters: [
-      'There are ... people in my family.',
-      'My mother/father is someone who...',
-      'I am closest with my ... because...',
-      'On weekends, our family usually...'
+    "id": "sc-beg-ice-2",
+    "title": "My Favorite Comfort Food",
+    "level": "beginner",
+    "category": "ice-breaker",
+    "question": "Describe your absolute favorite dish or snack. What does it taste like and when do you love eating it?",
+    "estimatedDuration": 60,
+    "suggestedDurationOptions": [
+      45,
+      60,
+      90
     ],
-    hints: ['Describe physical features or personality traits', 'Give one memorable memory together'],
-    sampleResponse: 'There are four people in my family: my father, mother, younger sister, and me. I am closest with my sister because we love sharing music and funny stories every evening.'
+    "vocabularySuggestions": [
+      "Delicious",
+      "Savory",
+      "Crispy",
+      "Comforting"
+    ],
+    "sentenceStarters": [
+      "If I had to choose one food...",
+      "The texture is very...",
+      "It reminds me of..."
+    ],
+    "hints": [
+      "Describe colors, flavors, and aromas",
+      "Explain who cooks it best"
+    ],
+    "sampleResponse": "My favorite food is warm chicken noodle soup. The savory broth and tender vegetables are so comforting, especially on rainy afternoons.",
+    "targetTone": "Enthusiastic"
   },
   {
-    id: 'beg-ice-3',
-    title: 'My Favorite Food & Cuisine',
-    level: 'beginner',
-    category: 'ice-breaker',
-    question: 'What is your absolute favorite meal? Describe its taste, texture, and when you love to eat it.',
-    estimatedDuration: 60,
-    suggestedDurationOptions: [30, 60, 90],
-    vocabularySuggestions: ['Delicious', 'Crispy', 'Savory', 'Spicy', 'Comfort food'],
-    sentenceStarters: [
-      'My favorite food of all time is...',
-      'It has a unique flavor because it is...',
-      'The texture is very crunchy / tender...',
-      'Whenever I feel tired, this meal makes me...'
+    "id": "sc-int-ice-1",
+    "title": "A Cultural Tradition You Love",
+    "level": "intermediate",
+    "category": "ice-breaker",
+    "question": "Share a cultural tradition, holiday celebration, or family custom that holds deep meaning for you.",
+    "estimatedDuration": 90,
+    "suggestedDurationOptions": [
+      60,
+      90,
+      120
     ],
-    hints: ['Use sensory words: aroma, spicy, sweet, crunchy'],
-    sampleResponse: 'My favorite food is fried rice with sunny side up eggs. It smells delicious and has a savory taste with a touch of chili. It is my ultimate comfort food.'
+    "vocabularySuggestions": [
+      "Heritage",
+      "Ceremony",
+      "Generations",
+      "Festivity"
+    ],
+    "sentenceStarters": [
+      "In our community, we observe...",
+      "This custom dates back to...",
+      "What makes it unique is..."
+    ],
+    "hints": [
+      "Explain the historical or emotional significance",
+      "Describe special clothes, dishes, or music"
+    ],
+    "targetTone": "Reflective & Warm"
   },
   {
-    id: 'beg-conv-1',
-    title: 'Ordering Food at a Cozy Cafe',
-    level: 'beginner',
-    category: 'daily-conversation',
-    question: 'Imagine you are at a cafe counter. Order a drink, ask for less sugar, and request a pastry.',
-    estimatedDuration: 60,
-    suggestedDurationOptions: [30, 60, 90],
-    vocabularySuggestions: ['I would like to have', 'Could I get', 'Less sweet', 'Takeaway or dine-in', 'Receipt'],
-    sentenceStarters: [
-      'Good morning, I would like to order...',
-      'Could you make it with oat milk and less ice?',
-      'Also, do you have any warm croissants available?',
-      'How much is the total? Can I pay by card?'
+    "id": "sc-int-ice-2",
+    "title": "A Skill You Wish You Could Master Overnight",
+    "level": "intermediate",
+    "category": "ice-breaker",
+    "question": "If you could instantly wake up tomorrow with mastery of any artistic or physical skill, what would it be and why?",
+    "estimatedDuration": 75,
+    "suggestedDurationOptions": [
+      60,
+      75,
+      90
     ],
-    hints: ['Use polite phrases like "Please" and "Could I have..."'],
-    sampleResponse: 'Good morning! Could I get an iced vanilla latte with oat milk, please? Also, could you make it less sweet? I would also love one warm butter croissant for dine-in. Thank you!'
+    "vocabularySuggestions": [
+      "Virtuoso",
+      "Fluency",
+      "Dexterity",
+      "Instinctive"
+    ],
+    "sentenceStarters": [
+      "Without hesitation, I would choose...",
+      "Mastering this would allow me to...",
+      "I have always admired people who..."
+    ],
+    "hints": [
+      "Contrast how hard it is to learn normally with the joy of instant mastery"
+    ],
+    "targetTone": "Imaginative"
   },
   {
-    id: 'beg-conv-2',
-    title: 'Asking for Directions in a New City',
-    level: 'beginner',
-    category: 'daily-conversation',
-    question: 'You are lost near a train station. Ask a friendly local how to reach the central library or park.',
-    estimatedDuration: 60,
-    suggestedDurationOptions: [30, 60, 90],
-    vocabularySuggestions: ['Excuse me', 'Crossroad', 'Turn left / right', 'Within walking distance', 'Straight ahead'],
-    sentenceStarters: [
-      'Excuse me, could you help me for a moment?',
-      'I am looking for the City Library...',
-      'Is it far from here, or can I walk there?',
-      'Thank you so much for your kind help!'
+    "id": "sc-adv-ice-1",
+    "title": "Deconstruct a Core Personal Philosophy",
+    "level": "advanced",
+    "category": "ice-breaker",
+    "question": "Articulate an overarching mental model or maxim that guides your major life decisions, citing a formative experience.",
+    "estimatedDuration": 120,
+    "suggestedDurationOptions": [
+      90,
+      120,
+      180
     ],
-    hints: ['Start with a courteous greeting and speak clearly'],
-    sampleResponse: 'Excuse me, sir! Could you help me find the nearest train station? Is it within walking distance from here? Should I turn left at the next traffic light? Thank you very much!'
+    "vocabularySuggestions": [
+      "Guiding principle",
+      "Pragmatism",
+      "Equanimity",
+      "Formative"
+    ],
+    "sentenceStarters": [
+      "The philosophical anchor of my decision-making is...",
+      "A crucible moment occurred when...",
+      "This paradigm prevents me from..."
+    ],
+    "hints": [
+      "Ground abstract philosophy in a concrete historical or personal example"
+    ],
+    "targetTone": "Philosophical & Articulate"
   },
   {
-    id: 'beg-story-1',
-    title: 'What Happened Today? (Daily Routine)',
-    level: 'beginner',
-    category: 'storytelling',
-    question: 'Walk us through your morning. What was the first thing you did after waking up, and what went well?',
-    estimatedDuration: 60,
-    suggestedDurationOptions: [30, 60, 90],
-    vocabularySuggestions: ['Woke up', 'Refreshed', 'Breakfast', 'Commute', 'Productive'],
-    sentenceStarters: [
-      'Today I woke up at around...',
-      'The first thing I did was...',
-      'After having a quick breakfast, I...',
-      'The best moment this morning was...'
+    "id": "sc-adv-ice-2",
+    "title": "Intellectual Blindspot & Reconsidered Beliefs",
+    "level": "advanced",
+    "category": "ice-breaker",
+    "question": "Describe an intellectual or philosophical premise you previously held with conviction, but later abandoned due to compelling evidence.",
+    "estimatedDuration": 120,
+    "suggestedDurationOptions": [
+      90,
+      120,
+      180
     ],
-    hints: ['Use past simple tense: woke up, ate, washed, walked'],
-    sampleResponse: 'Today I woke up early at 6 AM. The morning breeze was fresh. I drank a glass of water, made a toast, and listened to an English podcast. It helped me feel ready for the day.'
-  },
-
-  // --- INTERMEDIATE: Opinions, Would You Rather, Roleplay, Fluency ---
-  {
-    id: 'int-op-1',
-    title: 'Is Social Media Good or Bad for Society?',
-    level: 'intermediate',
-    category: 'opinion',
-    question: 'Do social media platforms do more harm than good to young people? Defend your point of view with examples.',
-    estimatedDuration: 90,
-    suggestedDurationOptions: [60, 90, 120, 180],
-    vocabularySuggestions: ['Double-edged sword', 'Mental health', 'Connectivity', 'Distraction', 'Misinformation'],
-    sentenceStarters: [
-      'In my perspective, social media is a double-edged sword...',
-      'On one hand, it enables global connection, but on the other hand...',
-      'From personal experience, I have noticed that...',
-      'To conclude, the key is mindful usage rather than outright banning.'
+    "vocabularySuggestions": [
+      "Cognitive dissonance",
+      "Dogmatic",
+      "Nuanced",
+      "Paradigm shift"
     ],
-    hints: ['Balance both sides before stating your strong conclusion', 'Provide concrete real-world examples'],
-    sampleResponse: 'In my opinion, social media is a double-edged sword. While it bridges distances and allows students to access creative educational content, excessive scrolling harms mental focus and sleep. I believe balanced digital discipline is the real solution.'
+    "sentenceStarters": [
+      "I used to dogmatically believe that...",
+      "The catalyst for reconsidering this position was...",
+      "Today, I adopt a more nuanced view that..."
+    ],
+    "hints": [
+      "Highlight intellectual humility and the analytical reasoning process"
+    ],
+    "targetTone": "Analytical & Candid"
   },
   {
-    id: 'int-op-2',
-    title: 'Should Students Wear School Uniforms?',
-    level: 'intermediate',
-    category: 'opinion',
-    question: 'Explain whether mandatory school uniforms foster equality or suppress personal identity.',
-    estimatedDuration: 90,
-    suggestedDurationOptions: [60, 90, 120],
-    vocabularySuggestions: ['Equality', 'Individuality', 'Socioeconomic gap', 'Belonging', 'Self-expression'],
-    sentenceStarters: [
-      'This topic has sparked widespread debates among educators...',
-      'I firmly believe that uniforms create a sense of equal standing...',
-      'However, critics argue that self-expression is restricted...',
-      'Overall, the primary purpose of school is learning without social pressure.'
+    "id": "sc-beg-op-1",
+    "title": "City Life vs Countryside Life",
+    "level": "beginner",
+    "category": "opinion",
+    "question": "Do you prefer living in a bustling big city or a peaceful quiet village? Give two clear reasons.",
+    "estimatedDuration": 60,
+    "suggestedDurationOptions": [
+      45,
+      60,
+      90
     ],
-    hints: ['Mention socioeconomic aspects and daily convenience'],
-    sampleResponse: 'I support school uniforms because they eliminate visual wealth disparities among students. When everyone wears the same attire, peer pressure decreases and students can focus entirely on academics.'
+    "vocabularySuggestions": [
+      "Peaceful",
+      "Convenient",
+      "Crowded",
+      "Fresh air"
+    ],
+    "sentenceStarters": [
+      "In my opinion, living in...",
+      "First of all, it is much more...",
+      "Secondly, I enjoy..."
+    ],
+    "hints": [
+      "Contrast noise versus convenience",
+      "Give examples of daily routines"
+    ],
+    "targetTone": "Conversational"
   },
   {
-    id: 'int-wyr-1',
-    title: 'Live Without Internet vs Without Electricity?',
-    level: 'intermediate',
-    category: 'would-you-rather',
-    question: 'Would you rather live one month without internet access or one month without home appliances/electricity?',
-    estimatedDuration: 90,
-    suggestedDurationOptions: [60, 90, 120],
-    vocabularySuggestions: ['Essential utility', 'Digital detox', 'Survival', 'Priceless', 'Inconvenience'],
-    sentenceStarters: [
-      'If I were forced to choose between these two extreme conditions...',
-      'I would definitely choose to sacrifice internet rather than electricity because...',
-      'Without electricity, basic needs like refrigeration and lighting disappear...',
-      'In fact, a digital detox might even improve my focus!'
+    "id": "sc-beg-op-2",
+    "title": "Should Homework Be Banned on Weekends?",
+    "level": "beginner",
+    "category": "opinion",
+    "question": "Do you think teachers should give homework over Saturday and Sunday? Why or why not?",
+    "estimatedDuration": 60,
+    "suggestedDurationOptions": [
+      45,
+      60,
+      90
     ],
-    hints: ['Highlight practical survival needs vs digital habits'],
-    sampleResponse: 'I would easily choose to live without internet rather than without electricity. Electricity powers our refrigerators, fans, and clean water pumps. Living offline might feel inconvenient at first, but it can be a great digital detox.'
+    "vocabularySuggestions": [
+      "Relaxation",
+      "Family time",
+      "Overloaded",
+      "Productive"
+    ],
+    "sentenceStarters": [
+      "I believe that students should...",
+      "Weekends are meant for...",
+      "On the other hand, a little practice..."
+    ],
+    "hints": [
+      "Talk about mental rest versus exam preparation"
+    ],
+    "targetTone": "Persuasive"
   },
   {
-    id: 'int-fl-1',
-    title: 'The 4/3/2 Speed & Fluency Challenge',
-    level: 'intermediate',
-    category: 'random-challenge',
-    question: 'Describe an unforgettable trip or adventure. Challenge: speak continuously without saying "um" or long silences!',
-    estimatedDuration: 60,
-    suggestedDurationOptions: [60, 90, 120],
-    vocabularySuggestions: ['Breathtaking', 'Spontaneous', 'Memorable', 'Overcome obstacles', 'Scenic view'],
-    sentenceStarters: [
-      'Let me take you back to an unforgettable journey...',
-      'The moment we arrived at the destination...',
-      'What made this trip stand out was...',
-      'That experience taught me to embrace the unknown.'
+    "id": "sc-int-op-1",
+    "title": "Is Social Media Detrimental or Beneficial for Society?",
+    "level": "intermediate",
+    "category": "opinion",
+    "question": "Weigh the advantages of global connectivity against digital addiction. In your judgment, is social media a net positive?",
+    "estimatedDuration": 90,
+    "suggestedDurationOptions": [
+      60,
+      90,
+      120
     ],
-    hints: ['Keep sentences rolling smoothly; substitute filler words with steady pauses'],
-    sampleResponse: 'Last year I hiked Mount Bromo during sunrise. The temperature was freezing, but the golden horizon over the crater took our breath away. That trip proved to me that perseverance always rewards us.'
-  },
-
-  // --- ADVANCED: Debate Arena, Critical Thinking, Professional Communication ---
-  {
-    id: 'adv-deb-1',
-    title: 'AI in the Workforce: Catalyst for Innovation or Mass Threat?',
-    level: 'advanced',
-    category: 'debate',
-    question: 'Deliver a structured 2-minute speech on how generative artificial intelligence will reshape global employment. Are knowledge workers in jeopardy?',
-    estimatedDuration: 120,
-    suggestedDurationOptions: [60, 90, 120, 180],
-    vocabularySuggestions: ['Augmentation', 'Obsolescence', 'Cognitive capability', 'Unprecedented pace', 'Paradigm shift', 'Ethical governance'],
-    sentenceStarters: [
-      'Distinguished listeners, we stand at the precipice of an economic transformation...',
-      'History reminds us that technological disruptions inevitably displace archaic roles...',
-      'However, the distinction today lies in the cognitive reach of automated systems...',
-      'Therefore, policy makers and educational institutions must pivot immediately toward...'
+    "vocabularySuggestions": [
+      "Ubiquitous",
+      "Algorithmic",
+      "Isolation",
+      "Empowerment"
     ],
-    hints: ['Use rhetorical transitions and compelling macroeconomic evidence', 'Conclude with a proactive policy call-to-action'],
-    sampleResponse: 'We are witnessing not merely an automation of physical labor, but a profound paradigm shift in cognitive task delegation. AI should not be viewed as an inevitable destroyer of jobs, but rather as an augmentation partner. Those who learn to orchestrate intelligent systems will thrive, while those clinging to repetitive manual workflows face undeniable obsolescence.'
+    "sentenceStarters": [
+      "While proponents argue that...",
+      "I am convinced that the psychological toll...",
+      "On balance, it depends on..."
+    ],
+    "hints": [
+      "Balance both sides before rendering your verdict"
+    ],
+    "targetTone": "Balanced & Analytical"
   },
   {
-    id: 'adv-crit-1',
-    title: 'The Trolley Problem & Autonomous Vehicles',
-    level: 'advanced',
-    category: 'critical-thinking',
-    question: 'When self-driving car software must make a split-second life-or-death decision between protecting its passenger or avoiding pedestrians, what ethical framework should programmers code?',
-    estimatedDuration: 120,
-    suggestedDurationOptions: [90, 120, 180],
-    vocabularySuggestions: ['Utilitarianism', 'Deontological ethics', 'Moral culpability', 'Autonomous algorithms', 'Liability'],
-    sentenceStarters: [
-      'This classic ethical dilemma presents a modern engineering conundrum...',
-      'From a purely utilitarian standpoint, minimizing aggregate casualties seems logical...',
-      'Yet, consumer adoption collapses if an autonomous vehicle sacrifices its own occupant...',
-      'Thus, we must distinguish between legal liability and ethical programming principles.'
+    "id": "sc-int-op-2",
+    "title": "Should Students Wear School Uniforms?",
+    "level": "intermediate",
+    "category": "opinion",
+    "question": "Does requiring standardized uniforms promote equality and focus, or stifle creative individuality?",
+    "estimatedDuration": 90,
+    "suggestedDurationOptions": [
+      60,
+      90,
+      120
     ],
-    hints: ['Contrast utilitarian harm reduction with rights-based deontological philosophy'],
-    sampleResponse: 'Programming self-driving algorithms requires navigating profound moral hazards. If cars are programmed purely on utilitarian calculation, consumers may refuse to purchase vehicles that would sacrifice them in rare scenarios. Transparent regulatory consensus is imperative so individual companies do not hold arbitrary power over life and death.'
+    "vocabularySuggestions": [
+      "Socio-economic",
+      "Self-expression",
+      "Cohesion",
+      "Distraction"
+    ],
+    "sentenceStarters": [
+      "From an equity standpoint...",
+      "However, critics rightfully argue that...",
+      "My stance is that..."
+    ],
+    "hints": [
+      "Consider peer pressure, morning routines, and individual expression"
+    ],
+    "targetTone": "Persuasive"
   },
   {
-    id: 'adv-prof-1',
-    title: 'The 2-Minute Startup Pitch',
-    level: 'advanced',
-    category: 'professional',
-    question: 'Pitch an innovative green-technology or educational startup to venture capital investors. Define the pain point, market size, unfair advantage, and monetization model.',
-    estimatedDuration: 120,
-    suggestedDurationOptions: [90, 120, 180],
-    vocabularySuggestions: ['Value proposition', 'Scalable ecosystem', 'Customer acquisition cost', 'Unmet demand', 'Retention rate', 'Defensible moat'],
-    sentenceStarters: [
-      'Imagine a world where language barriers no longer stifle global ambition...',
-      'Our platform addresses a 60-billion-dollar market pain point through...',
-      'Unlike conventional fragmented learning apps, our proprietary engine provides...',
-      'We are projecting profitability within 18 months backed by solid unit economics.'
+    "id": "sc-adv-op-1",
+    "title": "The Ethics of Genetic Augmentation in Humans",
+    "level": "advanced",
+    "category": "opinion",
+    "question": "Should somatic and germline gene editing be restricted purely to curing congenital disease, or permitted for cognitive and physical enhancement?",
+    "estimatedDuration": 120,
+    "suggestedDurationOptions": [
+      90,
+      120,
+      180
     ],
-    hints: ['Hook the audience in the first 15 seconds', 'Highlight metrics, revenue model, and competitive moat'],
-    sampleResponse: 'Good afternoon, investors. Over one billion students worldwide struggle with speaking anxiety despite years of grammar study. Our platform, English Speaking Arena, bridges this divide through real-time gamified speech simulations and dynamic reading velocity pacing. With organic viral acquisition and 74% month-two retention, we are scaling to redefine conversational fluency.'
+    "vocabularySuggestions": [
+      "Eugenics",
+      "Therapeutic",
+      "Socio-stratification",
+      "Inviolable"
+    ],
+    "sentenceStarters": [
+      "We must draw a distinct line between therapeutic intervention and...",
+      "Permitting non-curative enhancement risks...",
+      "The ethical imperative is to ensure..."
+    ],
+    "hints": [
+      "Address wealth disparities and generational genetic divides"
+    ],
+    "targetTone": "Ethical & Rigorous"
   },
   {
-    id: 'adv-imp-1',
-    title: 'Defend an Unpopular Opinion (Impromptu)',
-    level: 'advanced',
-    category: 'debate',
-    question: 'Choose an unpopular stance: "Formal university degrees will become completely obsolete within the next decade." Defend this position persuasively.',
-    estimatedDuration: 120,
-    suggestedDurationOptions: [60, 90, 120, 180],
-    vocabularySuggestions: ['Credentialism', 'Skyrocketing tuition', 'Agile micro-credentials', 'Skill-first hiring', 'Diminishing return'],
-    sentenceStarters: [
-      'While many still view higher education as the pinnacle of success, the metrics tell a different story...',
-      'Employers increasingly prioritize verifiable portfolios over static degrees...',
-      'Four years in a traditional lecture hall cannot compete with high-velocity specialized academies...',
-      'Ultimately, competence is eclipsing credentialism.'
+    "id": "sc-adv-op-2",
+    "title": "Universal Basic Income in the Age of Artificial General Intelligence",
+    "level": "advanced",
+    "category": "opinion",
+    "question": "Is an unconditional state-funded universal basic income an economic necessity or a destabilizing disincentive to human productivity?",
+    "estimatedDuration": 120,
+    "suggestedDurationOptions": [
+      90,
+      120,
+      180
     ],
-    hints: ['Do not apologize for the stance; frame it with confidence and conviction'],
-    sampleResponse: 'The four-year degree is suffering from irreversible diminishing returns. In fast-paced technological domains, curricula are obsolete before graduation ceremonies occur. Progressive tech leaders now hire strictly based on verifiable code repositories and real-world problem-solving, proving that competence has superseded traditional credentialism.'
+    "vocabularySuggestions": [
+      "Disincentive",
+      "Automation dividend",
+      "Marginal propensity",
+      "Safety net"
+    ],
+    "sentenceStarters": [
+      "As cognitive automation compresses labor demand...",
+      "Skeptics caution that unconditional stipends...",
+      "A pragmatic framework would require..."
+    ],
+    "hints": [
+      "Discuss tax revenues, workforce participation, and human dignity"
+    ],
+    "targetTone": "Macroeconomic & Evaluative"
+  },
+  {
+    "id": "sc-beg-wyr-1",
+    "title": "Travel to the Past or Travel to the Future?",
+    "level": "beginner",
+    "category": "would-you-rather",
+    "question": "Would you rather travel 100 years into the past to meet your ancestors or 100 years into the future to see flying cars?",
+    "estimatedDuration": 45,
+    "suggestedDurationOptions": [
+      30,
+      45,
+      60
+    ],
+    "vocabularySuggestions": [
+      "Fascinating",
+      "Ancestors",
+      "Futuristic",
+      "Curiosity"
+    ],
+    "sentenceStarters": [
+      "I would definitely choose to travel to...",
+      "I am really curious about...",
+      "It would be amazing to see..."
+    ],
+    "hints": [
+      "Pick one and explain what you would ask people there"
+    ],
+    "targetTone": "Playful"
+  },
+  {
+    "id": "sc-beg-wyr-2",
+    "title": "Live Without Music or Live Without Television/Movies?",
+    "level": "beginner",
+    "category": "would-you-rather",
+    "question": "Would you rather spend the rest of your life without listening to music or without watching any movies and videos?",
+    "estimatedDuration": 60,
+    "suggestedDurationOptions": [
+      45,
+      60,
+      90
+    ],
+    "vocabularySuggestions": [
+      "Melody",
+      "Entertainment",
+      "Unimaginable",
+      "Mood booster"
+    ],
+    "sentenceStarters": [
+      "This is a tough choice, but I would rather...",
+      "Music is so essential because...",
+      "I could easily replace movies with..."
+    ],
+    "hints": [
+      "Explain how your choice affects your daily feelings"
+    ],
+    "targetTone": "Expressive"
+  },
+  {
+    "id": "sc-int-wyr-1",
+    "title": "Live Without Internet vs Live Without Electricity?",
+    "level": "intermediate",
+    "category": "would-you-rather",
+    "question": "Would you rather forfeit all digital internet access for a year, or forfeit household electrical power for one month?",
+    "estimatedDuration": 75,
+    "suggestedDurationOptions": [
+      60,
+      75,
+      90
+    ],
+    "vocabularySuggestions": [
+      "Indispensable",
+      "Modern convenience",
+      "Sanitation",
+      "Connectivity"
+    ],
+    "sentenceStarters": [
+      "While losing the internet sounds isolating...",
+      "Living without electricity directly compromises...",
+      "Ultimately, I would endure..."
+    ],
+    "hints": [
+      "Consider food refrigeration, medical care, and social communication"
+    ],
+    "targetTone": "Humorous & Strategic"
+  },
+  {
+    "id": "sc-int-wyr-2",
+    "title": "Uncapped Wealth in Obscurity vs Global Fame with Modest Income?",
+    "level": "intermediate",
+    "category": "would-you-rather",
+    "question": "Would you rather possess unlimited wealth while remaining completely anonymous, or achieve worldwide historic fame with only an average teacher's salary?",
+    "estimatedDuration": 90,
+    "suggestedDurationOptions": [
+      60,
+      90,
+      120
+    ],
+    "vocabularySuggestions": [
+      "Philanthropy",
+      "Anonymity",
+      "Legacy",
+      "Scrutiny"
+    ],
+    "sentenceStarters": [
+      "I would unequivocally prefer...",
+      "Fame without financial autonomy entails...",
+      "With private resources, one could..."
+    ],
+    "hints": [
+      "Contrast public recognition against personal privacy and impact"
+    ],
+    "targetTone": "Introspective"
+  },
+  {
+    "id": "sc-adv-wyr-1",
+    "title": "Absolute Determinism vs Paralyzing Quantum Uncertainty",
+    "level": "advanced",
+    "category": "would-you-rather",
+    "question": "Would you rather know the exact timestamp and cause of every future historical event with zero power to alter them, or live in a universe governed by total ontological randomness?",
+    "estimatedDuration": 120,
+    "suggestedDurationOptions": [
+      90,
+      120,
+      180
+    ],
+    "vocabularySuggestions": [
+      "Fatalism",
+      "Agency",
+      "Existential dread",
+      "Ontological"
+    ],
+    "sentenceStarters": [
+      "Living with immutable prescience would be...",
+      "Conversely, absolute indeterminacy precludes...",
+      "Between a gilded cage and chaotic void, I choose..."
+    ],
+    "hints": [
+      "Explore the psychological burden of foreknowledge versus meaninglessness"
+    ],
+    "targetTone": "Philosophical & Vivid"
+  },
+  {
+    "id": "sc-adv-wyr-2",
+    "title": "Eradicate Global Physical Disease vs Eliminate Human Cruelty & Conflict",
+    "level": "advanced",
+    "category": "would-you-rather",
+    "question": "If granted one global intervention, would you eradicate all biological disease and senescence, or permanently extinguish ideological cruelty and military warfare?",
+    "estimatedDuration": 120,
+    "suggestedDurationOptions": [
+      90,
+      120,
+      180
+    ],
+    "vocabularySuggestions": [
+      "Senescence",
+      "Malevolence",
+      "Sociopathy",
+      "Utilitarian"
+    ],
+    "sentenceStarters": [
+      "From a utilitarian calculus...",
+      "While cellular biology inflicts immense suffering...",
+      "Eradicating malice targets the fundamental catalyst of..."
+    ],
+    "hints": [
+      "Weigh somatic suffering against geopolitical atrocities and human dignity"
+    ],
+    "targetTone": "Moral & Analytical"
+  },
+  {
+    "id": "sc-beg-story-1",
+    "title": "What Happened Today? (Daily Routine)",
+    "level": "beginner",
+    "category": "storytelling",
+    "question": "Narrate your day from morning until right now in sequential order using past tense verbs (first, then, after that, finally).",
+    "estimatedDuration": 60,
+    "suggestedDurationOptions": [
+      45,
+      60,
+      90
+    ],
+    "vocabularySuggestions": [
+      "Woke up",
+      "Prepared",
+      "Commuted",
+      "Encountered"
+    ],
+    "sentenceStarters": [
+      "Early this morning, I woke up at...",
+      "After having breakfast, I...",
+      "Later in the afternoon, I finally..."
+    ],
+    "hints": [
+      "Pay close attention to regular and irregular past tense endings"
+    ],
+    "targetTone": "Narrative & Clear"
+  },
+  {
+    "id": "sc-beg-story-2",
+    "title": "An Unexpected Encounter with an Animal",
+    "level": "beginner",
+    "category": "storytelling",
+    "question": "Tell a short story about a time you encountered a friendly, funny, or surprising animal outdoors.",
+    "estimatedDuration": 60,
+    "suggestedDurationOptions": [
+      45,
+      60,
+      90
+    ],
+    "vocabularySuggestions": [
+      "Suddenly",
+      "Curious",
+      "Approached",
+      "Gentle"
+    ],
+    "sentenceStarters": [
+      "One afternoon while walking near...",
+      "Out of nowhere, a small...",
+      "At first I was surprised, but then..."
+    ],
+    "hints": [
+      "Describe the animal's sounds and movements"
+    ],
+    "targetTone": "Heartwarming"
+  },
+  {
+    "id": "sc-int-story-1",
+    "title": "A Travel Disaster That Became an Unforgettable Memory",
+    "level": "intermediate",
+    "category": "storytelling",
+    "question": "Recount a journey where things went completely wrong (missed flight, lost luggage, storm), but resulted in a valuable life lesson.",
+    "estimatedDuration": 90,
+    "suggestedDurationOptions": [
+      60,
+      90,
+      120
+    ],
+    "vocabularySuggestions": [
+      "Mishap",
+      "Unforeseen",
+      "Resilience",
+      "Hospitality"
+    ],
+    "sentenceStarters": [
+      "It was supposed to be a straightforward trip until...",
+      "Stranded in the middle of...",
+      "Looking back, that chaotic detour taught me..."
+    ],
+    "hints": [
+      "Build suspense before introducing how you resolved the predicament"
+    ],
+    "targetTone": "Engaging & Humorous"
+  },
+  {
+    "id": "sc-int-story-2",
+    "title": "Overcoming Stage Fright or Public Failure",
+    "level": "intermediate",
+    "category": "storytelling",
+    "question": "Describe a moment when you had to perform or speak in front of a critical audience despite overwhelming nervousness.",
+    "estimatedDuration": 90,
+    "suggestedDurationOptions": [
+      60,
+      90,
+      120
+    ],
+    "vocabularySuggestions": [
+      "Trepidation",
+      "Palms sweating",
+      "Composure",
+      "Breakthrough"
+    ],
+    "sentenceStarters": [
+      "Standing backstage, my heart was hammering because...",
+      "When my name was announced, I took a deep breath and...",
+      "The turning point came when..."
+    ],
+    "hints": [
+      "Describe physical sensations of anxiety before the relief of taking action"
+    ],
+    "targetTone": "Inspiring & Candid"
+  },
+  {
+    "id": "sc-adv-story-1",
+    "title": "The Negotiation That Teetered on Collapse",
+    "level": "advanced",
+    "category": "storytelling",
+    "question": "Narrate a high-stakes disagreement or commercial negotiation where conflicting egos almost derailed a project, and how equilibrium was restored.",
+    "estimatedDuration": 120,
+    "suggestedDurationOptions": [
+      90,
+      120,
+      180
+    ],
+    "vocabularySuggestions": [
+      "Impasse",
+      "Acrimonious",
+      "Olive branch",
+      "De-escalate"
+    ],
+    "sentenceStarters": [
+      "The boardroom atmosphere had turned toxic after...",
+      "Recognizing that an impasse would be mutually destructive, I...",
+      "By shifting the paradigm toward..."
+    ],
+    "hints": [
+      "Detail the psychological subtext and the pivotal compromise reached"
+    ],
+    "targetTone": "Dramatic & Professional"
+  },
+  {
+    "id": "sc-adv-story-2",
+    "title": "A Watershed Moment of Disillusionment and Clarity",
+    "level": "advanced",
+    "category": "storytelling",
+    "question": "Deliver an autobiographical or fictional narrative depicting an epiphany where a comforting illusion was shattered, revealing a harsher but liberating truth.",
+    "estimatedDuration": 120,
+    "suggestedDurationOptions": [
+      90,
+      120,
+      180
+    ],
+    "vocabularySuggestions": [
+      "Disillusionment",
+      "Epiphany",
+      "Facade",
+      "Vindication"
+    ],
+    "sentenceStarters": [
+      "For years, I had operated under the naive assumption that...",
+      "The catalyst shattered that comforting veneer on a crisp autumn evening...",
+      "Though painful, the aftermath bestowed an invaluable clarity..."
+    ],
+    "hints": [
+      "Structure the narrative arc with setup, crisis point, and transformative realization"
+    ],
+    "targetTone": "Literary & Evocative"
+  },
+  {
+    "id": "sc-beg-deb-1",
+    "title": "Should Fast Food Have Higher Taxes?",
+    "level": "beginner",
+    "category": "debate",
+    "question": "Pick a side: Should governments put extra taxes on sugary sodas and junk food to protect public health?",
+    "estimatedDuration": 60,
+    "suggestedDurationOptions": [
+      45,
+      60,
+      90
+    ],
+    "vocabularySuggestions": [
+      "Nutrition",
+      "Affordable",
+      "Lifestyle",
+      "Prevention"
+    ],
+    "sentenceStarters": [
+      "I strongly support the motion that...",
+      "Critics claim this is unfair because...",
+      "However, healthy citizens mean..."
+    ],
+    "hints": [
+      "Consider people with low incomes versus healthcare costs"
+    ],
+    "targetTone": "Direct & Clear"
+  },
+  {
+    "id": "sc-beg-deb-2",
+    "title": "Are E-Books Superior to Physical Printed Books?",
+    "level": "beginner",
+    "category": "debate",
+    "question": "Defend your position: Are digital e-readers better than traditional paper books with real pages?",
+    "estimatedDuration": 60,
+    "suggestedDurationOptions": [
+      45,
+      60,
+      90
+    ],
+    "vocabularySuggestions": [
+      "Convenient",
+      "Tangible",
+      "Screen fatigue",
+      "Portable"
+    ],
+    "sentenceStarters": [
+      "I firmly contend that...",
+      "The main advantage of...",
+      "While some miss the smell of paper, the convenience of..."
+    ],
+    "hints": [
+      "Talk about carrying twenty books in one bag versus enjoying physical paper"
+    ],
+    "targetTone": "Persuasive"
+  },
+  {
+    "id": "sc-int-deb-1",
+    "title": "Should Zoos Be Phased Out Globally?",
+    "level": "intermediate",
+    "category": "debate",
+    "question": "Debate the motion: Conventional zoological parks should be permanently replaced by in-situ wild wildlife sanctuaries.",
+    "estimatedDuration": 90,
+    "suggestedDurationOptions": [
+      60,
+      90,
+      120
+    ],
+    "vocabularySuggestions": [
+      "Captivity",
+      "Conservation",
+      "Biodiversity",
+      "Commercial exploitation"
+    ],
+    "sentenceStarters": [
+      "I rise to oppose the confinement of sentient creatures in...",
+      "While historical zoos prioritized entertainment, modern zoological institutions facilitate...",
+      "The resolution must pass because..."
+    ],
+    "hints": [
+      "Address animal welfare versus endangered species genetic breeding programs"
+    ],
+    "targetTone": "Formal & Passionate"
+  },
+  {
+    "id": "sc-int-deb-2",
+    "title": "Compulsory Voting: Democratic Duty or Coercion?",
+    "level": "intermediate",
+    "category": "debate",
+    "question": "Should democratic nations implement mandatory voter turnout laws with financial penalties for non-participation?",
+    "estimatedDuration": 90,
+    "suggestedDurationOptions": [
+      60,
+      90,
+      120
+    ],
+    "vocabularySuggestions": [
+      "Civic duty",
+      "Coercion",
+      "Legitimacy",
+      "Disenfranchisement"
+    ],
+    "sentenceStarters": [
+      "The health of a democracy hinges upon civic participation...",
+      "Compelling citizens to vote under penalty of law infringes upon...",
+      "Empirical evidence demonstrates that..."
+    ],
+    "hints": [
+      "Contrast democratic legitimacy with the freedom not to participate"
+    ],
+    "targetTone": "Civic & Rigorous"
+  },
+  {
+    "id": "sc-adv-deb-1",
+    "title": "AI in the Workforce: Innovation Catalyst vs Mass Displacement",
+    "level": "advanced",
+    "category": "debate",
+    "question": "Argue whether unconstrained enterprise deployment of autonomous agentic models represents an existential threat to white-collar employment.",
+    "estimatedDuration": 120,
+    "suggestedDurationOptions": [
+      90,
+      120,
+      180
+    ],
+    "vocabularySuggestions": [
+      "Schumpeterian",
+      "Cognitive arbitrage",
+      "Subjugation",
+      "Luddite"
+    ],
+    "sentenceStarters": [
+      "The motion asserts that cognitive automation will irrevocably hollow out...",
+      "Proponents fallaciously cite historical industrial transitions, ignoring that...",
+      "We must enact stringent oversight to forestall..."
+    ],
+    "hints": [
+      "Deconstruct historical automation analogies versus generalized cognitive agency"
+    ],
+    "targetTone": "Oratorical & Sophisticated"
+  },
+  {
+    "id": "sc-adv-deb-2",
+    "title": "Defend an Unpopular Stance: Defending the Status Quo",
+    "level": "advanced",
+    "category": "debate",
+    "question": "Deliver a compelling 2-minute defense of an unpopular thesis: \"Failure is frequently over-romanticized in startup folklore, while boring, unglamorous execution remains vastly superior.\"",
+    "estimatedDuration": 120,
+    "suggestedDurationOptions": [
+      90,
+      120,
+      180
+    ],
+    "vocabularySuggestions": [
+      "Fetishize",
+      "Survivor bias",
+      "Disciplined execution",
+      "Glamour"
+    ],
+    "sentenceStarters": [
+      "Contrary to popular Silicon Valley mythology...",
+      "We have fetishized pivot-and-fail narratives while neglecting...",
+      "True enterprise resilience stems from..."
+    ],
+    "hints": [
+      "Attack survivor bias and romanticized tech cliches with concrete operational points"
+    ],
+    "targetTone": "Provocative & Cogent"
+  },
+  {
+    "id": "sc-beg-dc-1",
+    "title": "Ordering Food at a Cozy Cafe",
+    "level": "beginner",
+    "category": "daily-conversation",
+    "question": "Roleplay ordering a hot drink and pastry at a cafe. Ask about milk options and request the bill politely.",
+    "estimatedDuration": 45,
+    "suggestedDurationOptions": [
+      30,
+      45,
+      60
+    ],
+    "vocabularySuggestions": [
+      "Oat milk",
+      "Pastry",
+      "Decaf",
+      "Receipt"
+    ],
+    "sentenceStarters": [
+      "Hi! Could I please get a medium...",
+      "Do you happen to have plant-based milk?",
+      "Could I also get the check, please?"
+    ],
+    "hints": [
+      "Use polite modal verbs like \"Could I have...\" and \"May I please...\""
+    ],
+    "targetTone": "Polite & Natural"
+  },
+  {
+    "id": "sc-beg-dc-2",
+    "title": "Asking for Directions in a Bustling Train Station",
+    "level": "beginner",
+    "category": "daily-conversation",
+    "question": "You are lost in a large metropolitan subway terminal. Politely ask a station agent how to reach Platform 4 for the airport express.",
+    "estimatedDuration": 45,
+    "suggestedDurationOptions": [
+      30,
+      45,
+      60
+    ],
+    "vocabularySuggestions": [
+      "Pardon me",
+      "Platform",
+      "Transfer",
+      "Turnstile"
+    ],
+    "sentenceStarters": [
+      "Excuse me, sir! Could you help me find...",
+      "Do I need to change lines at the next station?",
+      "Thank you so much for your assistance!"
+    ],
+    "hints": [
+      "Speak clearly and verify instructions by repeating the platform number"
+    ],
+    "targetTone": "Polite & Inquisitive"
+  },
+  {
+    "id": "sc-int-dc-1",
+    "title": "Returning a Defective Gadget to Customer Support",
+    "level": "intermediate",
+    "category": "daily-conversation",
+    "question": "Call customer care to explain that your newly purchased wireless headphones disconnect intermittently. Inquire about warranty replacement.",
+    "estimatedDuration": 75,
+    "suggestedDurationOptions": [
+      60,
+      75,
+      90
+    ],
+    "vocabularySuggestions": [
+      "Intermittent",
+      "Defective",
+      "Invoice",
+      "Replacement unit"
+    ],
+    "sentenceStarters": [
+      "I am calling to report a recurring malfunction with...",
+      "I have already attempted troubleshooting by resetting the firmware, but...",
+      "Could you guide me through the RMA replacement process?"
+    ],
+    "hints": [
+      "Remain courteous yet assertive; describe technical symptoms accurately"
+    ],
+    "targetTone": "Assertive & Professional"
+  },
+  {
+    "id": "sc-int-dc-2",
+    "title": "Catching Up with an Old University Friend",
+    "level": "intermediate",
+    "category": "daily-conversation",
+    "question": "You bump into a university peer you haven't seen in four years at a bookshop. Exchange life updates, career transitions, and plan a coffee date.",
+    "estimatedDuration": 75,
+    "suggestedDurationOptions": [
+      60,
+      75,
+      90
+    ],
+    "vocabularySuggestions": [
+      "Coincidence",
+      "Transition",
+      "Catch up",
+      "Milestone"
+    ],
+    "sentenceStarters": [
+      "What an incredible coincidence seeing you here!",
+      "How has life been treating you since graduation?",
+      "We must sit down over coffee to properly catch up."
+    ],
+    "hints": [
+      "Show genuine warmth and balance listening with sharing personal updates"
+    ],
+    "targetTone": "Warm & Animated"
+  },
+  {
+    "id": "sc-adv-dc-1",
+    "title": "Navigating Cultural Nuances at a Diplomatic Dinner",
+    "level": "advanced",
+    "category": "daily-conversation",
+    "question": "Engage in diplomatic small talk with an international trade attaché at an embassy gala, discussing sustainable port infrastructure while avoiding contentious political landmines.",
+    "estimatedDuration": 120,
+    "suggestedDurationOptions": [
+      90,
+      120,
+      180
+    ],
+    "vocabularySuggestions": [
+      "Multilateral",
+      "Attache",
+      "Diplomatic protocol",
+      "Convergence"
+    ],
+    "sentenceStarters": [
+      "I was captivated by your remarks regarding the green shipping corridor...",
+      "There appears to be strong bilateral convergence in maritime decarbonization...",
+      "How do your municipal authorities balance fiscal constraints with ecological mandates?"
+    ],
+    "hints": [
+      "Maintain sophisticated tact, active listening, and elegant conversational pivots"
+    ],
+    "targetTone": "Diplomatic & Polished"
+  },
+  {
+    "id": "sc-adv-dc-2",
+    "title": "Resolving a Complex Boundary Dispute with a Business Partner",
+    "level": "advanced",
+    "category": "daily-conversation",
+    "question": "Address an ambiguous clause in a joint venture partnership agreement with your co-founder over intellectual property ownership rights without severing personal goodwill.",
+    "estimatedDuration": 120,
+    "suggestedDurationOptions": [
+      90,
+      120,
+      180
+    ],
+    "vocabularySuggestions": [
+      "Joint venture",
+      "Intellectual property",
+      "Equitable reciprocity",
+      "Goodwill"
+    ],
+    "sentenceStarters": [
+      "I want to proactively address an ambiguity in Section 4 before it creates friction...",
+      "Our personal camaraderie is foundational to this venture, which is why...",
+      "Can we align on an addendum that protects both parties while honoring our founding vision?"
+    ],
+    "hints": [
+      "Blend legal precision with emotional intelligence and collaborative intent"
+    ],
+    "targetTone": "Constructive & Firm"
+  },
+  {
+    "id": "sc-beg-ct-1",
+    "title": "Solving a Rainy Day Dilemma",
+    "level": "beginner",
+    "category": "critical-thinking",
+    "question": "Your school trip to the outdoor botanical gardens was canceled because of heavy rain. Propose two fun, educational indoor alternatives for your class.",
+    "estimatedDuration": 60,
+    "suggestedDurationOptions": [
+      45,
+      60,
+      90
+    ],
+    "vocabularySuggestions": [
+      "Alternative",
+      "Science museum",
+      "Collaborative",
+      "Interactive"
+    ],
+    "sentenceStarters": [
+      "Since we cannot visit the gardens today, I propose...",
+      "An excellent indoor alternative would be...",
+      "This would still allow us to learn about..."
+    ],
+    "hints": [
+      "Explain how the indoor alternative keeps everyone safe and engaged"
+    ],
+    "targetTone": "Problem-Solving"
+  },
+  {
+    "id": "sc-beg-ct-2",
+    "title": "How to Prevent Plastic Waste at School",
+    "level": "beginner",
+    "category": "critical-thinking",
+    "question": "Identify one major source of plastic trash in your school canteen and suggest a simple, realistic step to eliminate it.",
+    "estimatedDuration": 60,
+    "suggestedDurationOptions": [
+      45,
+      60,
+      90
+    ],
+    "vocabularySuggestions": [
+      "Single-use",
+      "Reusable",
+      "Refill station",
+      "Awareness"
+    ],
+    "sentenceStarters": [
+      "A major source of waste is...",
+      "To solve this problem, our school could introduce...",
+      "If every student brought their own..."
+    ],
+    "hints": [
+      "Focus on practical steps students and cafeteria staff can take immediately"
+    ],
+    "targetTone": "Constructive"
+  },
+  {
+    "id": "sc-int-ct-1",
+    "title": "The Smart City Privacy Paradox",
+    "level": "intermediate",
+    "category": "critical-thinking",
+    "question": "Smart cities deploy cameras and IoT sensors to optimize traffic lights and detect crime. How should a city council balance citizen privacy rights with public safety?",
+    "estimatedDuration": 90,
+    "suggestedDurationOptions": [
+      60,
+      90,
+      120
+    ],
+    "vocabularySuggestions": [
+      "Surveillance",
+      "Anonymization",
+      "Oversight committee",
+      "Trade-off"
+    ],
+    "sentenceStarters": [
+      "While automated sensor networks undeniably reduce traffic bottlenecks...",
+      "Without rigorous data anonymization protocols, citizens face...",
+      "The optimal middle ground entails..."
+    ],
+    "hints": [
+      "Propose governance safeguards like citizen audit boards and data retention limits"
+    ],
+    "targetTone": "Analytical & Objective"
+  },
+  {
+    "id": "sc-int-ct-2",
+    "title": "Allocating Disaster Relief Under Strict Resource Scarcity",
+    "level": "intermediate",
+    "category": "critical-thinking",
+    "question": "A severe earthquake has severed transport links to three distinct isolated valleys. With only two transport helicopters available, what criteria should dictate flight routing?",
+    "estimatedDuration": 90,
+    "suggestedDurationOptions": [
+      60,
+      90,
+      120
+    ],
+    "vocabularySuggestions": [
+      "Triage",
+      "Logistical constraints",
+      "Critical infrastructure",
+      "Vulnerability index"
+    ],
+    "sentenceStarters": [
+      "Faced with acute logistical constraints, deployment must prioritize...",
+      "Rather than arbitrary choices, we should apply a vulnerability index based on...",
+      "To maximize lifesaving throughput..."
+    ],
+    "hints": [
+      "Establish transparent, ethical criteria: medical urgency, infant density, and alternative road access"
+    ],
+    "targetTone": "Decisive & Compassionate"
+  },
+  {
+    "id": "sc-adv-ct-1",
+    "title": "The Trolley Problem & Autonomous Vehicles",
+    "level": "advanced",
+    "category": "critical-thinking",
+    "question": "When an autonomous car's braking system fails, should algorithmic kill-switches prioritize protecting the passenger inside or minimizing net external pedestrian casualties?",
+    "estimatedDuration": 120,
+    "suggestedDurationOptions": [
+      90,
+      120,
+      180
+    ],
+    "vocabularySuggestions": [
+      "Utilitarianism",
+      "Deontological",
+      "Moral hazard",
+      "Liability framework"
+    ],
+    "sentenceStarters": [
+      "This classic ethical quandary moves from theoretical academia to code implementation...",
+      "A strict utilitarian algorithm that sacrifices passengers will encounter consumer rejection, while...",
+      "Legal liability requires a consensus standard predicated on..."
+    ],
+    "hints": [
+      "Analyze utilitarian versus deontological duties and product adoption liability"
+    ],
+    "targetTone": "Ethical & Systematic"
+  },
+  {
+    "id": "sc-adv-ct-2",
+    "title": "The Alignment Problem in Superintelligent Synthetic Agents",
+    "level": "advanced",
+    "category": "critical-thinking",
+    "question": "Deconstruct Nick Bostrom's Orthogonality Thesis: Why an artificial intelligence with superintelligence might pursue goals completely orthogonal to human flourishing unless alignment is mathematically bounded.",
+    "estimatedDuration": 120,
+    "suggestedDurationOptions": [
+      90,
+      120,
+      180
+    ],
+    "vocabularySuggestions": [
+      "Orthogonality thesis",
+      "Instrumental convergence",
+      "Recursive self-improvement",
+      "Constraint optimization"
+    ],
+    "sentenceStarters": [
+      "The misconception is that cognitive prowess inherently correlates with moral benevolence...",
+      "Under the orthogonality thesis, an agent's intelligence level is independent of its terminal utility function...",
+      "To avert catastrophic instrumental convergence, alignment architectures must..."
+    ],
+    "hints": [
+      "Distinguish between terminal goals, instrumental sub-goals, and capability scaling"
+    ],
+    "targetTone": "Rigorous & Deep"
+  },
+  {
+    "id": "sc-beg-rc-1",
+    "title": "Describe an Everyday Object Without Naming It",
+    "level": "beginner",
+    "category": "random-challenge",
+    "question": "Describe an everyday object (like an umbrella, microwave, or toothbrush) for 45 seconds without ever saying its name. Let your listeners guess!",
+    "estimatedDuration": 45,
+    "suggestedDurationOptions": [
+      30,
+      45,
+      60
+    ],
+    "vocabularySuggestions": [
+      "Essential",
+      "Portable",
+      "Shields",
+      "Manufactured"
+    ],
+    "sentenceStarters": [
+      "This is an object found in almost every home...",
+      "People use it when the conditions are...",
+      "It is made of metal and fabric, and its main purpose is to..."
+    ],
+    "hints": [
+      "Use sensory words: textures, colors, shapes, and everyday habits"
+    ],
+    "targetTone": "Playful & Engaging"
+  },
+  {
+    "id": "sc-beg-rc-2",
+    "title": "The 30-Second Vocabulary Sprint (Colors & Nature)",
+    "level": "beginner",
+    "category": "random-challenge",
+    "question": "Speak continuously for 30 seconds describing a sunny spring meadow using as many descriptive color and nature words as you can muster!",
+    "estimatedDuration": 30,
+    "suggestedDurationOptions": [
+      30,
+      45,
+      60
+    ],
+    "vocabularySuggestions": [
+      "Vibrant",
+      "Emerald",
+      "Azure",
+      "Blossoming"
+    ],
+    "sentenceStarters": [
+      "Looking across the meadow, I see vibrant...",
+      "The azure sky is dotted with...",
+      "Gentle emerald grass rolls towards..."
+    ],
+    "hints": [
+      "Keep speaking without pausing; paint a vivid mental picture with words"
+    ],
+    "targetTone": "Energetic"
+  },
+  {
+    "id": "sc-int-rc-1",
+    "title": "The 4/3/2 Speed & Fluency Sprint",
+    "level": "intermediate",
+    "category": "random-challenge",
+    "question": "Deliver an impromptu talk on \"Why Humans Need Art and Music\" in exactly 60 seconds without filler words like \"um\", \"uh\", or \"like\".",
+    "estimatedDuration": 60,
+    "suggestedDurationOptions": [
+      45,
+      60,
+      90
+    ],
+    "vocabularySuggestions": [
+      "Expression",
+      "Catharsis",
+      "Resonance",
+      "Universal language"
+    ],
+    "sentenceStarters": [
+      "Art is not an ornamental luxury; it is...",
+      "Throughout human history, music has provided...",
+      "Without creative expression, society becomes..."
+    ],
+    "hints": [
+      "Pause silently instead of saying \"um\" or \"like\""
+    ],
+    "targetTone": "Dynamic & Focused"
+  },
+  {
+    "id": "sc-int-rc-2",
+    "title": "Sell a Ridiculous Invention in 60 Seconds",
+    "level": "intermediate",
+    "category": "random-challenge",
+    "question": "Deliver a high-energy TV infomercial selling \"Solar-Powered Flashlights for Daytime Use\" or \"Soup Spoons with Built-In Electric Fans\".",
+    "estimatedDuration": 60,
+    "suggestedDurationOptions": [
+      45,
+      60,
+      90
+    ],
+    "vocabularySuggestions": [
+      "Revolutionary",
+      "Convenience",
+      "Patented technology",
+      "Order today"
+    ],
+    "sentenceStarters": [
+      "Are you tired of waiting ten minutes for your hot soup to cool down?",
+      "Introducing the revolutionary BreezeSpoon with patented micro-turbines!",
+      "Call within the next ten minutes and receive a second unit absolutely free!"
+    ],
+    "hints": [
+      "Use extreme vocal enthusiasm, dramatic pauses, and infomercial cliches"
+    ],
+    "targetTone": "Humorous & High-Energy"
+  },
+  {
+    "id": "sc-adv-rc-1",
+    "title": "Explain Quantum Superposition to a Six-Year-Old",
+    "level": "advanced",
+    "category": "random-challenge",
+    "question": "Explain the counterintuitive quantum mechanical principle of wave-function superposition using only everyday childhood playground metaphors in 90 seconds.",
+    "estimatedDuration": 90,
+    "suggestedDurationOptions": [
+      60,
+      90,
+      120
+    ],
+    "vocabularySuggestions": [
+      "Spinning coin",
+      "Possibilities",
+      "Peekaboo",
+      "State"
+    ],
+    "sentenceStarters": [
+      "Imagine you have a shiny spinning coin on the playground table...",
+      "While it spins wildly, is it showing heads or tails? It is actually both at once!",
+      "Only when your hand slaps it down does the universe choose one side..."
+    ],
+    "hints": [
+      "Avoid technical jargon like Hilbert spaces; rely on physical, tactile imagery"
+    ],
+    "targetTone": "Whimsical & Lucid"
+  },
+  {
+    "id": "sc-adv-rc-2",
+    "title": "Impromptu Executive Eulogy for a Failed Megaproject",
+    "level": "advanced",
+    "category": "random-challenge",
+    "question": "You are the CEO delivering an impromptu all-hands address after your flagship $50M satellite mission failed thirty seconds after launch. Instill pride, accountability, and grit without defensive excuses.",
+    "estimatedDuration": 90,
+    "suggestedDurationOptions": [
+      60,
+      90,
+      120
+    ],
+    "vocabularySuggestions": [
+      "Frontier",
+      "Audacity",
+      "Grit",
+      "Catalyst"
+    ],
+    "sentenceStarters": [
+      "Team, today we dared greatly on the frontier of human exploration, and today we met heartbreak...",
+      "The telemetry loss at T-plus-thirty seconds stings deeply, but let us be unequivocal: boldness demands risk...",
+      "We will conduct a transparent root-cause inquiry, we will learn, and we will build again..."
+    ],
+    "hints": [
+      "Balance solemn gravity with inspirational rallying leadership"
+    ],
+    "targetTone": "Inspiring & Resolute"
+  },
+  {
+    "id": "sc-beg-prof-1",
+    "title": "Self-Introduction in a Job Interview",
+    "level": "beginner",
+    "category": "professional",
+    "question": "Deliver a concise 45-second professional introduction: your educational background, your strongest soft skill, and why this company excites you.",
+    "estimatedDuration": 45,
+    "suggestedDurationOptions": [
+      30,
+      45,
+      60
+    ],
+    "vocabularySuggestions": [
+      "Background",
+      "Reliable",
+      "Collaborate",
+      "Contribute"
+    ],
+    "sentenceStarters": [
+      "Good morning! My name is...",
+      "My educational background is in...",
+      "I pride myself on being a dependable team player who..."
+    ],
+    "hints": [
+      "Sit up straight, speak with a calm cadence, and maintain eye contact"
+    ],
+    "targetTone": "Professional & Confident"
+  },
+  {
+    "id": "sc-beg-prof-2",
+    "title": "Declining a Meeting Request Politely",
+    "level": "beginner",
+    "category": "professional",
+    "question": "Your colleague asks you to join an unplanned meeting that clashes with an urgent deadline. Politely decline and propose an alternative time.",
+    "estimatedDuration": 45,
+    "suggestedDurationOptions": [
+      30,
+      45,
+      60
+    ],
+    "vocabularySuggestions": [
+      "Prioritize",
+      "Deadline",
+      "Reschedule",
+      "Availability"
+    ],
+    "sentenceStarters": [
+      "Thank you for inviting me to the session...",
+      "Unfortunately, I am currently finalizing an urgent report that is due at 3 PM...",
+      "Could we possibly reconvene tomorrow morning at 10 AM instead?"
+    ],
+    "hints": [
+      "Acknowledge the invitation before explaining the conflict and offering an alternative"
+    ],
+    "targetTone": "Courteous & Clear"
+  },
+  {
+    "id": "sc-int-prof-1",
+    "title": "Presenting a Project Update to Stakeholders",
+    "level": "intermediate",
+    "category": "professional",
+    "question": "Deliver a 90-second status update on a mobile application project: progress achieved, current blocker with third-party APIs, and next week's milestones.",
+    "estimatedDuration": 90,
+    "suggestedDurationOptions": [
+      60,
+      90,
+      120
+    ],
+    "vocabularySuggestions": [
+      "Milestone",
+      "Blocker",
+      "Sprint",
+      "Deliverable"
+    ],
+    "sentenceStarters": [
+      "Good afternoon stakeholders. I am pleased to report that sprint 4 completed eighty percent of deliverables...",
+      "Our primary operational blocker centers on API rate limits with the payment gateway...",
+      "To mitigate this, our engineering team is implementing caching protocols, keeping us on track for beta launch..."
+    ],
+    "hints": [
+      "Structure clearly: What was done, what is blocked, what comes next"
+    ],
+    "targetTone": "Structured & Direct"
+  },
+  {
+    "id": "sc-int-prof-2",
+    "title": "Negotiating a Salary or Promotion Request",
+    "level": "intermediate",
+    "category": "professional",
+    "question": "Pitch your manager for an annual compensation review based on your performance metrics: exceeding quarterly sales targets by 25% and mentoring two interns.",
+    "estimatedDuration": 90,
+    "suggestedDurationOptions": [
+      60,
+      90,
+      120
+    ],
+    "vocabularySuggestions": [
+      "Benchmark",
+      "Exceeded targets",
+      "Value addition",
+      "Market parity"
+    ],
+    "sentenceStarters": [
+      "Thank you for setting aside time for this quarterly performance review...",
+      "Over the past twelve months, I have expanded our client portfolio by twenty-five percent...",
+      "Based on these measurable contributions and market benchmarks, I would like to propose an adjustment to..."
+    ],
+    "hints": [
+      "Focus on empirical contributions and future commitments, not personal financial needs"
+    ],
+    "targetTone": "Confident & Diplomatic"
+  },
+  {
+    "id": "sc-adv-prof-1",
+    "title": "The 2-Minute Venture Startup Pitch",
+    "level": "advanced",
+    "category": "professional",
+    "question": "Pitch your enterprise B2B climate-tech AI SaaS company to venture capital partners: articulate the acute industry problem, proprietary defensibility, and traction metrics.",
+    "estimatedDuration": 120,
+    "suggestedDurationOptions": [
+      90,
+      120,
+      180
+    ],
+    "vocabularySuggestions": [
+      "Traction",
+      "Defensibility",
+      "TAM (Total Addressable Market)",
+      "Unit economics"
+    ],
+    "sentenceStarters": [
+      "Commercial enterprises currently waste four hundred billion dollars annually on uncalibrated HVAC heating grids...",
+      "Our edge-compute neural controller reduces commercial energy draw by thirty-two percent with zero hardware retrofits...",
+      "With forty-eight enterprise pilots deployed and sixty percent net retention, we are raising Series A to..."
+    ],
+    "hints": [
+      "Nail the hook in the first fifteen seconds; provide crisp quantitative traction numbers"
+    ],
+    "targetTone": "Persuasive & Executive"
+  },
+  {
+    "id": "sc-adv-prof-2",
+    "title": "Navigating Shareholder Activism in an Earnings Call",
+    "level": "advanced",
+    "category": "professional",
+    "question": "As Chief Financial Officer, respond to an aggressive institutional activist shareholder demanding immediate share buybacks during an uncertain macroeconomic environment.",
+    "estimatedDuration": 120,
+    "suggestedDurationOptions": [
+      90,
+      120,
+      180
+    ],
+    "vocabularySuggestions": [
+      "Capital stewardship",
+      "Share buyback",
+      "Liquidity buffer",
+      "Shareholder value"
+    ],
+    "sentenceStarters": [
+      "We appreciate the engagement from our long-term institutional stakeholders regarding capital returns...",
+      "However, prudent fiduciary governance dictates maintaining fortress balance sheet liquidity amid cyclical headwinds...",
+      "Our disciplined capital allocation framework prioritizes high-ROIC internal CapEx while retaining flexibility for opportunistic share repurchases..."
+    ],
+    "hints": [
+      "Maintain unwavering executive composure while projecting financial prudence and strategic clarity"
+    ],
+    "targetTone": "Authoritative & Fiduciary"
   }
 ];

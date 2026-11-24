@@ -472,7 +472,22 @@ class StorageService {
   public getSpeakingCards(): SpeakingCard[] {
     try {
       const data = localStorage.getItem(KEYS.SPEAKING_CARDS);
-      if (data) return JSON.parse(data);
+      if (data) {
+        const list: SpeakingCard[] = JSON.parse(data);
+        const existingIds = new Set(list.map(c => c.id));
+        let added = false;
+        for (const defaultCard of SPEAKING_CARDS) {
+          if (!existingIds.has(defaultCard.id)) {
+            list.push(defaultCard);
+            existingIds.add(defaultCard.id);
+            added = true;
+          }
+        }
+        if (added) {
+          localStorage.setItem(KEYS.SPEAKING_CARDS, JSON.stringify(list));
+        }
+        return list;
+      }
     } catch {}
     return SPEAKING_CARDS;
   }
@@ -487,7 +502,22 @@ class StorageService {
   public getReadingMaterials(): ReadingMaterial[] {
     try {
       const data = localStorage.getItem(KEYS.READING_MATERIALS);
-      if (data) return JSON.parse(data);
+      if (data) {
+        const list: ReadingMaterial[] = JSON.parse(data);
+        const existingIds = new Set(list.map(m => m.id));
+        let added = false;
+        for (const defaultMat of READING_MATERIALS) {
+          if (!existingIds.has(defaultMat.id)) {
+            list.push(defaultMat);
+            existingIds.add(defaultMat.id);
+            added = true;
+          }
+        }
+        if (added) {
+          localStorage.setItem(KEYS.READING_MATERIALS, JSON.stringify(list));
+        }
+        return list;
+      }
     } catch {}
     return READING_MATERIALS;
   }

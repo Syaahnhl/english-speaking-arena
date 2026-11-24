@@ -251,6 +251,25 @@ export const SpeakingCardsView: React.FC = () => {
             </div>
           );
         })}
+
+        {filteredCards.length === 0 && (
+          <div className="col-span-full p-12 text-center bg-white rounded-3xl border border-slate-200/80 shadow-soft space-y-4">
+            <Sparkles className="w-12 h-12 text-slate-300 mx-auto" />
+            <div className="space-y-1">
+              <h4 className="font-bold text-slate-800 text-base">Tidak ada kartu yang sesuai filter</h4>
+              <p className="text-xs text-slate-500">Coba ubah tingkat kesulitan atau pilih kategori topik lain.</p>
+            </div>
+            <button
+              onClick={() => {
+                setLevelFilter('all');
+                setCategoryFilter('all');
+              }}
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all"
+            >
+              Reset Filter & Tampilkan Semua
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Practice Modal */}
