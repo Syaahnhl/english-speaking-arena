@@ -22,8 +22,16 @@ import {
   ArrowRight,
   ShieldCheck,
   ChevronRight,
-  X
+  X,
+  Layers,
+  Gauge,
+  Clock,
+  FileText
 } from 'lucide-react';
+import { storageService } from '../../services/storageService';
+import { CreateSpeakingCardModal } from '../speaking-cards/CreateSpeakingCardModal';
+import { CreateReadingMaterialModal } from '../running-reading/CreateReadingMaterialModal';
+import { SpeakingCard, ReadingMaterial } from '../../types';
 
 export const ProfileProgressView: React.FC = () => {
   const { 
@@ -45,7 +53,22 @@ export const ProfileProgressView: React.FC = () => {
     loadSampleStudents
   } = useArena();
 
-  const [activeStep, setActiveStep] = useState<'profile' | 'classrooms' | 'students'>('profile');
+  const [activeStep, setActiveStep] = useState<'profile' | 'classrooms' | 'students' | 'materials'>('profile');
+
+  // --- CUSTOM MATERIALS STATE ---
+  const [showCreateCardModal, setShowCreateCardModal] = useState(false);
+  const [showCreateReadingModal, setShowCreateReadingModal] = useState(false);
+  const [customCards, setCustomCards] = useState<SpeakingCard[]>(() => 
+    storageService.getSpeakingCards().filter(c => c.isCustom)
+  );
+  const [customMaterials, setCustomMaterials] = useState<ReadingMaterial[]>(() => 
+    storageService.getReadingMaterials().filter(m => m.isCustom)
+  );
+
+  const refreshCustomContent = () => {
+    setCustomCards(storageService.getSpeakingCards().filter(c => c.isCustom));
+    setCustomMaterials(storageService.getReadingMaterials().filter(m => m.isCustom));
+  };
 
   // --- EDIT ACTIVE TEACHER STATE ---
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -212,8 +235,8 @@ export const ProfileProgressView: React.FC = () => {
           </div>
         </div>
 
-        {/* 3 Step Wizard Tabs (Easy for Beginners) */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+        {/* 4 Step Wizard Tabs (Easy for Beginners) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-xs">
           {/* Step 1 */}
           <button
             onClick={() => {
@@ -296,6 +319,35 @@ export const ProfileProgressView: React.FC = () => {
               </div>
             </div>
             <ChevronRight className={`w-4 h-4 flex-shrink-0 ${activeStep === 'students' ? 'text-white' : 'text-slate-400'}`} />
+          </button>
+
+          {/* Step 4: Topik & Materi Guru */}
+          <button
+            onClick={() => {
+              setActiveStep('materials');
+              refreshCustomContent();
+              soundService.playClick();
+            }}
+            className={`p-3 rounded-xl border text-left transition-all flex items-center justify-between ${
+              activeStep === 'materials'
+                ? 'bg-blue-600 border-blue-600 text-white shadow-xs'
+                : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+            }`}
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs ${
+                activeStep === 'materials' ? 'bg-white text-blue-700' : 'bg-slate-200 text-slate-700'
+              }`}>
+                4
+              </div>
+              <div className="truncate">
+                <strong className="block truncate">Topik & Materi</strong>
+                <span className={`text-[10px] block truncate ${activeStep === 'materials' ? 'text-blue-100' : 'text-slate-400'}`}>
+                  {customCards.length + customMaterials.length} Materi Kustom
+                </span>
+              </div>
+            </div>
+            <ChevronRight className={`w-4 h-4 flex-shrink-0 ${activeStep === 'materials' ? 'text-white' : 'text-slate-400'}`} />
           </button>
         </div>
       </div>
@@ -995,6 +1047,240 @@ export const ProfileProgressView: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* STEP 4: KELOLA TOPIK & MATERI AJAR GURU */}
+      {/* ========================================================= */}
+      {activeStep === 'materials' && (
+        <div className="space-y-6 animate-fadeIn">
+          {/* Header Action Banner */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-semibold">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Materi & Topik Silabus Pengajar</span>
+              </div>
+              <h2 className="text-xl font-bold text-slate-900">
+                Kelola Topik Diskusi & Teks Bacaan Sendiri
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600">
+                Input materi pelajaran atau topik spesifik yang sedang diajarkan di kelas agar siswa berlatih dengan konteks yang relevan.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5 flex-shrink-0">
+              <button
+                onClick={() => {
+                  soundService.playClick();
+                  setShowCreateCardModal(true);
+                }}
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                <span>+ Buat Topik Speaking</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  soundService.playClick();
+                  setShowCreateReadingModal(true);
+                }}
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-md transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                <span>+ Buat Teks Teleprompter</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Section 1: Topik Speaking Cards Kustom */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                  <Layers className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900">
+                    Kartu Topik Speaking Buatan Guru ({customCards.length})
+                  </h3>
+                  <span className="text-[11px] text-slate-500">
+                    Kartu pertanyaan pemantik untuk diproyeksikan dan diuji ke siswa di kelas
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {customCards.length === 0 ? (
+              <div className="p-8 text-center bg-slate-50 rounded-2xl border border-slate-200/80 space-y-3">
+                <Sparkles className="w-10 h-10 text-slate-300 mx-auto" />
+                <div className="space-y-1">
+                  <h4 className="font-bold text-xs text-slate-700">Belum Ada Topik Speaking Kustom</h4>
+                  <p className="text-[11px] text-slate-500 max-w-md mx-auto">
+                    Buat pertanyaan pemantik bicara baru yang selaras dengan tema pelajaran hari ini (misal: "Future Technology", "Environmental Issues", dll).
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowCreateCardModal(true)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition-all inline-flex items-center gap-1.5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Buat Topik Pertama Anda</span>
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {customCards.map(card => (
+                  <div
+                    key={card.id}
+                    className="p-4 rounded-2xl bg-white border border-slate-200 hover:border-blue-300 hover:shadow-xs transition-all flex flex-col justify-between group"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                          {card.category}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-mono text-slate-400">
+                            {card.estimatedDuration}s
+                          </span>
+                          <button
+                            onClick={() => {
+                              if (confirm(`Hapus topik "${card.title}"?`)) {
+                                storageService.deleteSpeakingCard(card.id);
+                                refreshCustomContent();
+                              }
+                            }}
+                            className="text-slate-300 hover:text-rose-600 transition-colors p-1"
+                            title="Hapus topik ini"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                      <h4 className="font-bold text-sm text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1">
+                        {card.title}
+                      </h4>
+                      <p className="text-xs text-slate-600 italic bg-slate-50 p-2.5 rounded-xl line-clamp-3">
+                        "{card.question}"
+                      </p>
+                    </div>
+
+                    <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                      <span className="capitalize font-semibold text-blue-600">Level: {card.level}</span>
+                      <span className="text-slate-400">Buatan Pengajar</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Section 2: Teks Bacaan Teleprompter Kustom */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                  <Gauge className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900">
+                    Teks Bacaan Teleprompter Buatan Guru ({customMaterials.length})
+                  </h3>
+                  <span className="text-[11px] text-slate-500">
+                    Teks artikel atau dialog untuk latihan kecepatan membaca kontinu di layar proyektor
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {customMaterials.length === 0 ? (
+              <div className="p-8 text-center bg-slate-50 rounded-2xl border border-slate-200/80 space-y-3">
+                <BookOpen className="w-10 h-10 text-slate-300 mx-auto" />
+                <div className="space-y-1">
+                  <h4 className="font-bold text-xs text-slate-700">Belum Ada Teks Bacaan Kustom</h4>
+                  <p className="text-[11px] text-slate-500 max-w-md mx-auto">
+                    Masukkan teks bacaan dari buku pelajaran, cerita fabel, atau artikel berita untuk diproyeksikan dan dibaca bersama siswa.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowCreateReadingModal(true)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white shadow-xs transition-all inline-flex items-center gap-1.5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Tambah Teks Bacaan Pertama</span>
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {customMaterials.map(mat => (
+                  <div
+                    key={mat.id}
+                    className="p-4 rounded-2xl bg-white border border-slate-200 hover:border-blue-300 hover:shadow-xs transition-all flex flex-col justify-between group"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                          {mat.genre.replace('-', ' ')}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-mono text-slate-400">
+                            {mat.wordCount} Kata
+                          </span>
+                          <button
+                            onClick={() => {
+                              if (confirm(`Hapus materi bacaan "${mat.title}"?`)) {
+                                storageService.deleteReadingMaterial(mat.id);
+                                refreshCustomContent();
+                              }
+                            }}
+                            className="text-slate-300 hover:text-rose-600 transition-colors p-1"
+                            title="Hapus materi ini"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                      <h4 className="font-bold text-sm text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1">
+                        {mat.title}
+                      </h4>
+                      <p className="text-xs text-slate-600 line-clamp-2">
+                        {mat.summary}
+                      </p>
+                    </div>
+
+                    <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                      <span className="capitalize font-semibold text-blue-600">Level: {mat.level}</span>
+                      <span className="text-slate-400">{mat.paragraphs.length} Paragraf • {mat.questions.length} Kuis</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal Dialogs */}
+      {showCreateCardModal && (
+        <CreateSpeakingCardModal
+          onClose={() => setShowCreateCardModal(false)}
+          onSuccess={() => {
+            refreshCustomContent();
+            setShowCreateCardModal(false);
+          }}
+        />
+      )}
+
+      {showCreateReadingModal && (
+        <CreateReadingMaterialModal
+          onClose={() => setShowCreateReadingModal(false)}
+          onSuccess={() => {
+            refreshCustomContent();
+            setShowCreateReadingModal(false);
+          }}
+        />
       )}
     </div>
   );

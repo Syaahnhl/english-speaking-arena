@@ -3,6 +3,7 @@ import { useArena } from '../../context/ArenaContext';
 import { storageService } from '../../services/storageService';
 import { ReadingMaterial, ReadingGenre, ProficiencyLevel } from '../../types';
 import { ReadingReader } from './ReadingReader';
+import { CreateReadingMaterialModal } from './CreateReadingMaterialModal';
 import { 
   BookOpen, 
   Sparkles, 
@@ -15,20 +16,29 @@ import {
   Zap,
   Gauge,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Plus,
+  Trash2
 } from 'lucide-react';
 import { soundService } from '../../services/soundService';
 
 export const RunningReadingView: React.FC = () => {
-  const { level } = useArena();
+  const { level, activeTeacher } = useArena();
   const [selectedMaterial, setSelectedMaterial] = useState<ReadingMaterial | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [levelFilter, setLevelFilter] = useState<ProficiencyLevel | 'all'>(level);
   const [genreFilter, setGenreFilter] = useState<ReadingGenre | 'all'>('all');
+  const [onlyCustomFilter, setOnlyCustomFilter] = useState<boolean>(false);
   const [showHowToPlay, setShowHowToPlay] = useState<boolean>(false);
 
-  const materials = storageService.getReadingMaterials();
+  const [materials, setMaterials] = useState<ReadingMaterial[]>(() => storageService.getReadingMaterials());
+
+  const refreshMaterials = () => {
+    setMaterials(storageService.getReadingMaterials());
+  };
 
   const filteredMaterials = materials.filter(m => {
+    if (onlyCustomFilter && !m.isCustom) return false;
     if (levelFilter !== 'all' && m.level !== levelFilter) return false;
     if (genreFilter !== 'all' && m.genre !== genreFilter) return false;
     return true;
@@ -43,6 +53,17 @@ export const RunningReadingView: React.FC = () => {
     { id: 'interesting-facts', label: 'Interesting Facts' },
     { id: 'professional', label: 'Professional' }
   ];
+
+  const handleDeleteCustomMaterial = (e: React.MouseEvent, mat: ReadingMaterial) => {
+    e.stopPropagation();
+    if (window.confirm(`Hapus teks bacaan kustom "${mat.title}"?`)) {
+      storageService.deleteReadingMaterial(mat.id);
+      refreshMaterials();
+      soundService.playClick();
+    }
+  };
+
+  const customCount = materials.filter(m => m.isCustom).length;
 
   if (selectedMaterial) {
     return (
@@ -66,19 +87,32 @@ export const RunningReadingView: React.FC = () => {
             Teleprompter Kecepatan Baca Kelas
           </h1>
           <p className="text-slate-600 text-sm leading-relaxed">
-            Pandu latihan membaca cepat dan fluency di depan kelas. Proyeksikan teks teleprompter ke layar proyektor, atur kecepatan baca murid (0.5x – 2.0x), dan uji pemahaman dengan kuis interaktif.
+            Pandu latihan membaca cepat dan fluency di depan kelas. Anda dapat menggunakan 35+ teks bawaan atau menambahkan materi bacaan/artikel Anda sendiri yang selaras dengan topik ajar kelas hari ini.
           </p>
         </div>
 
-        {/* How to Play Card Button */}
-        <button
-          onClick={() => setShowHowToPlay(!showHowToPlay)}
-          className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-md transition-all flex-shrink-0"
-        >
-          <HelpCircle className="w-4 h-4 text-amber-400" />
-          <span>Panduan Guru & Kecepatan</span>
-          {showHowToPlay ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        </button>
+        {/* Action Buttons */}
+        <div className="flex flex-wrap items-center gap-2.5 flex-shrink-0">
+          <button
+            onClick={() => {
+              soundService.playClick();
+              setShowCreateModal(true);
+            }}
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            <span>+ Buat Teks / Materi Sendiri</span>
+          </button>
+
+          <button
+            onClick={() => setShowHowToPlay(!showHowToPlay)}
+            className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-md transition-all"
+          >
+            <HelpCircle className="w-4 h-4 text-amber-400" />
+            <span>Panduan</span>
+            {showHowToPlay ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+        </div>
       </div>
 
       {/* Expandable "Cara Main / How It Works" Card */}
@@ -148,6 +182,21 @@ export const RunningReadingView: React.FC = () => {
 
         {/* Genre Filter Pills */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          <button
+            onClick={() => {
+              setOnlyCustomFilter(!onlyCustomFilter);
+              soundService.playClick();
+            }}
+            className={`flex-shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all border flex items-center gap-1.5 ${
+              onlyCustomFilter
+                ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                : 'bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Teks Buatan Guru ({customCount})</span>
+          </button>
+
           {genres.map(g => (
             <button
               key={g.id}
@@ -179,22 +228,42 @@ export const RunningReadingView: React.FC = () => {
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100">
-                    {mat.genre.replace('-', ' ')}
-                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100">
+                      {mat.genre.replace('-', ' ')}
+                    </span>
+                    {mat.isCustom && (
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-lg bg-blue-100 text-blue-800 border border-blue-200 flex items-center gap-1">
+                        <Sparkles className="w-2.5 h-2.5 text-blue-600" />
+                        Guru
+                      </span>
+                    )}
+                  </div>
 
-                  <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-lg flex items-center gap-1 ${
-                    mat.level === 'beginner' 
-                      ? 'bg-sky-50 text-sky-700 border border-sky-200' 
-                      : mat.level === 'intermediate'
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'bg-purple-50 text-purple-700'
-                  }`}>
-                    {mat.level === 'beginner' && <Sparkles className="w-3 h-3" />}
-                    {mat.level === 'intermediate' && <Compass className="w-3 h-3" />}
-                    {mat.level === 'advanced' && <Flame className="w-3 h-3" />}
-                    <span className="capitalize">{mat.level}</span>
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-lg flex items-center gap-1 ${
+                      mat.level === 'beginner' 
+                        ? 'bg-sky-50 text-sky-700 border border-sky-200' 
+                        : mat.level === 'intermediate'
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'bg-purple-50 text-purple-700'
+                    }`}>
+                      {mat.level === 'beginner' && <Sparkles className="w-3 h-3" />}
+                      {mat.level === 'intermediate' && <Compass className="w-3 h-3" />}
+                      {mat.level === 'advanced' && <Flame className="w-3 h-3" />}
+                      <span className="capitalize">{mat.level}</span>
+                    </span>
+
+                    {mat.isCustom && (
+                      <button
+                        onClick={(e) => handleDeleteCustomMaterial(e, mat)}
+                        className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                        title="Hapus materi kustom ini"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <h3 className="font-extrabold text-lg text-slate-900 group-hover:text-indigo-600 transition-colors">
@@ -243,6 +312,7 @@ export const RunningReadingView: React.FC = () => {
               onClick={() => {
                 setLevelFilter('all');
                 setGenreFilter('all');
+                setOnlyCustomFilter(false);
               }}
               className="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all"
             >
@@ -251,6 +321,19 @@ export const RunningReadingView: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Create Reading Material Modal */}
+      {showCreateModal && (
+        <CreateReadingMaterialModal
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={() => {
+            refreshMaterials();
+            setShowCreateModal(false);
+          }}
+          initialLevel={levelFilter !== 'all' ? levelFilter : 'intermediate'}
+          initialGenre={genreFilter !== 'all' ? genreFilter : 'educational'}
+        />
+      )}
     </div>
   );
 };

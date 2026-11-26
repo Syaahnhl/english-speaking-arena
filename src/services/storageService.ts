@@ -498,6 +498,13 @@ class StorageService {
     localStorage.setItem(KEYS.SPEAKING_CARDS, JSON.stringify(cards));
   }
 
+  public deleteSpeakingCard(id: string) {
+    try {
+      const cards = this.getSpeakingCards().filter(c => c.id !== id);
+      localStorage.setItem(KEYS.SPEAKING_CARDS, JSON.stringify(cards));
+    } catch {}
+  }
+
   // --- RUNNING READING ---
   public getReadingMaterials(): ReadingMaterial[] {
     try {
@@ -526,6 +533,13 @@ class StorageService {
     const list = this.getReadingMaterials();
     list.unshift(material);
     localStorage.setItem(KEYS.READING_MATERIALS, JSON.stringify(list));
+  }
+
+  public deleteReadingMaterial(id: string) {
+    try {
+      const materials = this.getReadingMaterials().filter(m => m.id !== id);
+      localStorage.setItem(KEYS.READING_MATERIALS, JSON.stringify(materials));
+    } catch {}
   }
 
   // --- SPEAKING CART ---

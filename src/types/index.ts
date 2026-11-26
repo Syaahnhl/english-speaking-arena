@@ -50,6 +50,9 @@ export interface SpeakingCard {
   hints: string[];
   sampleResponse?: string;
   targetTone?: string;
+  isCustom?: boolean;
+  teacherName?: string;
+  createdAt?: string;
 }
 
 export type CartItemType = 'appetizer' | 'main-course' | 'dessert';
@@ -94,6 +97,9 @@ export interface ReadingMaterial {
   paragraphs: string[];
   vocabularyGlossary: { word: string; definition: string; example: string }[];
   questions: ReadingQuestion[];
+  isCustom?: boolean;
+  teacherName?: string;
+  createdAt?: string;
 }
 
 export interface SecretMission {

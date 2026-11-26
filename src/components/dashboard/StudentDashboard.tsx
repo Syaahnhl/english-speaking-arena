@@ -106,6 +106,17 @@ export const StudentDashboard: React.FC = () => {
               <span>Bank Speaking Cards</span>
             </button>
 
+            <button
+              onClick={() => {
+                soundService.playClick();
+                setActiveTab('cards');
+              }}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-sm transition-all"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>+ Buat Topik Sendiri</span>
+            </button>
+
             {students.length > 0 && (
               <button
                 onClick={handlePickRandomStudent}

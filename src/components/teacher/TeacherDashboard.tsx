@@ -88,7 +88,8 @@ export const TeacherDashboard: React.FC = () => {
       estimatedDuration: newCardDuration,
       vocabularySuggestions: vocabArray.length > 0 ? vocabArray : ['Articulate', 'Perspective', 'Conclusion'],
       sentenceStarters: ['In my point of view...', 'Furthermore...', 'To summarize...'],
-      hints: ['Maintain eye contact and clear pacing']
+      hints: ['Maintain eye contact and clear pacing'],
+      isCustom: true
     };
 
     storageService.addSpeakingCard(card);
