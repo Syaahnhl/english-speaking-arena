@@ -497,7 +497,7 @@ export const ProfileProgressView: React.FC = () => {
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>+ Tambah Guru Baru</span>
+                <span>Tambah Guru Baru</span>
               </button>
             </div>
 
@@ -650,7 +650,7 @@ export const ProfileProgressView: React.FC = () => {
               <div className="border-b border-slate-100 pb-3">
                 <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
                   <FolderOpen className="w-4 h-4 text-blue-600" />
-                  <span>+ Buat Kelas Baru</span>
+                  <span>Buat Kelas Baru</span>
                 </h3>
                 <p className="text-[11px] text-slate-500 mt-0.5">
                   Milik pengajar: <strong className="text-slate-800">{activeTeacher?.name}</strong>
@@ -828,7 +828,7 @@ export const ProfileProgressView: React.FC = () => {
                               }}
                               className="text-blue-600 hover:underline font-bold"
                             >
-                              + Input Siswa →
+                              Input Siswa →
                             </button>
 
                             {classrooms.length > 1 && (
@@ -1078,7 +1078,7 @@ export const ProfileProgressView: React.FC = () => {
                 className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all"
               >
                 <Plus className="w-4 h-4" />
-                <span>+ Buat Topik Speaking</span>
+                <span>Buat Topik Speaking</span>
               </button>
 
               <button
@@ -1089,7 +1089,7 @@ export const ProfileProgressView: React.FC = () => {
                 className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-md transition-all"
               >
                 <Plus className="w-4 h-4" />
-                <span>+ Buat Teks Teleprompter</span>
+                <span>Buat Teks Teleprompter</span>
               </button>
             </div>
           </div>

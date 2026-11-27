@@ -311,7 +311,7 @@ export const CreateReadingMaterialModal: React.FC<CreateReadingMaterialModalProp
                 className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 text-xs font-bold hover:bg-blue-100 transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>+ Tambah Kata</span>
+                <span>Tambah Kata</span>
               </button>
             </div>
 

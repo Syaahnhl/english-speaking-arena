@@ -127,7 +127,7 @@ export const TeacherDashboard: React.FC = () => {
           {[
             { id: 'roster', label: `Daftar Murid (${currentStudents.length})`, icon: Users },
             { id: 'rubric', label: 'Rubrik Nilai Langsung', icon: ClipboardCheck },
-            { id: 'create-card', label: '+ Buat Kartu Topik', icon: Layers }
+            { id: 'create-card', label: 'Buat Kartu Topik', icon: Layers }
           ].map(tab => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -170,7 +170,7 @@ export const TeacherDashboard: React.FC = () => {
                 className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-colors flex items-center gap-1.5 shadow-2xs"
               >
                 <Users className="w-3.5 h-3.5" />
-                <span>+ Input / Edit Siswa</span>
+                <span>Input / Edit Siswa</span>
               </button>
             </div>
           </div>
