@@ -26,12 +26,18 @@ import {
   Layers,
   Gauge,
   Clock,
-  FileText
+  FileText,
+  Theater,
+  Swords,
+  Mic2
 } from 'lucide-react';
 import { storageService } from '../../services/storageService';
 import { CreateSpeakingCardModal } from '../speaking-cards/CreateSpeakingCardModal';
 import { CreateReadingMaterialModal } from '../running-reading/CreateReadingMaterialModal';
-import { SpeakingCard, ReadingMaterial } from '../../types';
+import { CreateRoleplayModal } from '../roleplay/CreateRoleplayModal';
+import { CreateBattleModal } from '../arena/CreateBattleModal';
+import { CreateInteractiveQuestionModal } from '../interactive/CreateInteractiveQuestionModal';
+import { SpeakingCard, ReadingMaterial, RoleplayScenario, HeadToHeadBattle } from '../../types';
 
 export const ProfileProgressView: React.FC = () => {
   const { 
@@ -58,16 +64,41 @@ export const ProfileProgressView: React.FC = () => {
   // --- CUSTOM MATERIALS STATE ---
   const [showCreateCardModal, setShowCreateCardModal] = useState(false);
   const [showCreateReadingModal, setShowCreateReadingModal] = useState(false);
+  const [showCreateRoleplayModal, setShowCreateRoleplayModal] = useState(false);
+  const [showCreateBattleModal, setShowCreateBattleModal] = useState(false);
+  const [showCreateInteractiveModal, setShowCreateInteractiveModal] = useState(false);
+
   const [customCards, setCustomCards] = useState<SpeakingCard[]>(() => 
     storageService.getSpeakingCards().filter(c => c.isCustom)
   );
   const [customMaterials, setCustomMaterials] = useState<ReadingMaterial[]>(() => 
     storageService.getReadingMaterials().filter(m => m.isCustom)
   );
+  const [customRoleplays, setCustomRoleplays] = useState<RoleplayScenario[]>(() => 
+    storageService.getRoleplayScenarios().filter(r => r.isCustom)
+  );
+  const [customBattles, setCustomBattles] = useState<HeadToHeadBattle[]>(() => 
+    storageService.getBattles().filter(b => b.isCustom)
+  );
+
+  const getCustomInteractiveList = () => {
+    const taboo = storageService.getTabooCards().filter(x => x.isCustom).map(x => ({ id: x.id, type: 'Taboo', title: x.word, level: x.level, del: () => storageService.deleteTabooCard(x.id) }));
+    const yesAnd = storageService.getYesAndPrompts().filter(x => x.isCustom).map(x => ({ id: x.id, type: 'Yes, And', title: x.scenario, level: x.level, del: () => storageService.deleteYesAndPrompt(x.id) }));
+    const ftt = storageService.getFourThreeTwoTopics().filter(x => x.isCustom).map(x => ({ id: x.id, type: 'Teknik 4/3/2', title: x.title, level: x.level, del: () => storageService.deleteFourThreeTwoTopic(x.id) }));
+    const speed = storageService.getSpeedTalkingTopics().filter(x => x.isCustom).map(x => ({ id: x.id, type: 'Speed Talk', title: x.topic, level: x.level, del: () => storageService.deleteSpeedTalkingTopic(x.id) }));
+    const shadow = storageService.getShadowingLessons().filter(x => x.isCustom).map(x => ({ id: x.id, type: 'Shadowing', title: x.title, level: x.level, del: () => storageService.deleteShadowingLesson(x.id) }));
+    const visual = storageService.getVisualStoryPrompts().filter(x => x.isCustom).map(x => ({ id: x.id, type: 'Visual Story', title: x.title, level: x.level, del: () => storageService.deleteVisualStoryPrompt(x.id) }));
+    return [...taboo, ...yesAnd, ...ftt, ...speed, ...shadow, ...visual];
+  };
+
+  const [customInteractiveItems, setCustomInteractiveItems] = useState(() => getCustomInteractiveList());
 
   const refreshCustomContent = () => {
     setCustomCards(storageService.getSpeakingCards().filter(c => c.isCustom));
     setCustomMaterials(storageService.getReadingMaterials().filter(m => m.isCustom));
+    setCustomRoleplays(storageService.getRoleplayScenarios().filter(r => r.isCustom));
+    setCustomBattles(storageService.getBattles().filter(b => b.isCustom));
+    setCustomInteractiveItems(getCustomInteractiveList());
   };
 
   // --- EDIT ACTIVE TEACHER STATE ---
@@ -1091,6 +1122,39 @@ export const ProfileProgressView: React.FC = () => {
                 <Plus className="w-4 h-4" />
                 <span>Buat Teks Teleprompter</span>
               </button>
+
+              <button
+                onClick={() => {
+                  soundService.playClick();
+                  setShowCreateRoleplayModal(true);
+                }}
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Buat Skenario Roleplay</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  soundService.playClick();
+                  setShowCreateBattleModal(true);
+                }}
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold shadow-md transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Buat Topik Duel</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  soundService.playClick();
+                  setShowCreateInteractiveModal(true);
+                }}
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-md transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Tambah Soal Game</span>
+              </button>
             </div>
           </div>
 
@@ -1259,6 +1323,170 @@ export const ProfileProgressView: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* Section 3: Skenario Roleplay & Arena Duel Kustom */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Roleplay Kustom */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                    <Theater className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm text-slate-900">
+                      Skenario Roleplay Buatan Guru ({customRoleplays.length})
+                    </h3>
+                    <span className="text-[11px] text-slate-500">Misi rahasia berpasangan</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowCreateRoleplayModal(true)}
+                  className="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Tambah</span>
+                </button>
+              </div>
+
+              {customRoleplays.length === 0 ? (
+                <div className="p-6 text-center bg-slate-50 rounded-2xl border border-slate-200/80 text-xs text-slate-500">
+                  Belum ada skenario roleplay buatan sendiri. Klik "Tambah" untuk membuat skenario misi baru.
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  {customRoleplays.map(r => (
+                    <div key={r.id} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <span className="text-[10px] font-bold uppercase text-indigo-600">{r.level}</span>
+                        <h4 className="font-bold text-xs text-slate-900 truncate">{r.title}</h4>
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (confirm(`Hapus skenario "${r.title}"?`)) {
+                            storageService.deleteRoleplayScenario(r.id);
+                            refreshCustomContent();
+                          }
+                        }}
+                        className="text-slate-400 hover:text-rose-600 p-1"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Arena Duel Kustom */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
+                    <Swords className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm text-slate-900">
+                      Topik Duel 1v1 Buatan Guru ({customBattles.length})
+                    </h3>
+                    <span className="text-[11px] text-slate-500">Soal debat & adu argumen</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowCreateBattleModal(true)}
+                  className="text-xs font-bold text-sky-600 hover:underline flex items-center gap-1"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Tambah</span>
+                </button>
+              </div>
+
+              {customBattles.length === 0 ? (
+                <div className="p-6 text-center bg-slate-50 rounded-2xl border border-slate-200/80 text-xs text-slate-500">
+                  Belum ada topik duel buatan sendiri. Klik "Tambah" untuk membuat topik debat 1v1 baru.
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  {customBattles.map(b => (
+                    <div key={b.id} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <span className="text-[10px] font-bold uppercase text-sky-600">{b.category} • {b.level}</span>
+                        <h4 className="font-bold text-xs text-slate-900 truncate">{b.title}</h4>
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (confirm(`Hapus topik duel "${b.title}"?`)) {
+                            storageService.deleteBattle(b.id);
+                            refreshCustomContent();
+                          }
+                        }}
+                        className="text-slate-400 hover:text-rose-600 p-1"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Section 4: Soal Studio Games Interaktif Kustom */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+                  <Mic2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900">
+                    Soal Studio Games Interaktif Buatan Guru ({customInteractiveItems.length})
+                  </h3>
+                  <span className="text-[11px] text-slate-500">
+                    Taboo, Yes And, Teknik 4/3/2, Speed Talk, Shadowing, dan Visual Story
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowCreateInteractiveModal(true)}
+                className="text-xs font-bold text-purple-600 hover:underline flex items-center gap-1"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Tambah Soal Game</span>
+              </button>
+            </div>
+
+            {customInteractiveItems.length === 0 ? (
+              <div className="p-6 text-center bg-slate-50 rounded-2xl border border-slate-200/80 text-xs text-slate-500">
+                Belum ada soal game interaktif buatan sendiri. Tambahkan soal Taboo, Speed Talk, atau Shadowing khusus untuk kelas Anda.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {customInteractiveItems.map(item => (
+                  <div key={item.id} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-purple-100 text-purple-700">
+                        {item.type}
+                      </span>
+                      <h4 className="font-bold text-xs text-slate-900 truncate mt-1">{item.title}</h4>
+                      <span className="text-[10px] text-slate-500 capitalize">Level: {item.level}</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (confirm(`Hapus soal "${item.title}"?`)) {
+                          item.del();
+                          refreshCustomContent();
+                        }
+                      }}
+                      className="text-slate-400 hover:text-rose-600 p-1"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -1282,6 +1510,30 @@ export const ProfileProgressView: React.FC = () => {
           }}
         />
       )}
+
+      <CreateRoleplayModal
+        isOpen={showCreateRoleplayModal}
+        onClose={() => setShowCreateRoleplayModal(false)}
+        onCreated={() => {
+          refreshCustomContent();
+        }}
+      />
+
+      <CreateBattleModal
+        isOpen={showCreateBattleModal}
+        onClose={() => setShowCreateBattleModal(false)}
+        onCreated={() => {
+          refreshCustomContent();
+        }}
+      />
+
+      <CreateInteractiveQuestionModal
+        isOpen={showCreateInteractiveModal}
+        onClose={() => setShowCreateInteractiveModal(false)}
+        onCreated={() => {
+          refreshCustomContent();
+        }}
+      />
     </div>
   );
 };

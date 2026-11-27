@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useArena } from '../../context/ArenaContext';
-import { HEAD_TO_HEAD_BATTLES } from '../../data/seedUsersData';
 import { LeaderboardUser, HeadToHeadBattle } from '../../types';
 import { soundService } from '../../services/soundService';
 import { storageService } from '../../services/storageService';
+import { CreateBattleModal } from './CreateBattleModal';
 import { 
   Trophy, 
   Flame, 
@@ -24,12 +24,16 @@ import {
   Target,
   Dices,
   Send,
-  UserCheck
+  UserCheck,
+  Plus,
+  Trash2
 } from 'lucide-react';
 
 export const SpeakingArenaView: React.FC = () => {
   const { addToast, activeClassStudents, activeClassId, setActiveTab } = useArena();
   const [activeBoard, setActiveBoard] = useState<'weekly' | 'monthly' | 'all-time'>('weekly');
+  const [battles, setBattles] = useState<HeadToHeadBattle[]>(() => storageService.getBattles());
+  const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [selectedBattle, setSelectedBattle] = useState<HeadToHeadBattle | null>(null);
   const [showHowToPlay, setShowHowToPlay] = useState<boolean>(false);
 
@@ -214,29 +218,63 @@ export const SpeakingArenaView: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <Swords className="w-5 h-5 text-indigo-600" />
+              <Swords className="w-5 h-5 text-blue-600" />
               <h2 className="text-lg font-extrabold text-slate-900">Pilih Arena Duel Topik</h2>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
               Pilih salah satu arena duel untuk menandingkan dua murid dalam kelas pada topik yang sama.
             </p>
           </div>
+          <button
+            onClick={() => {
+              soundService.playClick();
+              setShowCreateModal(true);
+            }}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all flex-shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Buat Topik Duel Sendiri</span>
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {HEAD_TO_HEAD_BATTLES.map((battle) => (
+          {battles.map((battle) => (
             <div
               key={battle.id}
-              className="p-6 rounded-3xl bg-slate-50/80 border border-slate-200 hover:border-indigo-300 hover:bg-white hover:shadow-card transition-all flex flex-col justify-between"
+              className="p-6 rounded-3xl bg-slate-50/80 border border-slate-200 hover:border-blue-300 hover:bg-white hover:shadow-card transition-all flex flex-col justify-between"
             >
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded bg-indigo-100 text-indigo-700">
-                    {battle.category}
-                  </span>
-                  <span className="text-xs font-mono text-slate-500 font-semibold">
-                    {Math.floor(battle.timeLimit / 60)}:{(battle.timeLimit % 60).toString().padStart(2, '0')} Menit / Siswa
-                  </span>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded bg-blue-100 text-blue-700">
+                      {battle.category}
+                    </span>
+                    {battle.isCustom && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-700">
+                        Buatan Guru
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-mono text-slate-500 font-semibold">
+                      {Math.floor(battle.timeLimit / 60)}:{(battle.timeLimit % 60).toString().padStart(2, '0')}m
+                    </span>
+                    {battle.isCustom && (
+                      <button
+                        onClick={() => {
+                          if (confirm(`Hapus topik duel "${battle.title}"?`)) {
+                            storageService.deleteBattle(battle.id);
+                            setBattles(storageService.getBattles());
+                            soundService.playClick();
+                          }
+                        }}
+                        className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                        title="Hapus topik duel"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <h3 className="font-extrabold text-sm text-slate-900">{battle.title}</h3>
@@ -702,6 +740,14 @@ export const SpeakingArenaView: React.FC = () => {
           </div>
         )}
       </section>
+
+      <CreateBattleModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onCreated={() => {
+          setBattles(storageService.getBattles());
+        }}
+      />
     </div>
   );
 };

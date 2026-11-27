@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useArena } from '../../context/ArenaContext';
 import { 
-  TABOO_CARDS, 
-  YES_AND_PROMPTS, 
-  FOUR_THREE_TWO_TOPICS, 
-  SPEED_TALKING_TOPICS, 
-  SHADOWING_LESSONS, 
-  VISUAL_STORY_PROMPTS 
-} from '../../data/interactiveData';
+  TabooCard,
+  YesAndPrompt,
+  FourThreeTwoTopic,
+  SpeedTalkingTopic,
+  ShadowingLesson,
+  VisualStoryPrompt
+} from '../../types';
+import { storageService } from '../../services/storageService';
 import { soundService } from '../../services/soundService';
 import { speechService } from '../../services/speechService';
+import { CreateInteractiveQuestionModal, InteractiveGameType } from './CreateInteractiveQuestionModal';
 import { 
   Mic2, 
   Play, 
@@ -25,20 +27,30 @@ import {
   HelpCircle,
   ChevronDown,
   ChevronUp,
-  Info
+  Info,
+  Plus
 } from 'lucide-react';
 
 export const InteractiveHubView: React.FC = () => {
   const { awardXp } = useArena();
   const [activeSubTab, setActiveSubTab] = useState<'taboo' | 'yes-and' | '432' | 'speed-talk' | 'shadowing' | 'visual-story'>('taboo');
   const [showHowToPlay, setShowHowToPlay] = useState<boolean>(true);
+  const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
+
+  // Dynamic Lists from Storage
+  const [tabooCards, setTabooCards] = useState<TabooCard[]>(() => storageService.getTabooCards());
+  const [yesAndPrompts, setYesAndPrompts] = useState<YesAndPrompt[]>(() => storageService.getYesAndPrompts());
+  const [fttTopics, setFttTopics] = useState<FourThreeTwoTopic[]>(() => storageService.getFourThreeTwoTopics());
+  const [speedTopics, setSpeedTopics] = useState<SpeedTalkingTopic[]>(() => storageService.getSpeedTalkingTopics());
+  const [shadowLessons, setShadowLessons] = useState<ShadowingLesson[]>(() => storageService.getShadowingLessons());
+  const [visualPrompts, setVisualPrompts] = useState<VisualStoryPrompt[]>(() => storageService.getVisualStoryPrompts());
 
   // --- 1. TABOO STATE (PENALTY SYSTEM) ---
   const [tabooIndex, setTabooIndex] = useState(0);
   const [tabooTimeLeft, setTabooTimeLeft] = useState(60);
   const [tabooRunning, setTabooRunning] = useState(false);
   const [tabooViolations, setTabooViolations] = useState<{ [word: string]: number }>({});
-  const currentTaboo = TABOO_CARDS[tabooIndex];
+  const currentTaboo = tabooCards[tabooIndex % tabooCards.length] || tabooCards[0];
 
   const totalTabooViolations = Object.values(tabooViolations).reduce((a, b) => a + b, 0);
   const penaltyPerViolation = 10;
@@ -75,7 +87,7 @@ export const InteractiveHubView: React.FC = () => {
     soundService.playSuccess();
     const earnedXp = Math.max(5, Math.round(currentTabooScore / 4));
     awardXp(earnedXp, `Taboo "${currentTaboo.word}" (Skor: ${currentTabooScore}/100, ${totalTabooViolations} Pelanggaran)`);
-    setTabooIndex((tabooIndex + 1) % TABOO_CARDS.length);
+    setTabooIndex((tabooIndex + 1) % tabooCards.length);
     setTabooViolations({});
     setTabooTimeLeft(60);
     setTabooRunning(false);
@@ -83,7 +95,7 @@ export const InteractiveHubView: React.FC = () => {
 
   // --- 2. YES, AND STATE ---
   const [yesAndIndex, setYesAndIndex] = useState(0);
-  const currentYesAnd = YES_AND_PROMPTS[yesAndIndex];
+  const currentYesAnd = yesAndPrompts[yesAndIndex % yesAndPrompts.length] || yesAndPrompts[0];
 
   // --- 3. 4/3/2 TECHNIQUE STATE ---
   const [fttIndex, setFttIndex] = useState(0);
@@ -91,21 +103,21 @@ export const InteractiveHubView: React.FC = () => {
   const roundDurations = { 1: 240, 2: 180, 3: 120 }; // 4m, 3m, 2m
   const [fttTimeLeft, setFttTimeLeft] = useState(roundDurations[1]);
   const [fttRunning, setFttRunning] = useState(false);
-  const currentFtt = FOUR_THREE_TWO_TOPICS[fttIndex];
+  const currentFtt = fttTopics[fttIndex % fttTopics.length] || fttTopics[0];
 
   // --- 4. SPEED TALKING STATE ---
   const [speedIndex, setSpeedIndex] = useState(0);
-  const currentSpeed = SPEED_TALKING_TOPICS[speedIndex];
+  const currentSpeed = speedTopics[speedIndex % speedTopics.length] || speedTopics[0];
 
   // --- 5. SHADOWING STATE ---
   const [shadowIndex, setShadowIndex] = useState(0);
   const [shadowSentenceIndex, setShadowSentenceIndex] = useState(0);
-  const currentShadow = SHADOWING_LESSONS[shadowIndex];
-  const activeShadowSentence = currentShadow.sentences[shadowSentenceIndex];
+  const currentShadow = shadowLessons[shadowIndex % shadowLessons.length] || shadowLessons[0];
+  const activeShadowSentence = currentShadow.sentences[shadowSentenceIndex % currentShadow.sentences.length] || currentShadow.sentences[0];
 
   // --- 6. VISUAL STORYTELLING STATE ---
   const [visualIndex, setVisualIndex] = useState(0);
-  const currentVisual = VISUAL_STORY_PROMPTS[visualIndex];
+  const currentVisual = visualPrompts[visualIndex % visualPrompts.length] || visualPrompts[0];
 
   // Timer for Taboo
   useEffect(() => {
@@ -157,6 +169,9 @@ export const InteractiveHubView: React.FC = () => {
       setFttTimeLeft(roundDurations[nextRound]);
     } else {
       awardXp(35, `Menyelesaikan Teknik 4/3/2: "${currentFtt.title}"`);
+      setFttIndex((fttIndex + 1) % fttTopics.length);
+      setFttRound(1);
+      setFttTimeLeft(roundDurations[1]);
     }
   };
 
@@ -177,14 +192,27 @@ export const InteractiveHubView: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={() => setShowHowToPlay(!showHowToPlay)}
-          className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-md transition-all flex-shrink-0"
-        >
-          <HelpCircle className="w-4 h-4 text-amber-400" />
-          <span>Panduan Fasilitator Kelas</span>
-          {showHowToPlay ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        </button>
+        <div className="flex flex-wrap items-center gap-2.5 flex-shrink-0">
+          <button
+            onClick={() => {
+              soundService.playClick();
+              setShowCreateModal(true);
+            }}
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Tambah Soal Game Ini</span>
+          </button>
+
+          <button
+            onClick={() => setShowHowToPlay(!showHowToPlay)}
+            className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-md transition-all"
+          >
+            <HelpCircle className="w-4 h-4 text-amber-400" />
+            <span>Panduan</span>
+            {showHowToPlay ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+        </div>
       </div>
 
       {/* Sub-tab Navigation */}
@@ -255,7 +283,7 @@ export const InteractiveHubView: React.FC = () => {
               <span className="text-[11px] font-bold uppercase tracking-wider text-rose-700 bg-rose-50 px-3 py-1 rounded-full border border-rose-200">
                 Kategori: {currentTaboo.category}
               </span>
-              <span className="text-xs font-mono text-slate-400">Kartu {tabooIndex + 1} dari {TABOO_CARDS.length}</span>
+              <span className="text-xs font-mono text-slate-400">Kartu {(tabooIndex % tabooCards.length) + 1} dari {tabooCards.length}</span>
             </div>
 
             {/* Score & Penalty Live Status Bar */}
@@ -480,7 +508,7 @@ export const InteractiveHubView: React.FC = () => {
                 onClick={() => {
                   soundService.playSuccess();
                   awardXp(20, `Menyelesaikan Improv "Yes, And..." pada ${currentYesAnd.scenario}`);
-                  setYesAndIndex((yesAndIndex + 1) % YES_AND_PROMPTS.length);
+                  setYesAndIndex((yesAndIndex + 1) % yesAndPrompts.length);
                 }}
                 className="px-6 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md transition-all"
               >
@@ -660,7 +688,7 @@ export const InteractiveHubView: React.FC = () => {
                 onClick={() => {
                   soundService.playSuccess();
                   awardXp(15, `Menyelesaikan Speed Talking: ${currentSpeed.category}`);
-                  setSpeedIndex((speedIndex + 1) % SPEED_TALKING_TOPICS.length);
+                  setSpeedIndex((speedIndex + 1) % speedTopics.length);
                 }}
                 className="px-6 py-2.5 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-md transition-all"
               >
@@ -772,7 +800,7 @@ export const InteractiveHubView: React.FC = () => {
                 onClick={() => {
                   soundService.playSuccess();
                   awardXp(20, `Menyelesaikan Shadowing: "${currentShadow.title}"`);
-                  setShadowIndex((shadowIndex + 1) % SHADOWING_LESSONS.length);
+                  setShadowIndex((shadowIndex + 1) % shadowLessons.length);
                   setShadowSentenceIndex(0);
                 }}
                 className="px-6 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md transition-all"
@@ -864,7 +892,7 @@ export const InteractiveHubView: React.FC = () => {
                 onClick={() => {
                   soundService.playSuccess();
                   awardXp(25, `Menyelesaikan Visual Storytelling: "${currentVisual.title}"`);
-                  setVisualIndex((visualIndex + 1) % VISUAL_STORY_PROMPTS.length);
+                  setVisualIndex((visualIndex + 1) % visualPrompts.length);
                 }}
                 className="px-6 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md transition-all"
               >
@@ -874,6 +902,35 @@ export const InteractiveHubView: React.FC = () => {
           </div>
         </div>
       )}
+
+      <CreateInteractiveQuestionModal
+        isOpen={showCreateModal}
+        defaultGame={activeSubTab}
+        onClose={() => setShowCreateModal(false)}
+        onCreated={(gameType: InteractiveGameType) => {
+          setActiveSubTab(gameType);
+          if (gameType === 'taboo') {
+            setTabooCards(storageService.getTabooCards());
+            setTabooIndex(0);
+          } else if (gameType === 'yes-and') {
+            setYesAndPrompts(storageService.getYesAndPrompts());
+            setYesAndIndex(0);
+          } else if (gameType === '432') {
+            setFttTopics(storageService.getFourThreeTwoTopics());
+            setFttIndex(0);
+          } else if (gameType === 'speed-talk') {
+            setSpeedTopics(storageService.getSpeedTalkingTopics());
+            setSpeedIndex(0);
+          } else if (gameType === 'shadowing') {
+            setShadowLessons(storageService.getShadowingLessons());
+            setShadowIndex(0);
+            setShadowSentenceIndex(0);
+          } else if (gameType === 'visual-story') {
+            setVisualPrompts(storageService.getVisualStoryPrompts());
+            setVisualIndex(0);
+          }
+        }}
+      />
     </div>
   );
 };

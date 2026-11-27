@@ -1,7 +1,35 @@
-import { UserProfile, SpeakingCard, ReadingMaterial, StudentSubmission, Classroom, Student, DailyChallenge, SpeakingCartItem, ProficiencyLevel, LeaderboardUser } from '../types';
-import { DEFAULT_TEACHER, INITIAL_CLASSROOMS, INITIAL_SUBMISSIONS, INITIAL_STUDENTS, SAMPLE_STUDENTS_PRESET } from '../data/seedUsersData';
+import { 
+  UserProfile, 
+  SpeakingCard, 
+  ReadingMaterial, 
+  StudentSubmission, 
+  Classroom, 
+  Student, 
+  DailyChallenge, 
+  SpeakingCartItem, 
+  ProficiencyLevel, 
+  LeaderboardUser,
+  RoleplayScenario,
+  HeadToHeadBattle,
+  TabooCard,
+  YesAndPrompt,
+  FourThreeTwoTopic,
+  SpeedTalkingTopic,
+  ShadowingLesson,
+  VisualStoryPrompt
+} from '../types';
+import { DEFAULT_TEACHER, INITIAL_CLASSROOMS, INITIAL_SUBMISSIONS, INITIAL_STUDENTS, SAMPLE_STUDENTS_PRESET, HEAD_TO_HEAD_BATTLES } from '../data/seedUsersData';
 import { SPEAKING_CARDS } from '../data/speakingCardsData';
 import { READING_MATERIALS } from '../data/readingMaterialsData';
+import { ROLEPLAY_SCENARIOS } from '../data/roleplayScenariosData';
+import { 
+  TABOO_CARDS, 
+  YES_AND_PROMPTS, 
+  FOUR_THREE_TWO_TOPICS, 
+  SPEED_TALKING_TOPICS, 
+  SHADOWING_LESSONS, 
+  VISUAL_STORY_PROMPTS 
+} from '../data/interactiveData';
 import { ACHIEVEMENTS_LIST } from '../data/achievementsData';
 import { getRankByXp } from './gamificationService';
 
@@ -18,6 +46,14 @@ const KEYS = {
   STUDENTS: 'esa_students',
   DAILY_CHALLENGES: 'esa_daily_challenges',
   COMPLETED_CHALLENGES: 'esa_completed_challenges',
+  ROLEPLAY_SCENARIOS: 'esa_roleplay_scenarios',
+  HEAD_TO_HEAD_BATTLES: 'esa_h2h_battles',
+  TABOO_CARDS: 'esa_taboo_cards',
+  YES_AND_PROMPTS: 'esa_yes_and_prompts',
+  FOUR_THREE_TWO_TOPICS: 'esa_432_topics',
+  SPEED_TALKING_TOPICS: 'esa_speed_talking_topics',
+  SHADOWING_LESSONS: 'esa_shadowing_lessons',
+  VISUAL_STORY_PROMPTS: 'esa_visual_story_prompts',
 };
 
 class StorageService {
@@ -570,6 +606,302 @@ class StorageService {
 
   public clearCart() {
     this.saveCartItems([]);
+  }
+
+  // --- ROLEPLAY SCENARIOS ---
+  public getRoleplayScenarios(): RoleplayScenario[] {
+    try {
+      const data = localStorage.getItem(KEYS.ROLEPLAY_SCENARIOS);
+      if (data) {
+        const list: RoleplayScenario[] = JSON.parse(data);
+        const existingIds = new Set(list.map(s => s.id));
+        let added = false;
+        for (const def of ROLEPLAY_SCENARIOS) {
+          if (!existingIds.has(def.id)) {
+            list.push(def);
+            existingIds.add(def.id);
+            added = true;
+          }
+        }
+        if (added) {
+          localStorage.setItem(KEYS.ROLEPLAY_SCENARIOS, JSON.stringify(list));
+        }
+        return list;
+      }
+    } catch {}
+    return ROLEPLAY_SCENARIOS;
+  }
+
+  public saveCustomRoleplayScenario(scenario: RoleplayScenario) {
+    const list = this.getRoleplayScenarios();
+    list.unshift(scenario);
+    localStorage.setItem(KEYS.ROLEPLAY_SCENARIOS, JSON.stringify(list));
+  }
+
+  public deleteRoleplayScenario(id: string) {
+    try {
+      const list = this.getRoleplayScenarios().filter(s => s.id !== id);
+      localStorage.setItem(KEYS.ROLEPLAY_SCENARIOS, JSON.stringify(list));
+    } catch {}
+  }
+
+  // --- HEAD-TO-HEAD DUEL BATTLES ---
+  public getBattles(): HeadToHeadBattle[] {
+    try {
+      const data = localStorage.getItem(KEYS.HEAD_TO_HEAD_BATTLES);
+      if (data) {
+        const list: HeadToHeadBattle[] = JSON.parse(data);
+        const existingIds = new Set(list.map(b => b.id));
+        let added = false;
+        for (const def of HEAD_TO_HEAD_BATTLES) {
+          if (!existingIds.has(def.id)) {
+            list.push(def);
+            existingIds.add(def.id);
+            added = true;
+          }
+        }
+        if (added) {
+          localStorage.setItem(KEYS.HEAD_TO_HEAD_BATTLES, JSON.stringify(list));
+        }
+        return list;
+      }
+    } catch {}
+    return HEAD_TO_HEAD_BATTLES;
+  }
+
+  public saveCustomBattle(battle: HeadToHeadBattle) {
+    const list = this.getBattles();
+    list.unshift(battle);
+    localStorage.setItem(KEYS.HEAD_TO_HEAD_BATTLES, JSON.stringify(list));
+  }
+
+  public deleteBattle(id: string) {
+    try {
+      const list = this.getBattles().filter(b => b.id !== id);
+      localStorage.setItem(KEYS.HEAD_TO_HEAD_BATTLES, JSON.stringify(list));
+    } catch {}
+  }
+
+  // --- INTERACTIVE: TABOO CARDS ---
+  public getTabooCards(): TabooCard[] {
+    try {
+      const data = localStorage.getItem(KEYS.TABOO_CARDS);
+      if (data) {
+        const list: TabooCard[] = JSON.parse(data);
+        const existingIds = new Set(list.map(c => c.id));
+        let added = false;
+        for (const def of TABOO_CARDS) {
+          if (!existingIds.has(def.id)) {
+            list.push(def);
+            existingIds.add(def.id);
+            added = true;
+          }
+        }
+        if (added) {
+          localStorage.setItem(KEYS.TABOO_CARDS, JSON.stringify(list));
+        }
+        return list;
+      }
+    } catch {}
+    return TABOO_CARDS;
+  }
+
+  public saveCustomTabooCard(card: TabooCard) {
+    const list = this.getTabooCards();
+    list.unshift(card);
+    localStorage.setItem(KEYS.TABOO_CARDS, JSON.stringify(list));
+  }
+
+  public deleteTabooCard(id: string) {
+    try {
+      const list = this.getTabooCards().filter(c => c.id !== id);
+      localStorage.setItem(KEYS.TABOO_CARDS, JSON.stringify(list));
+    } catch {}
+  }
+
+  // --- INTERACTIVE: YES, AND PROMPTS ---
+  public getYesAndPrompts(): YesAndPrompt[] {
+    try {
+      const data = localStorage.getItem(KEYS.YES_AND_PROMPTS);
+      if (data) {
+        const list: YesAndPrompt[] = JSON.parse(data);
+        const existingIds = new Set(list.map(p => p.id));
+        let added = false;
+        for (const def of YES_AND_PROMPTS) {
+          if (!existingIds.has(def.id)) {
+            list.push(def);
+            existingIds.add(def.id);
+            added = true;
+          }
+        }
+        if (added) {
+          localStorage.setItem(KEYS.YES_AND_PROMPTS, JSON.stringify(list));
+        }
+        return list;
+      }
+    } catch {}
+    return YES_AND_PROMPTS;
+  }
+
+  public saveCustomYesAndPrompt(prompt: YesAndPrompt) {
+    const list = this.getYesAndPrompts();
+    list.unshift(prompt);
+    localStorage.setItem(KEYS.YES_AND_PROMPTS, JSON.stringify(list));
+  }
+
+  public deleteYesAndPrompt(id: string) {
+    try {
+      const list = this.getYesAndPrompts().filter(p => p.id !== id);
+      localStorage.setItem(KEYS.YES_AND_PROMPTS, JSON.stringify(list));
+    } catch {}
+  }
+
+  // --- INTERACTIVE: 4/3/2 TOPICS ---
+  public getFourThreeTwoTopics(): FourThreeTwoTopic[] {
+    try {
+      const data = localStorage.getItem(KEYS.FOUR_THREE_TWO_TOPICS);
+      if (data) {
+        const list: FourThreeTwoTopic[] = JSON.parse(data);
+        const existingIds = new Set(list.map(t => t.id));
+        let added = false;
+        for (const def of FOUR_THREE_TWO_TOPICS) {
+          if (!existingIds.has(def.id)) {
+            list.push(def);
+            existingIds.add(def.id);
+            added = true;
+          }
+        }
+        if (added) {
+          localStorage.setItem(KEYS.FOUR_THREE_TWO_TOPICS, JSON.stringify(list));
+        }
+        return list;
+      }
+    } catch {}
+    return FOUR_THREE_TWO_TOPICS;
+  }
+
+  public saveCustomFourThreeTwoTopic(topic: FourThreeTwoTopic) {
+    const list = this.getFourThreeTwoTopics();
+    list.unshift(topic);
+    localStorage.setItem(KEYS.FOUR_THREE_TWO_TOPICS, JSON.stringify(list));
+  }
+
+  public deleteFourThreeTwoTopic(id: string) {
+    try {
+      const list = this.getFourThreeTwoTopics().filter(t => t.id !== id);
+      localStorage.setItem(KEYS.FOUR_THREE_TWO_TOPICS, JSON.stringify(list));
+    } catch {}
+  }
+
+  // --- INTERACTIVE: SPEED TALKING TOPICS ---
+  public getSpeedTalkingTopics(): SpeedTalkingTopic[] {
+    try {
+      const data = localStorage.getItem(KEYS.SPEED_TALKING_TOPICS);
+      if (data) {
+        const list: SpeedTalkingTopic[] = JSON.parse(data);
+        const existingIds = new Set(list.map(t => t.id));
+        let added = false;
+        for (const def of SPEED_TALKING_TOPICS) {
+          if (!existingIds.has(def.id)) {
+            list.push(def);
+            existingIds.add(def.id);
+            added = true;
+          }
+        }
+        if (added) {
+          localStorage.setItem(KEYS.SPEED_TALKING_TOPICS, JSON.stringify(list));
+        }
+        return list;
+      }
+    } catch {}
+    return SPEED_TALKING_TOPICS;
+  }
+
+  public saveCustomSpeedTalkingTopic(topic: SpeedTalkingTopic) {
+    const list = this.getSpeedTalkingTopics();
+    list.unshift(topic);
+    localStorage.setItem(KEYS.SPEED_TALKING_TOPICS, JSON.stringify(list));
+  }
+
+  public deleteSpeedTalkingTopic(id: string) {
+    try {
+      const list = this.getSpeedTalkingTopics().filter(t => t.id !== id);
+      localStorage.setItem(KEYS.SPEED_TALKING_TOPICS, JSON.stringify(list));
+    } catch {}
+  }
+
+  // --- INTERACTIVE: SHADOWING LESSONS ---
+  public getShadowingLessons(): ShadowingLesson[] {
+    try {
+      const data = localStorage.getItem(KEYS.SHADOWING_LESSONS);
+      if (data) {
+        const list: ShadowingLesson[] = JSON.parse(data);
+        const existingIds = new Set(list.map(l => l.id));
+        let added = false;
+        for (const def of SHADOWING_LESSONS) {
+          if (!existingIds.has(def.id)) {
+            list.push(def);
+            existingIds.add(def.id);
+            added = true;
+          }
+        }
+        if (added) {
+          localStorage.setItem(KEYS.SHADOWING_LESSONS, JSON.stringify(list));
+        }
+        return list;
+      }
+    } catch {}
+    return SHADOWING_LESSONS;
+  }
+
+  public saveCustomShadowingLesson(lesson: ShadowingLesson) {
+    const list = this.getShadowingLessons();
+    list.unshift(lesson);
+    localStorage.setItem(KEYS.SHADOWING_LESSONS, JSON.stringify(list));
+  }
+
+  public deleteShadowingLesson(id: string) {
+    try {
+      const list = this.getShadowingLessons().filter(l => l.id !== id);
+      localStorage.setItem(KEYS.SHADOWING_LESSONS, JSON.stringify(list));
+    } catch {}
+  }
+
+  // --- INTERACTIVE: VISUAL STORY PROMPTS ---
+  public getVisualStoryPrompts(): VisualStoryPrompt[] {
+    try {
+      const data = localStorage.getItem(KEYS.VISUAL_STORY_PROMPTS);
+      if (data) {
+        const list: VisualStoryPrompt[] = JSON.parse(data);
+        const existingIds = new Set(list.map(p => p.id));
+        let added = false;
+        for (const def of VISUAL_STORY_PROMPTS) {
+          if (!existingIds.has(def.id)) {
+            list.push(def);
+            existingIds.add(def.id);
+            added = true;
+          }
+        }
+        if (added) {
+          localStorage.setItem(KEYS.VISUAL_STORY_PROMPTS, JSON.stringify(list));
+        }
+        return list;
+      }
+    } catch {}
+    return VISUAL_STORY_PROMPTS;
+  }
+
+  public saveCustomVisualStoryPrompt(prompt: VisualStoryPrompt) {
+    const list = this.getVisualStoryPrompts();
+    list.unshift(prompt);
+    localStorage.setItem(KEYS.VISUAL_STORY_PROMPTS, JSON.stringify(list));
+  }
+
+  public deleteVisualStoryPrompt(id: string) {
+    try {
+      const list = this.getVisualStoryPrompts().filter(p => p.id !== id);
+      localStorage.setItem(KEYS.VISUAL_STORY_PROMPTS, JSON.stringify(list));
+    } catch {}
   }
 
   // --- RESET ALL DATA ---

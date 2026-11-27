@@ -121,6 +121,8 @@ export interface RoleplayScenario {
   playerB: SecretMission;
   vocabularySupport: string[];
   suggestedDuration: number; // in seconds
+  isCustom?: boolean;
+  teacherId?: string;
 }
 
 export interface Achievement {
@@ -169,6 +171,8 @@ export interface HeadToHeadBattle {
   level: ProficiencyLevel;
   prompt: string;
   timeLimit: number;
+  isCustom?: boolean;
+  teacherId?: string;
   opponent: {
     name: string;
     avatar: string;
@@ -191,6 +195,8 @@ export interface TabooCard {
   forbiddenWords: string[];
   hints: string;
   category: string;
+  isCustom?: boolean;
+  teacherId?: string;
 }
 
 export interface YesAndPrompt {
@@ -199,6 +205,18 @@ export interface YesAndPrompt {
   starterLine: string;
   level: ProficiencyLevel;
   suggestedTwists: string[];
+  isCustom?: boolean;
+  teacherId?: string;
+}
+
+export interface FourThreeTwoTopic {
+  id: string;
+  title: string;
+  level: ProficiencyLevel;
+  description: string;
+  outline: string[];
+  isCustom?: boolean;
+  teacherId?: string;
 }
 
 export interface SpeedTalkingTopic {
@@ -207,6 +225,8 @@ export interface SpeedTalkingTopic {
   category: string;
   level: ProficiencyLevel;
   guideQuestions: string[];
+  isCustom?: boolean;
+  teacherId?: string;
 }
 
 export interface ShadowingLesson {
@@ -216,6 +236,8 @@ export interface ShadowingLesson {
   speaker: string;
   accent: string;
   topic: string;
+  isCustom?: boolean;
+  teacherId?: string;
   sentences: {
     id: string;
     text: string;
@@ -231,6 +253,8 @@ export interface VisualStoryPrompt {
   level: ProficiencyLevel;
   promptQuestions: string[];
   suggestedVocab: string[];
+  isCustom?: boolean;
+  teacherId?: string;
 }
 
 export interface StudentSubmission {

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useArena } from '../../context/ArenaContext';
-import { ROLEPLAY_SCENARIOS } from '../../data/roleplayScenariosData';
 import { RoleplayScenario, SecretMission } from '../../types';
 import { soundService } from '../../services/soundService';
 import { speechService } from '../../services/speechService';
 import { storageService } from '../../services/storageService';
+import { CreateRoleplayModal } from './CreateRoleplayModal';
 import { 
   Theater, 
   Sparkles, 
@@ -28,11 +28,15 @@ import {
   Dices,
   Monitor,
   Send,
-  UserCheck
+  UserCheck,
+  Plus,
+  Trash2
 } from 'lucide-react';
 
 export const RoleplayView: React.FC = () => {
   const { addToast, activeClassStudents } = useArena();
+  const [scenarios, setScenarios] = useState<RoleplayScenario[]>(() => storageService.getRoleplayScenarios());
+  const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const students = activeClassStudents;
   
   const [selectedScenario, setSelectedScenario] = useState<RoleplayScenario | null>(null);
@@ -608,15 +612,28 @@ export const RoleplayView: React.FC = () => {
           </p>
         </div>
 
-        {/* How to Play Button */}
-        <button
-          onClick={() => setShowHowToPlay(!showHowToPlay)}
-          className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-md transition-all flex-shrink-0"
-        >
-          <HelpCircle className="w-4 h-4 text-amber-400" />
-          <span>Panduan Fasilitasi Kelas</span>
-          {showHowToPlay ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        </button>
+        {/* Action Buttons */}
+        <div className="flex flex-wrap items-center gap-2.5 flex-shrink-0">
+          <button
+            onClick={() => {
+              soundService.playClick();
+              setShowCreateModal(true);
+            }}
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Buat Skenario Sendiri</span>
+          </button>
+
+          <button
+            onClick={() => setShowHowToPlay(!showHowToPlay)}
+            className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-md transition-all"
+          >
+            <HelpCircle className="w-4 h-4 text-amber-400" />
+            <span>Panduan</span>
+            {showHowToPlay ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+        </div>
       </div>
 
       {/* Expandable How to Play Card */}
@@ -650,33 +667,57 @@ export const RoleplayView: React.FC = () => {
 
       {/* Scenarios Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {ROLEPLAY_SCENARIOS.map((scenario) => {
+        {scenarios.map((scenario) => {
           return (
             <div
               key={scenario.id}
-              className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-soft hover:shadow-card hover:border-indigo-300 transition-all flex flex-col justify-between group"
+              className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-soft hover:shadow-card hover:border-blue-300 transition-all flex flex-col justify-between group"
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
-                  <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-lg flex items-center gap-1 ${
-                    scenario.level === 'beginner' 
-                      ? 'bg-sky-50 text-sky-700 border border-sky-200' 
-                      : scenario.level === 'intermediate'
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'bg-purple-50 text-purple-700'
-                  }`}>
-                    {scenario.level === 'beginner' && <Sparkles className="w-3 h-3" />}
-                    {scenario.level === 'intermediate' && <Compass className="w-3 h-3" />}
-                    {scenario.level === 'advanced' && <Flame className="w-3 h-3" />}
-                    <span className="capitalize">{scenario.level}</span>
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-lg flex items-center gap-1 ${
+                      scenario.level === 'beginner' 
+                        ? 'bg-sky-50 text-sky-700 border border-sky-200' 
+                        : scenario.level === 'intermediate'
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'bg-purple-50 text-purple-700'
+                    }`}>
+                      {scenario.level === 'beginner' && <Sparkles className="w-3 h-3" />}
+                      {scenario.level === 'intermediate' && <Compass className="w-3 h-3" />}
+                      {scenario.level === 'advanced' && <Flame className="w-3 h-3" />}
+                      <span className="capitalize">{scenario.level}</span>
+                    </span>
+                    {scenario.isCustom && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-100 text-blue-700">
+                        Buatan Guru
+                      </span>
+                    )}
+                  </div>
 
-                  <span className="text-xs font-mono text-slate-400">
-                    {Math.round(scenario.suggestedDuration / 60)} Menit
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono text-slate-400">
+                      {Math.round(scenario.suggestedDuration / 60)} Menit
+                    </span>
+                    {scenario.isCustom && (
+                      <button
+                        onClick={() => {
+                          if (confirm(`Hapus skenario "${scenario.title}"?`)) {
+                            storageService.deleteRoleplayScenario(scenario.id);
+                            setScenarios(storageService.getRoleplayScenarios());
+                            soundService.playClick();
+                          }
+                        }}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                        title="Hapus skenario ini"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
-                <h3 className="font-extrabold text-lg text-slate-900 group-hover:text-indigo-600 transition-colors">
+                <h3 className="font-extrabold text-lg text-slate-900 group-hover:text-blue-600 transition-colors">
                   {scenario.title}
                 </h3>
                 <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">
@@ -716,6 +757,14 @@ export const RoleplayView: React.FC = () => {
           );
         })}
       </div>
+
+      <CreateRoleplayModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onCreated={(newScenario) => {
+          setScenarios(storageService.getRoleplayScenarios());
+        }}
+      />
     </div>
   );
 };

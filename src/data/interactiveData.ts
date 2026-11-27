@@ -1,4 +1,5 @@
-import { TabooCard, YesAndPrompt, SpeedTalkingTopic, ShadowingLesson, VisualStoryPrompt } from '../types';
+import { TabooCard, YesAndPrompt, FourThreeTwoTopic, SpeedTalkingTopic, ShadowingLesson, VisualStoryPrompt } from '../types';
+export type { FourThreeTwoTopic };
 
 // 1. TABOO / HOT SEAT
 export const TABOO_CARDS: TabooCard[] = [
@@ -82,14 +83,6 @@ export const YES_AND_PROMPTS: YesAndPrompt[] = [
 ];
 
 // 3. 4/3/2 TECHNIQUE PROMPTS
-export interface FourThreeTwoTopic {
-  id: string;
-  title: string;
-  level: 'beginner' | 'intermediate' | 'advanced';
-  description: string;
-  outline: string[];
-}
-
 export const FOUR_THREE_TWO_TOPICS: FourThreeTwoTopic[] = [
   {
     id: 'ftt-1',
